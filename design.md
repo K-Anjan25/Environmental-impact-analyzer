@@ -1,0 +1,124 @@
+# UI/UX Design — Environmental Impact Analyzer
+
+> **Status:** Product design direction for the MVP
+> **Last updated:** 2026-10-03
+
+## 1. Design intent
+
+Make a complicated environmental estimate calm, understandable, and honest. The interface should help someone learn what matters and decide what to do next—not reward a brand with a simplistic “green” badge. Show a useful result even when a single composite score is not justified.
+
+### Experience principles
+
+- **Explain before persuade:** show the indicator definition, unit, boundary, and evidence; do not imply a comparison group or score where none is approved.
+- **Known versus estimated:** visually distinguish user-provided, extracted, reference-data, and unavailable information.
+- **No false precision:** use sensible rounding and ranges where appropriate; make data limitations visible beside the result.
+- **Support correction:** users can inspect and edit what text extraction found.
+- **Accessible by default:** information is not conveyed by color alone; all actions work by keyboard and screen reader.
+
+## 2. Information architecture
+
+MVP navigation can remain intentionally small:
+
+- **Assess a product** — primary entry point.
+- **Compare** — available after at least two comparable assessments exist.
+- **How it works** — why a score is withheld, method boundaries, candidate data sources, communication restrictions, and limitations.
+- **Feedback** — report a data, extraction, methodology, or usability issue.
+
+Do not require an account to assess a product. Saved history, accounts, barcode scanning, and a business dashboard are outside the first release.
+
+## 3. Primary journey
+
+1. **Landing / start:** one clear “Assess a product” action, brief category/scope note, and a prominent link to methodology.
+2. **Choose item:** select apparel/footwear subtype; unsupported categories receive an honest out-of-scope message.
+3. **Describe item:** enter product name and known facts, or paste a description. Mark optional information as “I don’t know.” Do not fetch a pasted URL automatically.
+4. **Review extracted facts:** show each suggested attribute, the exact text span it came from, and actions to edit, confirm, reject, or mark unknown. A clear notice says extraction is not verification.
+5. **Calculate:** show a short progress state with a way to return to the form. Avoid implying model certainty while processing.
+6. **Read results:** display scope and evidence, supported method-specific indicators, explicit no-score state, assumptions, and next steps. Any future score requires separate LCA and legal/claims approval.
+7. **Compare or give feedback:** allow comparison only when products are compatible; provide a short, non-intrusive feedback action.
+
+## 4. Key screens and content hierarchy
+
+### Assessment form
+
+- Heading: **“Understand an item’s estimated footprint”**.
+- Category/subtype selector with supported choices and concise examples.
+- Product name; description text area with character guidance; structured fields for material composition, mass, and product-origin claim.
+- A collapsed optional section for component/material shares and supplier process notes (process technology, stage output/reference unit and geography/year, input/loss notes, waste-treatment notes, and a text-only evidence reference). Label these inputs unverified, stateless, and not enough to produce an environmental result; never fetch the reference automatically.
+- A visible “Not sure” state for optional fields; do not imply that an empty field means the impact is zero.
+- Text-extraction CTA that describes what it does: **“Suggest details from description”**.
+- Inline validation for composition totals, units, unsupported subtypes, and maximum lengths.
+- Submit CTA: **“Review assessment”** or **“Calculate estimate”** depending on whether the confirmation step is complete.
+
+### Extraction review
+
+Each candidate fact is a compact, editable row/card:
+
+- Attribute and normalized value (for example, “Material: cotton — 100%”).
+- Evidence quote/source text and a “Suggested from text” label.
+- Edit, confirm, reject, and unknown actions.
+- Never use a checkmark or green status alone to imply independent verification.
+
+### Results
+
+Recommended top-to-bottom order:
+
+1. **Result header:** product, assessment date, functional unit, methodology version, boundary, and an “estimated screening assessment” label.
+2. **No-score state (default):** explain which method, data, reference, or communication gate is unresolved; show confirmed facts and supported indicators instead of a placeholder score. The PEFCR v3.1 report says its single score cannot be used in B2C communication and its results cannot be compared with its representative products. Any independent index requires separate LCA and legal/claims review.
+3. **Impact breakdown:** show climate and water-use indicators only with source-compatible, explicitly named units and boundaries. Do not label EF 3.1 WTU as litres of physical water. Show estimate/range, included life-cycle stages, evidence source/type, and uncertainty. Use a table or text summary in addition to any bar visualization.
+4. **Process-mapping readiness:** distinguish fields the form captures from missing component BOM, process-route, stage geography, loss/waste, boundary, and end-of-life inputs. Use plain-language states such as “not collected” or “not in candidate”; do not convert this checklist into a score, confidence rating, or factor-match claim.
+5. **What is known / assumed / missing:** group facts by provenance and explain how a missing or estimated input affects the result.
+6. **Practical next steps:** a short list tied to evidence (for example, verify composition, compare similar items, repair/reuse). Mark general advice as general.
+7. **Sources and method:** show publisher, dataset/version, date, and links. For candidate sources, expose license name and review status, applicable attribution/ShareAlike conditions, any separate background-database rights, and a licensing contact/path where available. Put required attribution on the same result screen if a source is later approved for product use. Candidates that have not passed license/method review must be explicitly labeled as inactive and must not appear as evidence behind a score.
+8. **Feedback:** “Something look wrong?” with structured reason options and optional comment.
+
+If a score is not supported, replace the score card with a clear state such as: **“We can’t calculate a comparable overall score yet. Here are the indicators and evidence we do have.”** Never substitute a neutral-looking score, blank chart, or zero.
+
+### Comparison view
+
+- Require the same apparel/footwear subtype, indicator definition, functional unit, boundary, and methodology version for any indicator comparison.
+- Present items in columns on wider screens and stacked cards on mobile.
+- Align the same indicator rows and units; annotate which information differs or is estimated.
+- If inputs are not comparable, explain the mismatch and show non-ranked facts only. Do not compare products against PEFCR representative products or sort them by an unapproved composite.
+
+## 5. Visual direction
+
+Use a warm, editorial feel rather than a “greenwashing dashboard”: deep forest/ink for primary text, muted botanical greens for secondary emphasis, warm neutral surfaces, and amber for attention/uncertainty. Keep contrast strong and reserve color for reinforcement, not meaning.
+
+Suggested starting tokens (validate contrast in the final implementation):
+
+| Token | Starting value | Use |
+|---|---|---|
+| Ink | `#17231F` | Main text and headings. |
+| Forest | `#1F5A46` | Primary actions and restrained accent. |
+| Leaf | `#4C8063` | Secondary data visualization accent. |
+| Sand | `#F5F2EA` | Page background. |
+| Surface | `#FFFFFF` | Cards and input surfaces. |
+| Amber | `#8A5A00` | Caution, uncertainty, or attention with a text label. |
+| Border | `#D7DED8` | Dividers and input outlines. |
+
+Use a readable sans-serif/system font, generous line height, clear headings, and a consistent spacing scale. Avoid decorative leaf icons that could be read as a sustainability certification.
+
+## 6. Interaction and content rules
+
+- Put explanation next to the number it explains; do not hide critical caveats only in tooltips.
+- Label every indicator with a unit and functional unit, such as **“kg CO₂e per item”**.
+- Display “estimated,” “user-provided,” “suggested from text,” and “not available” in plain language.
+- Use an explicit “Why no overall score?” link when eligibility fails.
+- Round values for readability while preserving unrounded values for calculations and audit.
+- Keep assumptions reversible: changing a confirmed input should make it clear that a recalculation is needed.
+- Provide loading, retry, partial-result, unsupported-category, no-data, and service-error states.
+- Use respectful, nonjudgmental copy. Avoid moralizing a consumer’s choice or presenting an uncertain recommendation as a fact.
+
+## 7. Accessibility and responsive behavior
+
+- Target WCAG 2.2 AA; verify contrast for normal text, large text, controls, and focus states.
+- Use semantic headings, associated form labels, descriptive buttons, live status announcements for async work, and visible keyboard focus.
+- Ensure the complete form and comparison can be used without a pointer.
+- Never rely on green/red alone for lower/higher impact or status; pair color with text, labels, shapes, and values.
+- Give charts an accessible summary/table and text alternative. Respect reduced-motion settings.
+- Start with a single-column mobile layout. At larger widths, use a readable max-width content column and side-by-side comparison only when there is enough space.
+- Do not require hover to reveal sources, explanations, or errors.
+
+## 8. Design validation
+
+Before release, test with consumers unfamiliar with LCA terminology, an environmental-assessment reviewer, and legal/claims counsel. Ask users to explain why no overall score is shown, what each indicator means, what is excluded, and which facts are uncertain. If an independent index is proposed later, test its interpretation separately and confirm the approved communication scope.

@@ -1,0 +1,1 @@
+"""Environmental Impact Analyzer API."""

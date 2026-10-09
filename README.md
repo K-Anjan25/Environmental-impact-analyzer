@@ -4,7 +4,7 @@ A consumer-facing prototype for making product-impact information easier to unde
 
 ## Current prototype
 
-- React + TypeScript + Vite + Material UI frontend.
+- React + TypeScript + Vite + Material UI frontend, with an original surrealist-inspired visual direction and hand-authored inline SVG vector art. The artwork is decorative, captioned as non-data, and does not encode a footprint or score.
 - Python + FastAPI backend with a rule-based description parser and validated assessment contract.
 - Users can review suggested product facts, optionally record component/material shares and supplier-stage process, output/reference-unit, input/loss, and waste-treatment notes, and see which details remain unknown. These added fields are unverified and used only in the stateless no-score response.
 - Climate and water indicators are explicitly marked **not calculated**; no water method/unit is selected. The API never invents a score or converts missing data to zero. The app has no assessment-record persistence, but deployment-level logging/retention has not been reviewed; do not enter confidential supplier details.

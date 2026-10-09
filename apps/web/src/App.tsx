@@ -44,6 +44,7 @@ import {
 } from './api';
 import { assessmentIsScored } from './assessment';
 import { buildLicensingInquiryHref } from './licensing';
+import { OrbitGlyph, SurrealScene } from './SurrealScene';
 
 type Stage = 'input' | 'review';
 type MaterialRow = { material: string; sharePercent: string; provenance: Provenance };
@@ -518,15 +519,20 @@ onClick={openMethodology}
           <div className="hero-copy">
             <div className="eyebrow"><span className="eyebrow-line" /> PRODUCT IMPACT, WITH CONTEXT</div>
             <Typography id="hero-title" component="h1" className="hero-title">
-              Look beyond the label.
+              Look beyond the <span className="hero-title-accent">label.</span>
             </Typography>
             <Typography className="hero-subtitle">
               Understand what’s known, what’s missing, and what it would take to make a fair comparison.
             </Typography>
+            <div className="hero-note">
+              <span className="hero-note-icon"><ScienceOutlinedIcon /></span>
+              <span><strong>Evidence before estimates.</strong> No footprint score is invented when data is missing.</span>
+            </div>
           </div>
-          <div className="hero-note">
-            <span className="hero-note-icon"><ScienceOutlinedIcon /></span>
-            <span><strong>Evidence first.</strong> No footprint score is invented when data is missing.</span>
+          <div className="hero-visual">
+            <div className="art-caption-top" aria-hidden="true"><span /> A dreamlike study of materials</div>
+            <SurrealScene />
+            <div className="art-caption-bottom">Original vector illustration · not a footprint result</div>
           </div>
         </section>
 
@@ -1107,9 +1113,7 @@ function EmptyAssessment({ hasInput }: { hasInput: boolean }) {
   return (
     <div className="empty-result">
       <div className="empty-illustration" aria-hidden="true">
-        <div className="illustration-ring ring-one" />
-        <div className="illustration-ring ring-two" />
-        <div className="illustration-core"><ForestOutlinedIcon /></div>
+        <OrbitGlyph />
       </div>
       <Chip
         icon={<InfoOutlinedIcon />}

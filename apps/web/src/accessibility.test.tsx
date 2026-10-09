@@ -95,6 +95,16 @@ describe('assessment form accessibility', () => {
     expect(contrastRatio('#ffffff', '#438064')).toBeGreaterThanOrEqual(4.5);
   });
 
+  it('keeps decorative vector illustrations out of the accessibility tree and tab order', () => {
+    const { container } = render(<App />);
+
+    for (const selector of ['.surreal-scene', '.orbit-glyph']) {
+      const illustration = container.querySelector(selector);
+      expect(illustration?.getAttribute('aria-hidden')).toBe('true');
+      expect(illustration?.getAttribute('focusable')).toBe('false');
+    }
+  });
+
   it('has no axe violations in the initial and expanded supplier-evidence form', async () => {
     const { container } = render(<App />);
     const details = container.querySelector('details');

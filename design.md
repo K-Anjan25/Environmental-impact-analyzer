@@ -80,23 +80,44 @@ If a score is not supported, replace the score card with a clear state such as: 
 - Align the same indicator rows and units; annotate which information differs or is estimated.
 - If inputs are not comparable, explain the mismatch and show non-ranked facts only. Do not compare products against PEFCR representative products or sort them by an unapproved composite.
 
-## 5. Visual direction
+## 5. Visual direction — surreal editorial, vector first
 
-Use a warm, editorial feel rather than a “greenwashing dashboard”: deep forest/ink for primary text, muted botanical greens for secondary emphasis, warm neutral surfaces, and amber for attention/uncertainty. Keep contrast strong and reserve color for reinforcement, not meaning.
+The interface uses a restrained, surrealist-inspired editorial composition: familiar materials (a garment, cotton, a seed, an orbit) appear at impossible scale and in unexpected relationships. Tate describes Surrealism through dream worlds, the uncanny, and unexpected or unconventional imagery; here those are compositional cues, not a claim that the product, supply chain, or impact behaves in any particular way. The art is original to this prototype and does not imitate a named artist. A visible caption states that the illustration is not a footprint result.
 
-Suggested starting tokens (validate contrast in the final implementation):
+### Original vector art
 
-| Token | Starting value | Use |
+- Use hand-authored inline SVG with a logical `viewBox`, smooth scaling, restrained gradients, bold silhouettes, and enough negative space for responsive crops. Keep all interface copy as real text rather than text embedded in art.
+- The hero's floating garment, small cotton bloom, blue-green orb, thread, and seed-island are decorative metaphors only. They must not encode product routes, system boundaries, impact values, certification, or a score. No factor chart or data visualization is drawn from this artwork.
+- Purely decorative SVG is `aria-hidden="true"` and `focusable="false"`. A future SVG that conveys information must instead have an accessible name and description (for example `role="img"`, `<title>`, and `<desc>`); any chart also needs a visible text/table equivalent.
+- Prefer vector artwork over raster images for this visual system so it stays crisp at different viewport sizes and zoom levels. Avoid using background images behind important copy.
+
+### Palette and typography
+
+Use a warm, editorial base with deep ink/forest text, botanical green, unexpected ultramarine/violet, restrained coral, and citrus accents. Warm neutral surfaces keep form controls readable; the unusual hues belong mainly to illustration and small editorial accents, never to a simulated impact scale. Keep all text contrast at or above the selected accessibility target, use a strong visible focus ring, and label status in words rather than color alone.
+
+| Token | Value | Use |
 |---|---|---|
 | Ink | `#17231F` | Main text and headings. |
 | Forest | `#1F5A46` | Primary actions and restrained accent. |
-| Leaf | `#4C8063` | Secondary data visualization accent. |
+| Violet | `#554AA3` | Large headline accent and small editorial details. |
+| Coral (text) | `#B74732` | Text or controls only when the required contrast is met; brighter coral stays in decoration. |
 | Sand | `#F5F2EA` | Page background. |
-| Surface | `#FFFFFF` | Cards and input surfaces. |
-| Amber | `#8A5A00` | Caution, uncertainty, or attention with a text label. |
+| Surface | `#FFFEFA` | Cards and input surfaces. |
+| Amber | `#8A5A00` | Caution or uncertainty, always paired with text. |
 | Border | `#D7DED8` | Dividers and input outlines. |
 
-Use a readable sans-serif/system font, generous line height, clear headings, and a consistent spacing scale. Avoid decorative leaf icons that could be read as a sustainability certification.
+The implemented Violet (`#554AA3`) on Sand (`#F5F2EA`) measures 6.48:1; Coral text (`#B74732`) on Sand measures 4.74:1. These are reference pairings, not a substitute for checking actual rendered surfaces—especially gradients, translucent cards, and focus states—when tokens or layouts change.
+
+Use a readable system sans-serif, generous line height, clear heading hierarchy, and a consistent spacing scale. Avoid decorative leaf badges or icons that could be misread as certification or proof of environmental benefit.
+
+### Accessibility guardrails for the visual system
+
+- Target WCAG 2.2 AA. The W3C's contrast guidance sets 4.5:1 for normal text and 3:1 for large text; meaningful controls and graphical objects have a 3:1 non-text contrast threshold against adjacent colors. Recheck rendered text, control boundaries, and keyboard states after visual changes.
+- Do not rely on hue alone for status or indicators; include labels and explicit states. The hero illustration is hidden from assistive technology because it is decorative; its nearby caption clarifies that it is not data.
+- Keep decorative vectors static. If motion is added later, respect `prefers-reduced-motion`; motion must never be the only way to communicate a state.
+- Run browser accessibility checks at mobile and desktop sizes, then complete human screen-reader and usability review before any public pilot.
+
+**Research references:** [Tate: Surrealism](https://www.tate.org.uk/art/art-terms/s/surrealism); [MDN: SVG in HTML and accessible names/descriptions](https://developer.mozilla.org/en-US/docs/Web/SVG/Guides/SVG_in_HTML); [MDN: `aria-hidden`](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Attributes/aria-hidden); [W3C: WCAG 2.2 contrast minimum](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html); [W3C: non-text contrast](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html); [MDN: `prefers-reduced-motion`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/prefers-reduced-motion).
 
 ## 6. Interaction and content rules
 

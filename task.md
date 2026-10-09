@@ -1,7 +1,7 @@
 # Tasks and Roadmap — Environmental Impact Analyzer
 
 > **Status:** Initial implementation backlog
-> **Last updated:** 2026-10-03
+> **Last updated:** 2026-10-09
 > **Repository state:** Stateless web/API prototype and informational candidate-source registry are in place. A potential CC BY-SA 4.0 reuse path and a separate commercial-license fallback are documented, but release-specific rights and methodology approval remain pending; no factor data, persistence, or numeric scoring is implemented.
 
 ## Status and priority legend
@@ -53,7 +53,8 @@ Deliver a consumer-facing apparel/footwear assessment that makes evidence and li
 - [x] **M3-03 — Build extraction review UI.** Users can select or dismiss suggestions with source spans, then edit applied values before assessment.
 - [~] **M3-04 — Build results UI.** Prototype results show a clear no-score state, unavailable indicators, known facts, data gaps, limitations, and a collapsible product-to-process mapping checklist. Data-backed score/evidence presentation awaits reviewed sources.
 - [ ] **M3-05 — Build feedback flow.** Capture structured issue type and optional comment without requiring identity; route feedback to a review process.
-- [~] **M3-06 — Add accessibility and responsive testing.** Automated axe checks cover the initial form, expanded supplier-evidence inputs, methodology dialog, no-score result, and expanded mapping checklist. A static CSS/theme contrast test checks declared non-decorative text against the light page surface (axe color-contrast remains disabled in JSDOM). Browser review with temporary, npm-packaged Chromium 153 covered desktop at 1440 px and mobile at 390/360/320 px; rendered axe checks passed on the initial form, expanded evidence section, extraction review, no-score result/mapping checklist, and the stable methodology dialog. No horizontal overflow or runtime/request errors were observed. Keyboard tab order, Enter/Escape dialog handling and focus restoration, and reduced-motion CSS were checked. Human screen-reader and usability reviews, plus supported-browser/device verification, remain outstanding.
+- [~] **M3-06 — Add accessibility and responsive testing.** Automated axe checks cover the initial form, expanded supplier-evidence inputs, methodology dialog, no-score result, and expanded mapping checklist; an additional assertion keeps decorative SVGs out of the accessibility tree and tab order. A static CSS/theme contrast test checks declared non-decorative text against the light page surface (axe color-contrast remains disabled in JSDOM). Browser review with temporary, npm-packaged Chromium 153 covered desktop at 1440 px and mobile at 390/360/320 px; rendered axe checks passed on the initial form, expanded evidence section, extraction review, no-score result/mapping checklist, and stable methodology dialog. After the vector redesign, desktop and mobile axe checks, no-overflow checks, reduced-motion emulation, and the sample no-score API flow also passed with no runtime or request errors. Keyboard tab order, Enter/Escape dialog handling and focus restoration, and reduced-motion CSS were checked. Human screen-reader and usability reviews, plus supported-browser/device verification, remain outstanding.
+- [x] **M3-07 — Implement original surreal/vector visual direction.** Research informed an original inline-SVG hero scene and no-score orbit illustration, with an explicit non-data caption, responsive styling, high-contrast type, and decorative SVG accessibility handling. The artwork does not encode factors, boundaries, eligibility, or results; visual principles and source links are documented in `design.md`.
 
 ## Milestone 4 — Comparison and pilot readiness (P1)
 

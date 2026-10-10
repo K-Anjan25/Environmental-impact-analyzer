@@ -19,6 +19,10 @@ This roadmap separates **v1 release verification** from future discovery. A feat
 4. **Preview acceptance:** check `/`, `/healthz`, `/api/docs`, `/api/v1/factors?limit=1`, one estimate, CSV download, security headers, and runtime logs. Verify resource limits, cold starts, health behavior, and privacy/logging policy before using the Beta container runtime in production.
 5. **Production cut:** after the preview passes and the runtime choice is accepted, select the production URL/domain, verify health and privacy behavior, run the release checks, and record the release/version and rollback procedure. If the Container Runtime Beta is not acceptable for production, switch the deployment spike to Vercel's standard FastAPI Python runtime and validate its entrypoint, static files, and bundled data instead; do not treat Beta as an approved production choice by default.
 
+### Vercel deployment attempt log
+
+The first Vercel build output cloned `main` at `102be24` and reported no `functions`, `static`, or `services` output. That commit predates this implementation and does not contain `Dockerfile.vercel`; this is a branch/root-selection issue, not a failure of the current container image. Do not promote or use that empty deployment. Retry as a **Preview** from `arena/01a0fee8-environmental-impact-analyzer` (currently `485f06b` or newer), with the project Root Directory set to the repository root. Set `PORT=8000` in the Preview environment. Keep `main` as the Production Branch for now and verify the deployment log names the feature branch before evaluating output.
+
 ### Local container acceptance flow
 
 From the repository root:

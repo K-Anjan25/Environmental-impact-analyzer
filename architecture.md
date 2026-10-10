@@ -15,6 +15,7 @@ The application is an open-data process-factor estimator. It does not create a w
 
 ```text
 docker-compose.yml          Local same-origin container acceptance setup
+Dockerfile.vercel            Vercel Container Runtime image entrypoint (Beta)
 roadmap.md                  Release readiness and future-version flow
 apps/web/
   src/App.tsx              Factor search, selection, calculation UI, results, source dialog
@@ -89,9 +90,9 @@ Run the local container acceptance test from the repository root:
 docker compose up --build
 ```
 
-The Compose service builds the Node web stage and Python API runtime into one same-origin image, exposes port 8000 by default, runs as non-root, and provides an HTTP health check. Uvicorn binds `0.0.0.0`, uses two workers, and disables access logging. Docker was unavailable in the development sandbox, so the image build has not yet been verified; see [roadmap.md](roadmap.md) for the acceptance steps.
+The Compose service builds the Node web stage and Python API runtime into one same-origin image, exposes port 8000 by default, runs as non-root, and provides an HTTP health check. Uvicorn binds `0.0.0.0`, uses two workers, and disables access logging. The user's Compose log confirms the image built, the health check passed, and application startup completed. The sandbox could not run Docker; browser/API/CSV checks in the user's container remain in the release checklist.
 
-Vercel is the selected deployment platform; its project configuration and custom domain are undecided, and the app has not been deployed there. Vercel documents a Python Functions/FastAPI runtime and static-asset support ([official guide](https://vercel.com/docs/frameworks/backend/fastapi)), but the repository-specific entrypoint, build output, routing, and headers still need a Vercel preview validation. Docker Compose is not a substitute for that Vercel check.
+Vercel is the selected deployment platform; the project configuration and custom domain are undecided, and the app has not been deployed there. The root `Dockerfile.vercel` targets Vercel's Container Runtime to reuse the tested one-origin image. Vercel auto-detects this filename, but the Container Runtime is currently Beta; see the [official guide](https://vercel.com/docs/functions/runtimes/container). Configure the Vercel project environment variable `PORT=8000` so the non-root process listens on Vercel's routed port. A Vercel preview is still required to validate image build, routing, health/API behavior, and resource limits. Docker Compose is local verification, not a substitute for a Vercel deployment check.
 
 For local development, run the API on `0.0.0.0:8000` with `--no-access-log`, then Vite on `0.0.0.0:5173`; Vite proxies `/api` and `/healthz`. The Vite server permits the Arena `.e2b.app` preview host and no browser code contacts localhost.
 

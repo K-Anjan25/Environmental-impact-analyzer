@@ -36,3 +36,43 @@ jobs:
       - run: npm ci --prefix apps/web
       - run: npm --prefix apps/web test
       - run: npm --prefix apps/web run build
+
+  containers:
+    name: Container builds and smoke tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and start the standard Compose image
+        run: docker compose up --build --detach --wait --wait-timeout 180 analyzer
+      - name: Build and start the Vercel-targeted image
+        run: docker compose --profile vercel up --build --detach --wait --wait-timeout 180 analyzer-vercel
+      - name: Smoke-test both containers
+        run: |
+          python - <<'PY'
+          import json
+          from urllib.request import Request, urlopen
+
+          for base_url in ("http://localhost:8000", "http://localhost:8001"):
+              with urlopen(f"{base_url}/healthz", timeout=5) as response:
+                  assert response.status == 200
+              with urlopen(f"{base_url}/api/docs", timeout=5) as response:
+                  assert response.status == 200
+              with urlopen(f"{base_url}/api/v1/factors?limit=1", timeout=5) as response:
+                  catalog = json.load(response)
+              assert catalog["total_records"] == 302
+              payload = json.dumps({
+                  "processes": [{"factor_id": catalog["factors"][0]["id"], "quantity": 0.18}]
+              }).encode()
+              request = Request(
+                  f"{base_url}/api/v1/process-estimates",
+                  data=payload,
+                  headers={"Content-Type": "application/json"},
+              )
+              with urlopen(request, timeout=10) as response:
+                  estimate = json.load(response)
+              assert len(estimate["results"][0]["indicators"]) == 16
+              assert estimate["license_url"] == "https://creativecommons.org/licenses/by-sa/4.0/"
+          PY
+      - name: Stop containers
+        if: always()
+        run: docker compose --profile vercel down --volumes

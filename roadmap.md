@@ -13,10 +13,11 @@ This roadmap separates **v1 release verification** from future discovery. A feat
 
 ### Remaining v1 release checks
 
-1. **Container acceptance:** run the repository's `docker-compose.yml` and inspect the image build, healthy status, UI, API, and result behavior. The image has not been built in this development environment because no Docker-compatible engine is installed. The user will run Compose and share the build/runtime logs.
-2. **Vercel deployment validation:** Vercel is the selected deployment platform. The exact Vercel project configuration and custom domain are not chosen yet, and no production deployment has been made. The Compose setup is a local container acceptance test; it is not itself a Vercel deployment configuration.
-3. **Vercel implementation spike:** verify the existing FastAPI application and bundled score files with Vercel's Python/FastAPI runtime, build and route the Vite assets, and test same-origin paths and response headers in a Vercel preview. Vercel documents deploying FastAPI with Python Functions and supports static assets/frontends; implement and verify the repository-specific entrypoint/build/routing before relying on it ([FastAPI deployment guide](https://vercel.com/docs/frameworks/backend/fastapi)). Do not assume the local Docker/Compose behavior is identical to Vercel.
-4. **Production cut:** after the preview passes, select the deployment URL/domain, verify health and privacy behavior, run the release checks, and record the release/version and rollback procedure.
+1. **Container acceptance:** the user ran `docker compose up --build`; the container started and reported `healthy`, with both Uvicorn workers completing application startup. This confirms the local image build and health check. Still smoke-test the UI, catalog, estimate endpoint, and CSV in that container; these are separate from the health check.
+2. **Local Vercel-image preflight:** run `docker compose --profile vercel up --build analyzer-vercel`; it builds the root `Dockerfile.vercel`, listens on host port 8001, and uses the same `PORT=8000` expected in Vercel settings. Check the browser and API routes before importing/deploying. This validates the image locally, not Vercel routing.
+3. **Vercel preview deployment:** Vercel is the selected platform; the project and custom domain are undecided, and no Vercel deployment has been made. The root `Dockerfile.vercel` uses Vercel's Container Runtime so the same-origin app can run as one container. Vercel auto-detects that filename and routes traffic to the image; the Container Runtime is currently Beta ([official guide](https://vercel.com/docs/functions/runtimes/container)). Import the repository with its root as the project root, set the project environment variable `PORT=8000` for Preview and Production, and deploy a preview. Do not treat the local Compose result as a Vercel preview result.
+4. **Preview acceptance:** check `/`, `/healthz`, `/api/docs`, `/api/v1/factors?limit=1`, one estimate, CSV download, security headers, and runtime logs. Verify resource limits, cold starts, health behavior, and privacy/logging policy before using the Beta container runtime in production.
+5. **Production cut:** after the preview passes and the runtime choice is accepted, select the production URL/domain, verify health and privacy behavior, run the release checks, and record the release/version and rollback procedure. If the Container Runtime Beta is not acceptable for production, switch the deployment spike to Vercel's standard FastAPI Python runtime and validate its entrypoint, static files, and bundled data instead; do not treat Beta as an approved production choice by default.
 
 ### Local container acceptance flow
 
@@ -26,23 +27,30 @@ From the repository root:
 docker compose up --build
 ```
 
-In another terminal, verify:
+The user's first run already showed `Up ... (healthy)` and successful FastAPI startup. To complete the container smoke test, verify these routes (use `curl.exe` in Windows PowerShell):
 
-```bash
+```powershell
 docker compose ps
-curl -fsS http://localhost:8000/healthz
-curl -fsS 'http://localhost:8000/api/v1/factors?limit=1'
-curl -fsS http://localhost:8000/api/docs
+curl.exe -fsS http://localhost:8000/healthz
+curl.exe -fsS 'http://localhost:8000/api/v1/factors?limit=1'
+curl.exe -fsS http://localhost:8000/api/docs
 ```
 
-Then use the browser at `http://localhost:8000` to calculate a process and download its CSV. The service should report healthy and return separate indicator rows with source/license information. To provide diagnostics, share the full `docker compose up --build` output if the build fails, plus:
+Then use the browser at `http://localhost:8000` to calculate a process and download its CSV. The service should return separate indicator rows with source/license information. To provide diagnostics, share the full `docker compose up --build` output if the build fails, plus:
 
 ```bash
 docker compose logs --no-color --tail=150 analyzer
 docker compose ps
 ```
 
-Stop the local container with `docker compose down`. To use a different host port, run `ANALYZER_PORT=8001 docker compose up --build` and visit port 8001.
+Stop the normal local container with `docker compose down`. To test the Vercel-targeted image locally, run:
+
+```powershell
+docker compose --profile vercel up --build analyzer-vercel
+curl.exe -fsS http://localhost:8001/healthz
+```
+
+Open `http://localhost:8001` and test one estimate/CSV. Stop the profile with `docker compose --profile vercel down`. This is still a local image test; Vercel's preview must be checked separately. To move the normal Compose app to another host port, run `ANALYZER_PORT=8001 docker compose up --build` in a POSIX shell, or set `$env:ANALYZER_PORT='8001'` before `docker compose up --build` in PowerShell.
 
 ## Future versions: gated by open data and the product boundary
 

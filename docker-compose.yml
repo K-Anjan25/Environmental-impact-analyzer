@@ -20,3 +20,17 @@ services:
       timeout: 5s
       start_period: 10s
       retries: 3
+
+  analyzer-vercel:
+    profiles: ["vercel"]
+    build:
+      context: .
+      dockerfile: Dockerfile.vercel
+    image: environmental-impact-analyzer:vercel-local
+    ports:
+      - "${VERCEL_ANALYZER_PORT:-8001}:8000"
+    environment:
+      WEB_DIST: /app/web/dist
+      PORT: "8000"
+      PYTHONUNBUFFERED: "1"
+    init: true

@@ -13,6 +13,7 @@ apps/web/dist/
 coverage/
 
 # Local configuration and logs
+.vercel/
 .env
 .env.*
 !.env.example

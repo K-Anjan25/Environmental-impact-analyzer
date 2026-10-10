@@ -38,9 +38,9 @@ The local container acceptance command is:
 docker compose up --build
 ```
 
-`docker-compose.yml` builds and health-checks the same-origin web/API image. The API's static-serving path was smoke-tested against the Vite build, but the image itself could not be built in this environment because Docker-compatible tools are unavailable. The user will run Compose and share the build/runtime logs for follow-up.
+`docker-compose.yml` builds and health-checks the same-origin web/API image. The user's Compose output confirmed a successful build, healthy status, and completed FastAPI startup. A browser/API/CSV smoke test in that container remains to be confirmed.
 
-Vercel is the selected deployment platform. The Vercel project configuration and custom domain are undecided, and no Vercel deployment has been validated yet. Compose is for local container acceptance, not the Vercel deployment configuration. See [roadmap.md](roadmap.md) for the release flow and future-version path.
+Vercel is the selected deployment platform. The root `Dockerfile.vercel` targets Vercel's Container Runtime (currently Beta); set `PORT=8000` in the Vercel project environment because the application runs as non-root. The Vercel project/domain are undecided and no Vercel preview has been validated. Compose is local acceptance only. GitHub CI now builds and smoke-tests both the standard Compose image and Vercel-targeted image; its run result is not yet available. See [roadmap.md](roadmap.md) for the release flow and future-version path.
 
 ## Fixed product boundary
 

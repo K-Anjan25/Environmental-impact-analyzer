@@ -69,7 +69,7 @@ The standalone image can also be built and run with `docker build -f services/ap
 
 ### Deployment target
 
-Vercel is the selected deployment platform; the project configuration and custom domain are not finalized, and a Vercel deployment has not yet been validated. The Compose setup above is for local container acceptance, not a Vercel deployment. See the [release readiness and version roadmap](roadmap.md) for the verification flow and next-version path.
+The local Compose run built the standard image and reported the API container healthy. Vercel is the selected deployment platform; the Vercel project and custom domain are not finalized, and no Vercel preview has been validated. The root [`Dockerfile.vercel`](Dockerfile.vercel) is a Vercel Container Runtime entrypoint. That runtime is currently Beta; configure the Vercel project environment variable `PORT=8000` for the non-root app process, then validate a preview before production. You can locally preflight that image with `docker compose --profile vercel up --build analyzer-vercel` (host port 8001). See the [official Container Runtime guide](https://vercel.com/docs/functions/runtimes/container) and the [release readiness and version roadmap](roadmap.md). Local Compose verifies an image only; it does not validate Vercel routing, limits, or deployment configuration.
 
 ## API
 

@@ -15,6 +15,8 @@ The v1 calculation remains an open-data process estimator. It uses Carbonfact's 
 - [x] Added an accessible, responsive React estimator and same-screen result attribution.
 - [x] Added a CSV export with one row per process and indicator, source identity, units, data-quality fields, license, attribution, and no aggregate row.
 - [x] Began v2 with a browser-only product-input organizer: user-entered labels, quantities, free-text units, and optional manual context associations. Input amounts never set or convert factor quantities; unassociated inputs are exported as not calculated, not zero.
+- [x] Simplified the input area by removing explanatory implementation copy beneath and around its fields; detailed method/privacy boundaries remain in the separate disclosure dialog.
+- [x] Started the v2 open-data/licensing screen, including direct USDA LCA Commons field-crop records. The version-2 crop archive remains a candidate pending provider-graph/method review; the separate ecoinvent-linked crosswalk is excluded. No new factor data was integrated; see [v2-source-audit.md](v2-source-audit.md).
 - [x] Kept the API stateless with no accounts, database, analytics, saved assessments, or request-body logging. Optional product-input notes exist only in browser page memory and are not sent to the API.
 - [x] Added a non-root multi-stage production Docker image that serves the web build and API from one origin, with health check and access logging disabled.
 - [x] Removed inactive-source/activation-gate UX and legacy no-score routes from the active API/UI.

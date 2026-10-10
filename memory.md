@@ -39,7 +39,7 @@ The UI and API no longer have inactive-source gates or no-score product-assessme
 - `docker-compose.yml`: local same-origin container acceptance setup.
 - `Dockerfile.vercel`: Vercel Container Runtime image entrypoint (Beta; project `PORT=8000` required).
 - `.github/workflows/ci.yml`: API/web checks plus standard and Vercel-targeted container build/smoke jobs.
-- `README.md`, `prd.md`, `data-sources.md`, `architecture.md`, `design.md`, `rules.md`, `task.md`, `roadmap.md`, and `v2-discovery.md`: current product boundary, release flow, and v2 input/mapping gates.
+- `README.md`, `prd.md`, `data-sources.md`, `architecture.md`, `design.md`, `rules.md`, `task.md`, `roadmap.md`, `v2-discovery.md`, and `v2-source-audit.md`: current product boundary, release flow, v2 input/mapping gates, and preliminary source/licensing findings.
 
 ## Verification commands
 
@@ -63,10 +63,11 @@ docker compose up --build
 - API Ruff lint and format checks: pass.
 - API mypy: pass.
 - API pytest: 11 passed.
-- Frontend Vitest/axe: 13 passed, including local-only product-input handling, exact API payload boundaries, context-only associations, CSV unassociated-input rows, and accessibility.
+- Frontend Vitest/axe: 13 passed after the input-area cleanup, including a check that no implementation explanation is placed around the fields, local-only input handling, exact API payload boundaries, context-only associations, CSV unassociated-input rows, and accessibility.
 - TypeScript and Vite production build: pass.
 - Vite-to-API smoke test: `/` served, proxied `/api/v1/factors?limit=1` returned 302 catalog records with one factor, and proxied `/healthz` returned ready.
-- Current local code includes the v2 product-input organizer; the organizer and context links are client-only. The API receives only factor IDs and separately entered reference-unit quantities. No new source data or factor mapping was added.
+- Current local code includes the v2 product-input organizer with a clean field area; implementation details remain in the Method/source/privacy dialog. The organizer and context links are client-only. The API receives only factor IDs and separately entered reference-unit quantities. No new source data or factor mapping was added.
+- The preliminary audit in `v2-source-audit.md` examined the USDA LCA Commons directly: field-crop version 2 is a public-domain cotton LCI lead, but its provider graph and compatible characterization method remain unverified; the separate v1 crosswalk maps to ecoinvent 2.2 and is excluded. Textile Exchange and U.S. Cotton 2026 datasets remain on hold pending exact reuse terms and dependency review. No candidate data archive was bundled.
 - GitHub CI run `38063089239` passed API, web, and both container checks on v2 app-code commit `2bf2130`.
 - Vercel reports deployment success for app-code commits `0775d5d` and `2bf2130`. Both the geography filter and v2 worksheet need the operator's authenticated Preview check. Vercel Preview is SSO-protected from external probes. The Vercel Container Runtime is Beta, authorized only for a no-SLA early beta with no custom domain; no Production deployment, PR, or merge is authorized.
 - Root `LICENSE` applies MIT to original project code/documentation; Carbonfact data and derived results remain under CC BY-SA 4.0. `PRIVACY.md` and `TERMS.md` describe the browser-only worksheet and still require operator/legal review before public Production. Legal pages are generated from canonical source documents during Vite build.

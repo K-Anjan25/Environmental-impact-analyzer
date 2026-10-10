@@ -245,10 +245,14 @@ describe('process estimator accessibility', () => {
     expect(screen.queryByRole('option', { name: /Spinning cotton to yarn · World/ })).toBeNull();
   });
 
-  it('keeps declared product inputs local and treats a manual association as context only', async () => {
+  it('keeps the input area concise and declared product inputs local', async () => {
     const fetchMock = stubApi();
-    render(<App />);
+    const { container } = render(<App />);
     await screen.findByText('Build a process estimate.');
+
+    const inputWorkspace = container.querySelector('.product-input-workspace');
+    expect(inputWorkspace?.textContent).not.toMatch(/context only|not sent to the API|manual association|not calculated, not zero/i);
+    expect(screen.getByRole('heading', { name: 'Product inputs' })).toBeTruthy();
 
     fireEvent.change(screen.getByRole('textbox', { name: 'Input or component name' }), {
       target: { value: 'Upper cotton fabric' },
@@ -270,18 +274,16 @@ describe('process estimator accessibility', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'Add process' }));
 
-    const inputContext = screen.getByRole('combobox', {
-      name: 'Input context for Spinning cotton to yarn',
-    });
+    const inputContext = screen.getByRole('combobox', { name: 'Link input' });
     fireEvent.mouseDown(inputContext);
     fireEvent.click(await screen.findByRole('option', { name: 'Upper cotton fabric — 0.35 kg' }));
     await expectNoAxeViolations();
 
     fireEvent.click(screen.getByRole('button', { name: 'Calculate separate indicators' }));
     await screen.findByRole('table', { name: /Separate environmental indicators for Spinning cotton to yarn/ });
-    const inputContextText = screen.getByText(/User-associated input:/).closest('p')?.textContent ?? '';
+    const inputContextText = screen.getByText('Input:').closest('p')?.textContent ?? '';
     expect(inputContextText).toContain('0.35 kg');
-    expect(inputContextText).toContain('not used to calculate');
+    expect(inputContextText).not.toMatch(/used to calculate|context only/i);
     expect(screen.getByText(/0\.18 × 1 kg yarn/)).toBeTruthy();
 
     const calculationCall = fetchMock.mock.calls.find(([path]) => String(path) === '/api/v1/process-estimates');

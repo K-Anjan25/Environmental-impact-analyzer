@@ -122,5 +122,6 @@ The application code/documentation license is separate from the bundled data lic
 - [Implementation and release record](task.md)
 - [Release readiness and version roadmap](roadmap.md)
 - [v2 product-input discovery and scope record](v2-discovery.md)
+- [v2 open-data and licensing audit](v2-source-audit.md)
 - [Coding and calculation rules](rules.md)
 - [Project memory](memory.md)

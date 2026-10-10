@@ -121,8 +121,7 @@ function ProcessResult({
           </div>
           {productInput && (
             <p className="product-input-result-context">
-              <strong>User-associated input:</strong> {productInput.name} — {productInput.quantity} {productInput.unit}.
-              {' '}Context only; its quantity was not used to calculate this process result.
+              <strong>Input:</strong> {productInput.name} · {productInput.quantity} {productInput.unit}
             </p>
           )}
         </div>
@@ -240,7 +239,7 @@ function SourceDialog({
           <section>
             <Typography component="h3" className="dialog-section-title">Data boundary</Typography>
             <Typography variant="body2">
-              Factor reference units, modeled boundaries, and geographies vary by source row. The source’s Input required (kg) value is displayed when present, but this app does not apply upstream material factors or add waste treatment. The source publishes WTU in m³ world-equivalent; it is an impact indicator, not litres of physical water. Use-phase records describe representative European consumer behavior.
+              Factor reference units, modeled boundaries, and geographies vary by source row. The source’s Input required (kg) value is displayed when present, but this app does not apply upstream material factors or add waste treatment. The source publishes WTU in m³ world-equivalent; it is an impact indicator, not litres of physical water. Use-phase records describe representative European consumer behavior. Declared inputs and manual associations are not matched, unit-converted, or included in calculations; an unassociated input is exported as not calculated, not zero.
             </Typography>
           </section>
           {loading && <CircularProgress size={22} aria-label="Loading source details" />}
@@ -351,12 +350,6 @@ function App() {
     () => new Map<string, ProductInput>(productInputs.map((item) => [item.id, item])),
     [productInputs],
   );
-  const associatedProductInputIds = useMemo(
-    () => new Set(selectedProcesses.flatMap((line) => line.productInputId ? [line.productInputId] : [])),
-    [selectedProcesses],
-  );
-  const unassociatedProductInputs = productInputs.filter((item) => !associatedProductInputIds.has(item.id));
-
   const clearProductInputDraft = () => {
     setProductInputNameDraft('');
     setProductInputQuantityDraft('');
@@ -574,17 +567,11 @@ function App() {
 
             <section className="product-input-workspace" aria-labelledby="product-input-heading">
               <div className="product-input-heading-row">
-                <div>
-                  <div className="step-label">V2 <span aria-hidden="true">·</span> DECLARED INPUTS</div>
-                  <Typography id="product-input-heading" component="h3" className="product-input-title">
-                    Optional product-input worksheet
-                  </Typography>
-                </div>
+                <Typography id="product-input-heading" component="h3" className="product-input-title">
+                  Product inputs
+                </Typography>
                 <Chip label={`${productInputs.length} / ${MAX_PRODUCT_INPUTS}`} size="small" className="soft-chip" />
               </div>
-              <Typography className="product-input-explainer">
-                Record inputs you already know, with your own labels, quantities, and unit text. These notes stay in this page and are not sent to the API. You may manually associate an input with a selected process below, but its amount never sets or converts the separate process quantity. No factor matching, stage mapping, loss treatment, or product total is inferred; unassociated inputs are not calculated, not zero.
-              </Typography>
               <div className="product-input-entry-grid">
                 <TextField
                   size="small"
@@ -645,11 +632,6 @@ function App() {
                   ))}
                 </Stack>
               )}
-              <Typography className="product-input-summary" aria-live="polite">
-                {productInputs.length === 0
-                  ? 'No input lines recorded. This worksheet is optional.'
-                  : `${unassociatedProductInputs.length} of ${productInputs.length} declared input line(s) are not associated with a selected process. They remain outside the estimate.`}
-              </Typography>
             </section>
 
             {catalog && (
@@ -816,13 +798,13 @@ function App() {
                           {productInputs.length > 0 && (
                             <FormControl fullWidth size="small" className="selected-process-input-context">
                               <InputLabel id={`process-input-context-label-${index}`}>
-                                Input context for {line.factor.activity}
+                                Link input
                               </InputLabel>
                               <Select
                                 labelId={`process-input-context-label-${index}`}
                                 id={`process-input-context-${index}`}
                                 value={line.productInputId ?? ''}
-                                label={`Input context for ${line.factor.activity}`}
+                                label="Link input"
                                 onChange={(event) => updateSelectedProductInput(line.key, event.target.value)}
                               >
                                 <MenuItem value="">No input association</MenuItem>
@@ -832,9 +814,6 @@ function App() {
                                   </MenuItem>
                                 ))}
                               </Select>
-                              <Typography component="span" className="input-context-helper">
-                                Context only; the factor quantity above is entered separately.
-                              </Typography>
                             </FormControl>
                           )}
                         </div>
@@ -893,11 +872,6 @@ function App() {
                     Download CSV
                   </Button>
                 </div>
-                {unassociatedProductInputs.length > 0 && (
-                  <Typography className="unassociated-input-note">
-                    {unassociatedProductInputs.length} declared input line(s) are not associated with these results and are not included; no zero-impact value is assigned.
-                  </Typography>
-                )}
                 <Stack spacing={2}>
                   {result.results.map((line, index) => {
                     const selectedProcess = selectedProcesses.find((item) => item.factor.id === line.factor_id);

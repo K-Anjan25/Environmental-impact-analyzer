@@ -136,10 +136,10 @@ const estimate: ProcessEstimateResponse = {
   }],
 };
 
-function stubApi(): ReturnType<typeof vi.fn> {
+function stubApi(catalogResponse: FactorCatalog = catalog): ReturnType<typeof vi.fn> {
   const fetchMock = vi.fn().mockImplementation(async (input: RequestInfo | URL) => {
     const path = String(input);
-    if (path === '/api/v1/factors?limit=500') return { ok: true, json: async () => catalog };
+    if (path === '/api/v1/factors?limit=500') return { ok: true, json: async () => catalogResponse };
     if (path === '/api/v1/sources') return { ok: true, json: async () => [source] };
     if (path === '/api/v1/process-estimates') return { ok: true, json: async () => estimate };
     return { ok: false, status: 404, json: async () => ({ detail: 'Not found.' }) };
@@ -206,11 +206,43 @@ describe('process estimator accessibility', () => {
     expect(dashboardText).not.toContain('Separate indicators. No combined score.');
     expect(dashboardText).not.toContain('Each selected process is reported on its own; this is not a whole-product footprint.');
     expect(dashboardText).not.toContain('Illustration only · values come from cited process data');
+    expect(dashboardText).not.toContain('Open-data process estimates');
+    expect(dashboardText).not.toContain('Open process data');
+    expect(dashboardText).not.toContain('OPEN FACTORS');
+    expect(screen.getByText('Environmental Impact Analyzer')).toBeTruthy();
     const legalNavigation = screen.getByRole('navigation', { name: 'Legal and source links' });
     expect(legalNavigation).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Privacy' }).getAttribute('href')).toBe('/legal/privacy.html');
     expect(screen.getByRole('link', { name: 'Terms' }).getAttribute('href')).toBe('/legal/terms.html');
     expect(screen.getByRole('link', { name: 'License' }).getAttribute('href')).toBe('/legal/license.html');
+  });
+
+  it('filters source factors by an exact source geography', async () => {
+    const vietnamFactor: ProcessFactor = {
+      ...factor,
+      id: factor.id.replace('@WORLD', '@VN'),
+      source_descriptor: factor.source_descriptor.replace('@WORLD', '@VN'),
+      activity: 'Spinning cotton to yarn in Vietnam',
+      geography_code: 'VN',
+      geography_label: 'Vietnam',
+    };
+    const geographyCatalog: FactorCatalog = {
+      ...catalog,
+      total_records: 2,
+      families: catalog.families.map((family) => ({ ...family, record_count: 2 })),
+      factors: [factor, vietnamFactor],
+    };
+    stubApi(geographyCatalog);
+    render(<App />);
+    await screen.findByText('Build a process estimate.');
+
+    fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Source geography' }));
+    fireEvent.click(await screen.findByRole('option', { name: 'Vietnam (VN) (1)' }));
+
+    const factorInput = screen.getByRole('combobox', { name: 'Process activity' });
+    fireEvent.change(factorInput, { target: { value: 'Spinning cotton' } });
+    expect(await screen.findByRole('option', { name: /Spinning cotton to yarn in Vietnam/ })).toBeTruthy();
+    expect(screen.queryByRole('option', { name: /Spinning cotton to yarn · World/ })).toBeNull();
   });
 
   it('has no axe violations in the calculator and populated indicator results', async () => {

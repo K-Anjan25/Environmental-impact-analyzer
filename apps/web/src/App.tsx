@@ -55,6 +55,7 @@ type SelectedProcess = {
 };
 
 const MAX_PROCESS_LINES = 25;
+const UNSPECIFIED_GEOGRAPHY = '__not_stated__';
 
 function numberForDisplay(value: number): string {
   if (!Number.isFinite(value)) return 'Not available';
@@ -257,6 +258,7 @@ function App() {
   const [catalogLoading, setCatalogLoading] = useState(true);
   const [catalogError, setCatalogError] = useState('');
   const [familyFilter, setFamilyFilter] = useState('');
+  const [geographyFilter, setGeographyFilter] = useState('');
   const [selectedFactor, setSelectedFactor] = useState<ProcessFactor | null>(null);
   const [quantityDraft, setQuantityDraft] = useState('');
   const [selectedProcesses, setSelectedProcesses] = useState<SelectedProcess[]>([]);
@@ -284,10 +286,32 @@ function App() {
     };
   }, []);
 
-  const visibleFactors = useMemo(() => {
+  const familyFactors = useMemo(() => {
     if (!catalog) return [];
     return catalog.factors.filter((factor) => !familyFilter || factor.family_id === familyFilter);
   }, [catalog, familyFilter]);
+
+  const geographyOptions = useMemo(() => {
+    const counts = new Map<string, { label: string; count: number }>();
+    for (const factor of familyFactors) {
+      const code = factor.geography_code || null;
+      const key = code ?? UNSPECIFIED_GEOGRAPHY;
+      const label = code ? `${factor.geography_label ?? code} (${code})` : 'Geography not stated';
+      const current = counts.get(key);
+      counts.set(key, { label, count: (current?.count ?? 0) + 1 });
+    }
+    return [...counts.entries()]
+      .map(([code, option]) => ({ code, ...option }))
+      .sort((left, right) => left.label.localeCompare(right.label));
+  }, [familyFactors]);
+
+  const visibleFactors = useMemo(() => {
+    if (!geographyFilter) return familyFactors;
+    if (geographyFilter === UNSPECIFIED_GEOGRAPHY) {
+      return familyFactors.filter((factor) => !factor.geography_code);
+    }
+    return familyFactors.filter((factor) => factor.geography_code === geographyFilter);
+  }, [familyFactors, geographyFilter]);
 
   const selectedFactorAlreadyAdded = selectedFactor
     ? selectedProcesses.some((line) => line.factor.id === selectedFactor.id)
@@ -373,7 +397,6 @@ function App() {
           <span className="brand-name">impact<span aria-hidden="true"> / </span>analyzer</span>
         </a>
         <div className="header-right">
-          <Chip label="Open process data" size="small" className="header-chip" />
           <Button variant="text" startIcon={<InfoOutlinedIcon />} onClick={() => setSourceDialogOpen(true)} className="method-button">
             Method & data
           </Button>
@@ -383,7 +406,7 @@ function App() {
       <main id="top" className="main-content estimator-main">
         <section className="hero-section estimator-hero" aria-labelledby="hero-title">
           <div className="hero-copy">
-            <div className="eyebrow"><span className="eyebrow-line" /> APPAREL & FOOTWEAR · OPEN FACTORS</div>
+            <div className="eyebrow"><span className="eyebrow-line" /> APPAREL & FOOTWEAR</div>
             <Typography id="hero-title" component="h1" className="hero-title">
               Process impacts, <span className="hero-title-accent">with context.</span>
             </Typography>
@@ -427,26 +450,51 @@ function App() {
 
             {catalog && (
               <form onSubmit={calculate} className="estimator-form">
-                <FormControl fullWidth size="small">
-                  <InputLabel id="family-label">Process family</InputLabel>
-                  <Select
-                    labelId="family-label"
-                    id="family-filter"
-                    value={familyFilter}
-                    label="Process family"
-                    onChange={(event) => {
-                      setFamilyFilter(event.target.value);
-                      setSelectedFactor(null);
-                      setQuantityDraft('');
-                      setResult(null);
-                    }}
-                  >
-                    <MenuItem value="">All families ({catalog.total_records})</MenuItem>
-                    {catalog.families.map((family) => (
-                      <MenuItem value={family.id} key={family.id}>{family.label} ({family.record_count})</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <div className="form-grid two-col">
+                  <FormControl fullWidth size="small">
+                    <InputLabel id="family-label">Process family</InputLabel>
+                    <Select
+                      labelId="family-label"
+                      id="family-filter"
+                      value={familyFilter}
+                      label="Process family"
+                      onChange={(event) => {
+                        setFamilyFilter(event.target.value);
+                        setGeographyFilter('');
+                        setSelectedFactor(null);
+                        setQuantityDraft('');
+                        setResult(null);
+                      }}
+                    >
+                      <MenuItem value="">All families ({catalog.total_records})</MenuItem>
+                      {catalog.families.map((family) => (
+                        <MenuItem value={family.id} key={family.id}>{family.label} ({family.record_count})</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+
+                  <FormControl fullWidth size="small">
+                    <InputLabel id="geography-label">Source geography</InputLabel>
+                    <Select
+                      labelId="geography-label"
+                      id="geography-filter"
+                      value={geographyFilter}
+                      label="Source geography"
+                      onChange={(event) => {
+                        setGeographyFilter(event.target.value);
+                        setSelectedFactor(null);
+                        setQuantityDraft('');
+                        setResult(null);
+                        setError('');
+                      }}
+                    >
+                      <MenuItem value="">All geographies ({familyFactors.length})</MenuItem>
+                      {geographyOptions.map((option) => (
+                        <MenuItem value={option.code} key={option.code}>{option.label} ({option.count})</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </div>
 
                 <Autocomplete
                   options={visibleFactors}
@@ -635,7 +683,7 @@ function App() {
         </div>
 
         <footer className="app-footer">
-          <span>Environmental Impact Analyzer · Open-data process estimates</span>
+          <span>Environmental Impact Analyzer</span>
           <nav className="app-footer-links" aria-label="Legal and source links">
             <a href="/legal/privacy.html">Privacy</a>
             <a href="/legal/terms.html">Terms</a>

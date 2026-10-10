@@ -323,7 +323,7 @@ button, input, textarea { font: inherit; }
 }
 
 /* Production process estimator */
-.header-chip.MuiChip-root, .calculated-chip.MuiChip-root {
+.calculated-chip.MuiChip-root {
   color: #245d47; background: #e6efe7; font-size: 10px; font-weight: 750;
 }
 .estimator-main { padding-top: 26px; }
@@ -434,7 +434,6 @@ button, input, textarea { font: inherit; }
   .site-header, .main-content { width: min(100% - 30px, 620px); }
   .site-header { height: 68px; }
   .header-right { gap: 8px; }
-  .header-chip.MuiChip-root { display: none; }
   .estimator-main { padding-top: 20px; }
   .estimator-hero { display: block; min-height: unset; margin-bottom: 8px; }
   .estimator-hero .hero-copy { padding: 14px 0 18px; }

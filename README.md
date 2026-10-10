@@ -7,6 +7,7 @@ This is the deliberately narrow, supportable product scope: the available openly
 ## What is included
 
 - **302 published factor rows** from 11 documented process categories in Carbonfact's pinned v1.1.0 release. The UI presents 12 selectable factor groups because sneaker assembly (per pair) and women's boots assembly (per kg) have different reference units.
+- Filter the catalog by process family and exact source geography. Geography choices preserve published codes and row counts; unstated geography stays explicitly unstated, with no inferred default.
 - Apparel/textile processes: spinning, knitting, weaving, dyeing, finishing, printing, and textile assembly.
 - Footwear and material processes: sneaker and women's boots assembly, synthetic PU leather, and natural rubber.
 - Use-phase laundry, drying, ironing, and detergent factors where published.

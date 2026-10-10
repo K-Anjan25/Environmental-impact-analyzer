@@ -22,6 +22,7 @@ The v1 product is an open-data process estimator. It uses Carbonfact's pinned v1
 - [x] Added contribution guidance and draft privacy/terms documents; populated the operator name, linked contact page, and proposed India-law/India-venue details at the operator's direction, with identity confirmation, contact monitoring, and legal review still required before Production.
 - [x] Added same-origin footer links to generated Privacy, Terms, Software License, and Data Source pages; generation runs from the canonical repository documents during Vite development/build.
 - [x] Removed the requested hero scope slogans and illustration captions from the dashboard without changing calculation behavior or product boundaries.
+- [x] Began the next usability increment with an explicit source-geography filter that preserves source labels/codes/counts and keeps unstated geography un-inferred.
 
 ## Release verification
 

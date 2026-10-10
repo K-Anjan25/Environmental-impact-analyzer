@@ -9,7 +9,7 @@ This roadmap separates **v1 release verification** from future discovery. A feat
 - Carbonfact v1.1.0 published factors are bundled and pinned under CC BY-SA 4.0: 302 source rows, 12 selectable factor groups, and 16 EF 3.1 indicators.
 - A quantity scales one selected factor in that factor's reference unit. Every process and indicator remains separate; there is no product total or combined score.
 - Attribution, license URL, source geography, available DQR/input metadata, CSV export, and the ecoinvent-background limitation are in the product.
-- API tests (11), frontend/accessibility/export tests (10), Ruff, formatting, mypy, TypeScript, and the Vite production build passed. CI smoke-tests both containers.
+- API tests (11), frontend/accessibility/export tests (10), Ruff, formatting, mypy, TypeScript, and the Vite build passed in CI run `38060391993` on `f3db1d1`. The next-version geography-filter changes raise the frontend suite to 11; those tests and the build pass locally, with CI verification pending after push.
 
 ### Remaining v1 release checks
 
@@ -60,6 +60,7 @@ Open `http://localhost:8001` and test one estimate/CSV. Stop the profile with `d
 
 ### v1.x — source coverage and operational polish
 
+- **First usability increment (implemented on this branch):** an explicit source-geography filter alongside process-family filtering. It preserves published geography codes and counts, keeps missing geography unstated, adds no inferred default, and never aggregates results.
 - Add a process family only when the source is openly licensed, pinned to a version/commit, attributable, and has a clear process boundary, reference unit, geography, and compatible EF 3.1 indicators.
 - Reconcile source row counts and optional metadata; preserve original scores and document transformations.
 - Improve search, CSV usability, and accessibility without adding defaults, missing-stage imputation, cross-process sums, or a combined score.

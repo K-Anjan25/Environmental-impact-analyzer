@@ -40,7 +40,7 @@ All published EF 3.1 indicators are available as separate rows: acidification (A
 ## Functional requirements
 
 - **FR-01 — Pinned catalog:** Load the committed Carbonfact v1.1.0 score files at API startup. Fail startup if a required included source file or indicator column is missing, nonnumeric, or malformed. Do not fetch live factor data at runtime.
-- **FR-02 — Factor discovery:** Provide family filtering and text search over activity, geography, and source descriptor. Preserve the exact source descriptor as the stable factor ID.
+- **FR-02 — Factor discovery:** Provide process-family and explicit source-geography filters plus text search over activity, geography, and source descriptor. Show published geography labels/codes and result counts; keep missing geography unstated and never infer it. Preserve the exact source descriptor as the stable factor ID.
 - **FR-03 — Quantity input:** Require a finite positive quantity for each selected factor. Display the exact source reference unit alongside the input. Limit a request to 25 process rows.
 - **FR-04 — Calculation:** For factor value `F` and user quantity `Q`, compute `F × Q` for each indicator. Use Decimal arithmetic internally. Return the source factor value and scaled indicator result with the numerator units and source reference unit.
 - **FR-05 — Separate indicators and processes:** Return all 16 indicators separately for each selected factor. Never return cross-indicator scores, cross-process totals, product totals, or ranks.

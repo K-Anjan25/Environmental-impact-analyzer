@@ -7,7 +7,7 @@ on:
 jobs:
   api:
     name: API tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
@@ -25,7 +25,7 @@ jobs:
 
   web:
     name: Web tests and build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -39,7 +39,7 @@ jobs:
 
   containers:
     name: Container builds and smoke tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
       - name: Build and start the standard Compose image

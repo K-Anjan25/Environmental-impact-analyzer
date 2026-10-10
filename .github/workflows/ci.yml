@@ -9,8 +9,8 @@ jobs:
     name: API tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
           cache: pip
@@ -27,8 +27,8 @@ jobs:
     name: Web tests and build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: '22'
           cache: npm
@@ -41,7 +41,7 @@ jobs:
     name: Container builds and smoke tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Build and start the standard Compose image
         run: docker compose up --build --detach --wait --wait-timeout 180 analyzer
       - name: Build and start the Vercel-targeted image

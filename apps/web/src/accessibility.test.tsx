@@ -98,7 +98,7 @@ describe('assessment form accessibility', () => {
   it('keeps decorative vector illustrations out of the accessibility tree and tab order', () => {
     const { container } = render(<App />);
 
-    for (const selector of ['.surreal-scene', '.orbit-glyph']) {
+    for (const selector of ['.landscape-scene', '.landscape-glyph']) {
       const illustration = container.querySelector(selector);
       expect(illustration?.getAttribute('aria-hidden')).toBe('true');
       expect(illustration?.getAttribute('focusable')).toBe('false');

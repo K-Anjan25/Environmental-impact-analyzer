@@ -80,44 +80,44 @@ If a score is not supported, replace the score card with a clear state such as: 
 - Align the same indicator rows and units; annotate which information differs or is estimated.
 - If inputs are not comparable, explain the mismatch and show non-ranked facts only. Do not compare products against PEFCR representative products or sort them by an unapproved composite.
 
-## 5. Visual direction — surreal editorial, vector first
+## 5. Visual direction — flat vector landscapes
 
-The interface uses a restrained, surrealist-inspired editorial composition: familiar materials (a garment, cotton, a seed, an orbit) appear at impossible scale and in unexpected relationships. Tate describes Surrealism through dream worlds, the uncanny, and unexpected or unconventional imagery; here those are compositional cues, not a claim that the product, supply chain, or impact behaves in any particular way. The art is original to this prototype and does not imitate a named artist. A visible caption states that the illustration is not a footprint result.
+Use the user's reference images for broad visual cues: poster-like flat color fields, layered mountains and hills, simplified clouds and sun, a winding lake/river shape, and strong geometric silhouettes. The app's illustrations are original inline SVGs, not traced or composited from the references. Do not reproduce their exact compositions, distinctive details, or stock watermark. Keep the landscape generic rather than depicting a specific place, project, or environmental outcome. A visible caption identifies the hero image as illustration, not a footprint result.
 
 ### Original vector art
 
-- Use hand-authored inline SVG with a logical `viewBox`, smooth scaling, restrained gradients, bold silhouettes, and enough negative space for responsive crops. Keep all interface copy as real text rather than text embedded in art.
-- The hero's floating garment, small cotton bloom, blue-green orb, thread, and seed-island are decorative metaphors only. They must not encode product routes, system boundaries, impact values, certification, or a score. No factor chart or data visualization is drawn from this artwork.
-- Purely decorative SVG is `aria-hidden="true"` and `focusable="false"`. A future SVG that conveys information must instead have an accessible name and description (for example `role="img"`, `<title>`, and `<desc>`); any chart also needs a visible text/table equivalent.
-- Prefer vector artwork over raster images for this visual system so it stays crisp at different viewport sizes and zoom levels. Avoid using background images behind important copy.
+- Use hand-authored inline SVG with a logical `viewBox`, responsive proportions, clean shape layers, limited palette, and crisp silhouettes. Keep all interface copy as real text rather than embedding it in artwork.
+- The hero is a wide, poster-like mountain valley with a sun, cloud forms, lake, layered foothills, and stylized trees. A small landscape glyph echoes those shapes in the empty state. Both are decorative only: they do not represent a product route, life-cycle boundary, impact values, certification, data coverage, or score.
+- Purely decorative SVG uses `aria-hidden="true"` and `focusable="false"`. Any future informative SVG needs an accessible name and description (for example `role="img"`, `<title>`, and `<desc>`); charts also need a visible text/table equivalent.
+- Prefer vectors so the art stays crisp across screen sizes and zoom levels. Keep illustration behind no important text and do not add animation to the decorative landscape.
 
 ### Palette and typography
 
-Use a warm, editorial base with deep ink/forest text, botanical green, unexpected ultramarine/violet, restrained coral, and citrus accents. Warm neutral surfaces keep form controls readable; the unusual hues belong mainly to illustration and small editorial accents, never to a simulated impact scale. Keep all text contrast at or above the selected accessibility target, use a strong visible focus ring, and label status in words rather than color alone.
+Use deep ink and forest for readable interface text and controls. The art may use muted sky/teal, sage, warm cream, and terracotta/sun accents, inspired by the supplied palette references; those colors are decorative, never an environmental performance scale. Warm neutral surfaces protect form readability. Use a visible focus ring and state labels in words rather than color alone.
 
 | Token | Value | Use |
 |---|---|---|
 | Ink | `#17231F` | Main text and headings. |
-| Forest | `#1F5A46` | Primary actions and restrained accent. |
-| Violet | `#554AA3` | Large headline accent and small editorial details. |
-| Coral (text) | `#B74732` | Text or controls only when the required contrast is met; brighter coral stays in decoration. |
+| Forest | `#1F5A46` | Primary actions and restrained interface accent. |
+| Terracotta | `#B74732` | Headline accent and small editorial details; verify against its rendered background. |
+| Landscape teal | `#286C70` | Illustration only; not a status or performance color. |
 | Sand | `#F5F2EA` | Page background. |
 | Surface | `#FFFEFA` | Cards and input surfaces. |
 | Amber | `#8A5A00` | Caution or uncertainty, always paired with text. |
 | Border | `#D7DED8` | Dividers and input outlines. |
 
-The implemented Violet (`#554AA3`) on Sand (`#F5F2EA`) measures 6.48:1; Coral text (`#B74732`) on Sand measures 4.74:1. These are reference pairings, not a substitute for checking actual rendered surfaces—especially gradients, translucent cards, and focus states—when tokens or layouts change.
+The implemented Terracotta (`#B74732`) on Sand (`#F5F2EA`) measures 4.74:1. This reference pairing does not replace checking actual rendered surfaces—especially gradients, translucent cards, and focus states—when tokens or layouts change.
 
 Use a readable system sans-serif, generous line height, clear heading hierarchy, and a consistent spacing scale. Avoid decorative leaf badges or icons that could be misread as certification or proof of environmental benefit.
 
 ### Accessibility guardrails for the visual system
 
 - Target WCAG 2.2 AA. The W3C's contrast guidance sets 4.5:1 for normal text and 3:1 for large text; meaningful controls and graphical objects have a 3:1 non-text contrast threshold against adjacent colors. Recheck rendered text, control boundaries, and keyboard states after visual changes.
-- Do not rely on hue alone for status or indicators; include labels and explicit states. The hero illustration is hidden from assistive technology because it is decorative; its nearby caption clarifies that it is not data.
+- Do not rely on hue alone for status or indicators; include labels and explicit states. The landscape illustrations are hidden from assistive technology because they are decorative; the nearby caption clarifies the hero is not data.
 - Keep decorative vectors static. If motion is added later, respect `prefers-reduced-motion`; motion must never be the only way to communicate a state.
 - Run browser accessibility checks at mobile and desktop sizes, then complete human screen-reader and usability review before any public pilot.
 
-**Research references:** [Tate: Surrealism](https://www.tate.org.uk/art/art-terms/s/surrealism); [MDN: SVG in HTML and accessible names/descriptions](https://developer.mozilla.org/en-US/docs/Web/SVG/Guides/SVG_in_HTML); [MDN: `aria-hidden`](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Attributes/aria-hidden); [W3C: WCAG 2.2 contrast minimum](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html); [W3C: non-text contrast](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html); [MDN: `prefers-reduced-motion`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/prefers-reduced-motion).
+**Research references:** [MDN: SVG in HTML and accessible names/descriptions](https://developer.mozilla.org/en-US/docs/Web/SVG/Guides/SVG_in_HTML); [MDN: `aria-hidden`](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Attributes/aria-hidden); [W3C: WCAG 2.2 contrast minimum](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html); [W3C: non-text contrast](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html); [MDN: `prefers-reduced-motion`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/prefers-reduced-motion).
 
 ## 6. Interaction and content rules
 

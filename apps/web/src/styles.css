@@ -18,7 +18,6 @@
   --surface: #fffefa;
   --amber: #8a5a00;
   --soft-green: #edf4ef;
-  --violet: #554aa3;
   --coral: #b74732;
   --citrus: #bfdc66;
 }
@@ -33,8 +32,8 @@ button, input, textarea { font: inherit; }
 .app-shell {
   min-height: 100vh;
   background:
-    radial-gradient(ellipse at 82% 5%, rgba(219, 216, 246, 0.64), transparent 34rem),
-    radial-gradient(ellipse at 10% 24%, rgba(219, 233, 197, 0.42), transparent 28rem),
+    radial-gradient(ellipse at 82% 5%, rgba(196, 224, 215, 0.62), transparent 34rem),
+    radial-gradient(ellipse at 10% 24%, rgba(239, 216, 180, 0.32), transparent 28rem),
     linear-gradient(180deg, #f8f5ee 0%, #f4f1e9 100%);
 }
 
@@ -66,15 +65,15 @@ button, input, textarea { font: inherit; }
 .eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
 .eyebrow-line { height: 1px; width: 25px; background: #8aa497; }
 .hero-title.MuiTypography-root { font-family: ui-sans-serif, system-ui, sans-serif; font-size: clamp(45px, 5.15vw, 72px); line-height: 0.99; font-weight: 760; letter-spacing: -0.072em; color: #183228; margin: 0 0 18px; text-wrap: balance; }
-.hero-title-accent { display: inline-block; color: var(--violet); font-style: italic; font-weight: 680; transform: rotate(-3deg); }
+.hero-title-accent { display: inline-block; color: var(--coral); font-style: italic; font-weight: 680; transform: rotate(-3deg); }
 .hero-subtitle.MuiTypography-root { max-width: 560px; color: #596c66; font-size: 16px; line-height: 1.65; }
 .hero-note { display: flex; align-items: center; gap: 11px; width: min(100%, 405px); margin-top: 21px; padding: 11px 13px; color: #52645d; background: rgba(255, 254, 250, 0.82); border: 1px solid rgba(32, 63, 59, 0.13); border-left: 4px solid #b9d660; border-radius: 4px 14px 14px 14px; box-shadow: 0 10px 24px rgba(35, 55, 48, 0.045); font-size: 11px; line-height: 1.5; }
 .hero-note strong { display: block; color: #233f38; font-size: 12px; margin-bottom: 2px; }
 .hero-note-icon { display: grid; place-items: center; width: 36px; height: 36px; flex: 0 0 36px; border-radius: 50% 50% 50% 12px; color: var(--forest); background: #e6eee7; }
-.hero-visual { position: relative; width: 100%; max-width: 620px; min-width: 0; min-height: 390px; justify-self: end; border-radius: 48% 40% 38% 42% / 38% 44% 50% 48%; background: radial-gradient(ellipse at 53% 52%, rgba(255, 254, 250, 0.7), rgba(255, 254, 250, 0) 67%); }
-.surreal-scene { display: block; width: 100%; height: 390px; overflow: visible; }
+.hero-visual { position: relative; width: 100%; max-width: 620px; min-width: 0; min-height: 390px; justify-self: end; border-radius: 28px; }
+.landscape-scene { display: block; width: 100%; height: 390px; overflow: hidden; border-radius: 28px; box-shadow: 0 16px 34px rgba(36, 79, 66, 0.1); }
 .art-caption-top { position: absolute; top: 9px; left: 23px; z-index: 1; display: flex; align-items: center; gap: 8px; padding: 7px 10px; border: 1px solid rgba(32, 63, 59, 0.12); border-radius: 999px; background: rgba(255, 254, 250, 0.88); color: #405a51; font-size: 9px; font-weight: 750; letter-spacing: 0.08em; text-transform: uppercase; }
-.art-caption-top span { width: 7px; height: 7px; border-radius: 50%; background: #f27b60; box-shadow: 0 0 0 3px rgba(242, 123, 96, 0.16); }
+.art-caption-top span { width: 7px; height: 7px; border-radius: 50%; background: var(--coral); box-shadow: 0 0 0 3px rgba(183, 71, 50, 0.14); }
 .art-caption-bottom { position: absolute; right: 13px; bottom: 2px; z-index: 1; padding: 7px 10px; border: 1px solid rgba(32, 63, 59, 0.11); border-radius: 10px; background: rgba(255, 254, 250, 0.9); color: #596b65; font-size: 9px; line-height: 1.3; }
 
 .workspace-grid { display: grid; grid-template-columns: minmax(0, 0.98fr) minmax(0, 1.02fr); gap: 24px; align-items: start; }
@@ -151,7 +150,7 @@ button, input, textarea { font: inherit; }
 .result-status-chip.MuiChip-root { background: #f6eddf; color: #8a5a00; font-size: 10px; font-weight: 700; }
 .empty-result { min-height: 490px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 16px 22px 24px; }
 .empty-illustration { width: 166px; height: 145px; display: grid; place-items: center; margin-bottom: 11px; }
-.orbit-glyph { display: block; width: 100%; height: 100%; overflow: visible; }
+.landscape-glyph { display: block; width: 100%; height: 100%; overflow: hidden; border-radius: 20px; }
 .soft-chip.MuiChip-root { background: #edf4ef; color: #557361; font-size: 9px; font-weight: 700; border-radius: 8px; }
 .soft-chip .MuiChip-icon { color: #577160; font-size: 15px; }
 .empty-title.MuiTypography-root { font-family: ui-sans-serif, system-ui, sans-serif; color: #294534; font-weight: 700; font-size: 21px; letter-spacing: -0.04em; margin-top: 14px; }
@@ -273,7 +272,7 @@ button, input, textarea { font: inherit; }
   .hero-copy { max-width: 700px; padding: 0; }
   .hero-note { width: min(100%, 460px); margin-top: 18px; }
   .hero-visual { width: min(100%, 620px); min-height: 360px; justify-self: center; margin-top: -2px; }
-  .surreal-scene { height: 360px; }
+  .landscape-scene { height: 360px; }
   .workspace-grid { grid-template-columns: 1fr; }
   .result-card.MuiPaper-root { position: static; }
   .empty-result { min-height: 390px; }
@@ -292,8 +291,8 @@ button, input, textarea { font: inherit; }
   .hero-title.MuiTypography-root { font-size: clamp(39px, 13vw, 56px); }
   .hero-subtitle.MuiTypography-root { font-size: 14px; }
   .hero-note { margin-top: 15px; }
-  .hero-visual { width: 100%; min-height: 228px; margin-top: -5px; }
-  .surreal-scene { height: 232px; }
+  .hero-visual { width: 100%; min-height: 0; margin-top: -5px; }
+  .landscape-scene { height: auto; aspect-ratio: 600 / 380; }
   .art-caption-top { top: 4px; left: 7px; padding: 6px 8px; font-size: 8px; }
   .art-caption-bottom { right: 5px; bottom: 0; max-width: 170px; font-size: 8px; }
   .form-card.MuiPaper-root, .result-card.MuiPaper-root { padding: 21px 18px 18px; border-radius: 15px; }

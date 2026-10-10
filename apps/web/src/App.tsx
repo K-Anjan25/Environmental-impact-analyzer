@@ -44,7 +44,7 @@ import {
 } from './api';
 import { assessmentIsScored } from './assessment';
 import { buildLicensingInquiryHref } from './licensing';
-import { OrbitGlyph, SurrealScene } from './SurrealScene';
+import { LandscapeGlyph, LandscapeScene } from './LandscapeArt';
 
 type Stage = 'input' | 'review';
 type MaterialRow = { material: string; sharePercent: string; provenance: Provenance };
@@ -530,9 +530,9 @@ onClick={openMethodology}
             </div>
           </div>
           <div className="hero-visual">
-            <div className="art-caption-top" aria-hidden="true"><span /> A dreamlike study of materials</div>
-            <SurrealScene />
-            <div className="art-caption-bottom">Original vector illustration · not a footprint result</div>
+            <div className="art-caption-top" aria-hidden="true"><span /> A landscape in layers</div>
+            <LandscapeScene />
+            <div className="art-caption-bottom">Illustration only · not a footprint result</div>
           </div>
         </section>
 
@@ -1113,7 +1113,7 @@ function EmptyAssessment({ hasInput }: { hasInput: boolean }) {
   return (
     <div className="empty-result">
       <div className="empty-illustration" aria-hidden="true">
-        <OrbitGlyph />
+        <LandscapeGlyph />
       </div>
       <Chip
         icon={<InfoOutlinedIcon />}

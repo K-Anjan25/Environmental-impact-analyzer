@@ -11,8 +11,8 @@ These draft terms describe use of the Environmental Impact Analyzer website and 
 ## Operator and contact
 
 - **Service operator:** Kyama Anjan Kumar
-- **Service contact:** [kyamaanjan2@gmail.com](mailto:kyamaanjan2@gmail.com)
-- **Governing law and venue:** These Terms and disputes arising out of or relating to the Service are governed by the laws of India. Subject to mandatory applicable law, courts of competent jurisdiction at Hyderabad, Telangana, India shall have jurisdiction.
+- **Service contact:** [Contact the service operator](https://k-anjan25.github.io/portfolio/contact.html)
+- **Governing law and venue:** These Terms and disputes arising out of or relating to the Service are governed by the laws of India. Subject to mandatory applicable law, courts of competent jurisdiction in India shall have jurisdiction.
 
 ## Service scope and limitations
 

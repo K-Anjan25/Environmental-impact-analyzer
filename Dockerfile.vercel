@@ -1,0 +1,33 @@
+# Vercel Container Runtime entrypoint. Keep build/data steps aligned with services/api/Dockerfile.
+# Vercel's container runtime is currently Beta; configure the project PORT variable to 8000.
+FROM node:22-alpine AS web-builder
+WORKDIR /workspace/apps/web
+COPY apps/web/package.json apps/web/package-lock.json ./
+RUN npm ci
+COPY apps/web/ ./
+COPY LICENSE PRIVACY.md TERMS.md data-sources.md /workspace/
+COPY services/api/data/carbonfact-v1.1.0/LICENSE services/api/data/carbonfact-v1.1.0/SOURCE.md /workspace/services/api/data/carbonfact-v1.1.0/
+RUN npm run build
+
+FROM python:3.11-slim AS runtime
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    WEB_DIST=/app/web/dist \
+    PORT=8000
+WORKDIR /app
+
+COPY services/api/requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir --upgrade "pip>=26.2" "setuptools>=83.0.0" \
+    && pip install --no-cache-dir -r requirements.txt
+COPY services/api/app ./app
+COPY services/api/data ./data
+COPY --from=web-builder /workspace/apps/web/dist ./web/dist
+
+RUN groupadd --system --gid 10001 appuser \
+    && useradd --system --uid 10001 --gid appuser --home-dir /nonexistent appuser \
+    && chown -R appuser:appuser /app
+USER appuser
+
+EXPOSE 8000
+# Vercel's OCI image build ignores Docker HEALTHCHECK; verify /healthz with HTTP smoke tests instead.
+CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1 --no-access-log"]

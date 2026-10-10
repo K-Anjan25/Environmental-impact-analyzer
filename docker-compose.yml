@@ -1,0 +1,46 @@
+services:
+  analyzer:
+    build:
+      context: .
+      dockerfile: services/api/Dockerfile
+    image: environmental-impact-analyzer:local
+    ports:
+      - "${ANALYZER_PORT:-8000}:8000"
+    environment:
+      WEB_DIST: /app/web/dist
+      PYTHONUNBUFFERED: "1"
+    init: true
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=3)"
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+  analyzer-vercel:
+    profiles: ["vercel"]
+    build:
+      context: .
+      dockerfile: Dockerfile.vercel
+    image: environmental-impact-analyzer:vercel-local
+    ports:
+      - "${VERCEL_ANALYZER_PORT:-8001}:8000"
+    environment:
+      WEB_DIST: /app/web/dist
+      PORT: "8000"
+      PYTHONUNBUFFERED: "1"
+    init: true
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=3)"
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3

@@ -1,0 +1,14 @@
+.git
+.vercel
+.venv
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+**/node_modules
+**/dist
+**/coverage
+apps/web/public/legal
+*.log
+.env
+.env.*
+!.env.example

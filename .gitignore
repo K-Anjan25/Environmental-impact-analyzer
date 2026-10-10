@@ -1,0 +1,22 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+
+# Node / frontend build output
+node_modules/
+apps/web/node_modules/
+apps/web/dist/
+apps/web/public/legal/
+coverage/
+
+# Local configuration and logs
+.vercel/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store

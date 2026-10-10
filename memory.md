@@ -2,9 +2,9 @@
 
 ## Current product state
 
-The application is a working process-level estimator for apparel and footwear activities. It uses 302 published score rows from a pinned CC BY-SA 4.0 source, calculates 16 EF 3.1 indicators separately, and exports attributed CSV. The application never sums different process rows or presents a whole-product footprint or combined score.
+The application is a working process-level estimator for apparel and footwear activities. It uses 302 published score rows from a pinned CC BY-SA 4.0 source, calculates 16 EF 3.1 indicators separately, and exports attributed CSV. The optional v2 worksheet records user-declared input labels, amounts, and free-text units in browser memory and allows manual context associations to selected process rows. It never uses those input amounts in calculations, sums different process rows, or presents a whole-product footprint or combined score.
 
-The UI and API no longer have inactive-source gates or no-score product-assessment endpoints. There are no account, database, history, analytics, or request-body logs in the application.
+The UI and API no longer have inactive-source gates or no-score product-assessment endpoints. There are no account, database, saved-history, analytics, or request-body logs in the application. Product-input context does not reach the API or persist after reload/page close.
 
 ## Firm scope decisions
 
@@ -12,7 +12,7 @@ The UI and API no longer have inactive-source gates or no-score product-assessme
 - Use only openly licensed data. Carbonfact v1.1.0 published impact scores are included under CC BY-SA 4.0 with same-screen linked attribution and ShareAlike for derived results.
 - Use published process factors only. The formula is source factor × user-entered quantity in the same reference unit.
 - Report each selected process and each of its 16 indicators separately. No cross-stage sum, product total, comparison, ranking, or combined score.
-- Do not imply a complete product LCA. Material composition, product BOM, stage linking, upstream input propagation, waste treatment, distribution, and end-of-life are not modeled.
+- Do not infer or validate a product BOM or imply a complete product LCA. The v2 worksheet is only a user-declared input organizer with optional manual context links; no automatic factor matching, stage linking, unit conversion, upstream input propagation, loss/waste treatment, distribution, or end-of-life is modeled.
 - Display source `Input required (kg)` but do not apply it to upstream burdens or waste treatment.
 - Preserve the source's EF 3.1 WTU unit as m³ world-equivalent, never as litres or physical water volume.
 - The Carbonfact outputs may reflect ecoinvent 3.12 modeled background contributions. Do not bundle, query, reconstruct, or call the underlying inventories open.
@@ -33,13 +33,13 @@ The UI and API no longer have inactive-source gates or no-score product-assessme
 - `services/api/app/factor_schemas.py`: validated catalog/estimate request and response models.
 - `services/api/app/sources.py`: active open source, license, background, attribution, and scope disclosure.
 - `services/api/app/main.py`: `/healthz`, methodology, sources, factors, process estimates, security headers, and production static serving.
-- `apps/web/src/App.tsx`: responsive process search, reference-unit quantity form, separate indicator results, source dialog, and attribution.
-- `apps/web/src/export.ts`: one-row-per-process/indicator CC BY-SA CSV formatter and download.
+- `apps/web/src/App.tsx`: responsive process search, reference-unit quantity form, browser-only product-input organizer with context associations, separate indicator results, source dialog, and attribution.
+- `apps/web/src/export.ts`: attributed process/indicator CSV with explicit context-only input fields and not-calculated/not-zero rows for unassociated declarations.
 - `services/api/data/carbonfact-v1.1.0/SOURCE.md`: exact source snapshot, attribution, included families, count reconciliation, and transformations.
 - `docker-compose.yml`: local same-origin container acceptance setup.
 - `Dockerfile.vercel`: Vercel Container Runtime image entrypoint (Beta; project `PORT=8000` required).
 - `.github/workflows/ci.yml`: API/web checks plus standard and Vercel-targeted container build/smoke jobs.
-- `README.md`, `prd.md`, `data-sources.md`, `architecture.md`, `design.md`, `rules.md`, `task.md`, and `roadmap.md`: current product boundary, release flow, and version path.
+- `README.md`, `prd.md`, `data-sources.md`, `architecture.md`, `design.md`, `rules.md`, `task.md`, `roadmap.md`, and `v2-discovery.md`: current product boundary, release flow, and v2 input/mapping gates.
 
 ## Verification commands
 
@@ -63,12 +63,14 @@ docker compose up --build
 - API Ruff lint and format checks: pass.
 - API mypy: pass.
 - API pytest: 11 passed.
-- Frontend Vitest/axe: 9 passed.
+- Frontend Vitest/axe: 13 passed, including local-only product-input handling, exact API payload boundaries, context-only associations, CSV unassociated-input rows, and accessibility.
 - TypeScript and Vite production build: pass.
-- ASGI smoke test: static `/` serving, `/api/docs`, OpenAPI route set, 302-row catalog, a 16-indicator estimate, and 404 for unknown API routes all passed.
-- Docker/Podman/Buildah/nerdctl are unavailable in this sandbox. The user ran Compose externally: image build completed, container reported healthy, and Uvicorn startup completed. GitHub CI built both standard and Vercel-targeted images and smoke-tested health/docs/catalog/estimates; the user's browser/CSV flow has not been confirmed.
-- Vercel is the user's selected deployment platform. `Dockerfile.vercel` targets the Container Runtime (Beta), `vercel.json` pins the `container` framework preset, and project `PORT=8000` is required for the non-root process. The old `main@102be24` deployment had no app output. The user confirms the app Preview runs; the latest completed deployment for commit `9dfd561` is `https://environmentalimpactanalyzer-f41tldstv.vercel.app`. The assistant cannot independently test routes because Preview protection redirects unauthenticated requests to Vercel login. Full browser/CSV acceptance, Root Directory, and `PORT=8000` still need user confirmation. Production is not launched; domain/runtime acceptance remains open.
-- Root `LICENSE` applies MIT to original project code/documentation; Carbonfact data and derived results remain under CC BY-SA 4.0. `PRIVACY.md` and `TERMS.md` are release drafts with operator/contact/jurisdiction placeholders that block public Production until completed and reviewed. `CONTRIBUTING.md` records project constraints and checks. The web footer now links to same-origin legal pages generated from the canonical Markdown/license/source files during Vite dev/build; both container images and CI must include those pages.
+- Vite-to-API smoke test: `/` served, proxied `/api/v1/factors?limit=1` returned 302 catalog records with one factor, and proxied `/healthz` returned ready.
+- Current local code includes the v2 product-input organizer; the organizer and context links are client-only. The API receives only factor IDs and separately entered reference-unit quantities. No new source data or factor mapping was added.
+- GitHub CI run `38061931644` passed API, web, and both container checks on the prior documentation commit `ba9141b`. CI for the current v2 changes must be checked after push.
+- Vercel reports deployment success for app-code commit `0775d5d`; the new geography filter still needs the operator's authenticated Preview check. Vercel Preview is SSO-protected from external probes. The Vercel Container Runtime is Beta, authorized only for a no-SLA early beta with no custom domain; no Production deployment, PR, or merge is authorized. Check the current v2 Preview separately after the new branch deployment.
+- Root `LICENSE` applies MIT to original project code/documentation; Carbonfact data and derived results remain under CC BY-SA 4.0. `PRIVACY.md` and `TERMS.md` describe the browser-only worksheet and still require operator/legal review before public Production. Legal pages are generated from canonical source documents during Vite build.
+
 
 ## Reference links
 

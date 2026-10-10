@@ -67,18 +67,18 @@ Open `http://localhost:8001` and test one estimate/CSV. Stop the profile with `d
 
 ### v2 discovery — product inputs without an aggregate score
 
-This is a discovery path, not a committed full-product LCA. A future workflow may capture product/BOM quantities to help users select and scale relevant process factors, while continuing to return **separate process-by-indicator results only**.
+This is a staged discovery path, not a committed full-product LCA. The first v2 increment is implemented as a client-only product-input organizer: users can enter known input labels, quantities, and free-text units, then manually associate an input with a selected process row as context. The declaration is not a BOM validation or calculation input; process reference quantities remain separate, and every indicator/process result stays separate. See [v2-discovery.md](v2-discovery.md).
 
-1. Define the intended product/use cases, product-input fields, reference quantities, and boundaries before adding a BOM form.
-2. Inventory openly licensed upstream material and process factors. Record each source's license, version, attribution, geography, time coverage, and reference unit before integration.
-3. Map factors to BOM/process inputs only where units and boundaries support that mapping. Missing compositions, stage inputs, loss rates, or geography must stay explicit; do not infer them.
+1. **Use case, input fields, and boundary (implemented):** define the apparel/footwear input organizer and its client-only data contract. An optional manual association never copies or converts the declared input amount into the process-factor quantity. Unassociated lines stay explicit in CSV as not calculated, not zero.
+2. **Open-source/license audit (next):** inventory openly licensed upstream material and process factors. Record each source's license, version, attribution, geography, time coverage, and reference unit before integration; do not add data based on a search snippet or unclear reuse terms.
+3. **Factor mapping (gated):** map factors to declared process outputs only where the reference unit and system boundary genuinely match. The current manual association is context-only, not a scientific mapping. Missing compositions, stage inputs, loss rates, or geography must stay explicit; do not infer them.
 4. Add loss or waste-treatment factors only when openly licensed, compatible factors and an explicit mass-balance method are available. Display those rows separately; do not silently apply `Input required (kg)` as an upstream burden.
 5. Use only openly licensed, bundled data. Do not obtain, bundle, query, or reconstruct ecoinvent or another non-open inventory. If no suitable open factor exists, leave that process unavailable rather than fabricate a result.
-6. Test unit conversion, factor lineage, mass balance, missing-data behavior, licensing, accessibility, and exports before any release.
+6. Test any future unit conversion, factor lineage, mass balance, missing-data behavior, licensing, accessibility, and exports before release.
 
 ### Hard boundary under the current authorization
 
-Cross-stage totals, a complete product footprint, and any combined environmental score remain out of scope. The future workflow above may organize product inputs and show additional separate rows, but it must not sum process results or imply that the selected rows form a complete LCA. Reconsidering that boundary would require a separate, explicit product-scope decision and a defensible open-data method; it must not happen as an implementation detail.
+Cross-stage totals, a complete product footprint, and any combined environmental score remain out of scope. The v2 worksheet may organize user-declared inputs and show manual context links to selected process rows, but it does not validate the BOM, derive process quantities, sum results, or imply that selected rows form a complete LCA. Reconsidering that boundary would require a separate, explicit product-scope decision and a defensible open-data method; it must not happen as an implementation detail.
 
 ## Version flow
 

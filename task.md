@@ -2,7 +2,7 @@
 
 ## Delivered scope
 
-The v1 product is an open-data process estimator. It uses Carbonfact's pinned v1.1.0 published score rows and returns process-level results by separate indicator. It does not calculate a complete product footprint, combine process rows, or create a combined score.
+The v1 calculation remains an open-data process estimator. It uses Carbonfact's pinned v1.1.0 published score rows and returns process-level results by separate indicator. The first v2 increment optionally organizes user-declared inputs in the browser and provides manual context links only. Neither version calculates a complete product footprint, combines process rows, or creates a combined score.
 
 ## Completed implementation
 
@@ -14,7 +14,8 @@ The v1 product is an open-data process estimator. It uses Carbonfact's pinned v1
 - [x] Added source geography, DQR fields, Input required (kg) display, source release/file identity, attribution, ShareAlike/result license, and background-inventory disclosure.
 - [x] Added an accessible, responsive React estimator and same-screen result attribution.
 - [x] Added a CSV export with one row per process and indicator, source identity, units, data-quality fields, license, attribution, and no aggregate row.
-- [x] Kept the tool stateless; no accounts, database, analytics, product-history, or request-body logging are used.
+- [x] Began v2 with a browser-only product-input organizer: user-entered labels, quantities, free-text units, and optional manual context associations. Input amounts never set or convert factor quantities; unassociated inputs are exported as not calculated, not zero.
+- [x] Kept the API stateless with no accounts, database, analytics, saved assessments, or request-body logging. Optional product-input notes exist only in browser page memory and are not sent to the API.
 - [x] Added a non-root multi-stage production Docker image that serves the web build and API from one origin, with health check and access logging disabled.
 - [x] Removed inactive-source/activation-gate UX and legacy no-score routes from the active API/UI.
 - [x] Added API arithmetic/schema/catalog tests, front-end API/export tests, and axe accessibility checks.
@@ -51,9 +52,9 @@ Vercel is the selected deployment platform. Root `vercel.json` pins the Containe
 
 The following are not incomplete v1 tasks; they are deliberately outside the delivered estimator's boundary:
 
-- product BOM/material composition and cross-stage mass propagation;
+- an inferred or validated product BOM, automatic factor mapping, and cross-stage mass propagation (the v2 worksheet records user declarations and context-only manual associations only);
 - upstream raw-material factor coverage and modeled waste treatment;
 - whole-product totals, comparison, ranking, and consumer environmental claims;
 - access to or reconstruction of ecoinvent or any other non-open inventory.
 
-The roadmap records a discovery path for adding product-input/BOM capture and more upstream/loss/waste process factors only when open licensed data, compatible units/boundaries, and validated calculations exist. Results must remain separate by process and indicator under the current authorization. No cross-stage total, complete product footprint, or combined score is planned; ecoinvent reconstruction is excluded by the open-data-only rule. See [roadmap.md](roadmap.md).
+The v2 worksheet now captures user-declared inputs locally and can associate them manually with separate process rows as context; it does not calculate from those declarations. Additional material/process factors, unit mapping, loss, or waste treatment remain gated on openly licensed data, compatible boundaries, and validated methods. Results must remain separate by process and indicator under the current authorization. No cross-stage total, complete product footprint, or combined score is planned; ecoinvent reconstruction is excluded by the open-data-only rule. See [roadmap.md](roadmap.md) and [v2-discovery.md](v2-discovery.md).

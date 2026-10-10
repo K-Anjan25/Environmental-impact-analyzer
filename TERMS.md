@@ -26,7 +26,7 @@ The Service is informational and is not legal, regulatory, engineering, investme
 
 Use the Service lawfully and do not interfere with its availability, security, or other users' access. Do not probe or exploit the service, bypass deployment protections, or send malware or unlawful material.
 
-The input form is intended for factor identifiers and numeric process quantities. Do not submit personal information, confidential business information, trade secrets, or information about another person. The Service has no account or saved-history feature and is not designed to store such information.
+The Service accepts factor identifiers and numeric process quantities for calculation. Its optional product-input worksheet also accepts user-entered labels, quantities, and unit text, with manual context-only associations to selected process rows. Those worksheet entries stay in browser page memory and are not sent to the calculation API; factor quantities must still be entered independently in each source factor's reference unit. A CSV download may contain the worksheet entries, and the visitor is responsible for handling that file. Do not submit personal information, confidential business information, trade secrets, supplier secrets, or information about another person. The Service has no account or saved-history feature and is not designed to store such information.
 
 ## Licenses and third-party material
 

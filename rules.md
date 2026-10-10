@@ -7,6 +7,7 @@
 3. Never infer a product BOM, missing process stage, geography, reference unit, loss treatment, or zero impact.
 4. Use only the pinned, explicitly licensed data included in the repository. Do not fetch unpinned runtime factors or use a commercial/non-open fallback.
 5. Display source attribution, license, transformation, source geography, and reference unit beside results.
+6. Treat v2 product-input lines as user-declared browser-only context. Never infer completeness, factor compatibility, process mapping, or geography; never send those fields to the calculation API.
 
 ## 2. Data and licensing
 
@@ -22,7 +23,7 @@
 - Formula: `scaled indicator = published indicator factor × quantity expressed in that factor's reference unit`.
 - Use Decimal arithmetic in the API. Reject missing/unknown factor IDs, nonfinite values, zero/negative quantities, and out-of-bound requests.
 - Return the source factor and scaled result with units. Convert only as a direct dimensionally valid scale by quantity; no unit guessing or silent conversions.
-- Keep every selected process row separate. No input propagation, process linking, summing, normalizing, ranking, or product boundary is applied.
+- Keep every selected process row separate. No input propagation, calculated process linking, summing, normalizing, ranking, or product boundary is applied. An optional manual input association is display/export context only.
 - `Input required (kg)` is display-only metadata in v1. Do not apply it to an upstream factor or waste treatment.
 - DQR values are source metadata. Do not combine them with impact values or relabel them as confidence.
 - WTU is m³ world-equivalent. Never relabel it as litres or physical water volume.
@@ -35,6 +36,7 @@
 - Load only the allowlisted bundled CSV files; do not make network calls to a data provider at runtime.
 - Keep routes same-origin friendly. Browser code uses relative paths only.
 - Never log request bodies or store calculations. Keep the production server's access log disabled.
+- Keep v2 user-input labels, quantities, unit text, and association IDs out of API requests and schemas; only explicit factor IDs and separately entered reference-unit quantities reach the calculation route.
 - Do not expose unused no-score/product-intake APIs in OpenAPI.
 
 ## 5. Frontend and content

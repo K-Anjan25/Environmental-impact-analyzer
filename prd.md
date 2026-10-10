@@ -13,6 +13,7 @@ The required direction remains: apparel and footwear context, multiple distinct 
 3. Calculate each of the 16 EF 3.1 impact indicators independently and transparently.
 4. Keep application behavior stateless and avoid retaining user-entered calculation quantities.
 5. Keep scope limits visible so process results cannot be mistaken for whole-product footprints.
+6. In the v2 worksheet, let users record known product inputs and optionally label a process result with a manual, context-only association.
 
 ## Non-goals
 
@@ -31,11 +32,12 @@ All published EF 3.1 indicators are available as separate rows: acidification (A
 
 ## Primary user journey
 
-1. Filter the pinned catalog by process family and search activity, material, or geography.
-2. Select an exact source row and read its reference unit and geography.
-3. Enter a positive quantity in units of that reference unit. Add up to 25 distinct factor rows.
-4. Calculate. The app returns a separate 16-indicator table for each row, including the source factor, scaled result, source DQR values where available, and source-reported input requirement where available.
-5. Review the on-screen attribution/license and download a CSV that preserves one row per process and indicator.
+1. Optionally record known product/component/process inputs with a user-provided label, quantity, and unit; entries remain in page memory.
+2. Filter the pinned catalog by process family, exact source geography, and search activity/material/geography.
+3. Select an exact source row and read its reference unit and geography.
+4. Enter a positive process quantity in units of that exact reference unit. Add up to 25 distinct factor rows. Optionally associate a process row with one declared input as context only.
+5. Calculate. The app returns a separate 16-indicator table for each row, including the source factor, scaled result, source DQR values where available, and source-reported input requirement where available. Declared input quantities do not set or convert process quantities.
+6. Review the on-screen attribution/license and download a CSV with one row per process/indicator plus explicit records for declared inputs that were not associated with a calculated process.
 
 ## Functional requirements
 
@@ -47,12 +49,13 @@ All published EF 3.1 indicators are available as separate rows: acidification (A
 - **FR-06 — Provenance and uncertainty metadata:** Show source activity, geography descriptor, version, source row/file, DQR fields as supplied, and Input required (kg) per reference unit if available. Missing DQR values remain absent.
 - **FR-07 — Boundaries:** State that selected-process outputs are not whole-product footprints. Do not apply Input required (kg) to upstream factors or add waste treatment. State that WTU is m³ world-equivalent, not physical litres.
 - **FR-08 — Attribution and licensing:** Display linked CC BY-SA 4.0 attribution beside results. Mark quantity scaling as the transformation. Include attribution, source URL, result license and license URL, and background-dependency note in CSV exports.
-- **FR-09 — Privacy:** Store no users, selected quantities, calculations, or history. Do not log request bodies. Disable application-server access logging in the production container.
+- **FR-09 — Privacy:** Persist no users, selected quantities, calculations, or history. Keep optional declared product inputs and manual associations in browser page memory only; do not send them to the API. The calculation API receives only selected factor IDs and process quantities in the exact factor reference units. Do not log request bodies. Disable application-server access logging in the production container.
 - **FR-10 — Error handling:** Validate IDs and quantities; return clear client errors for invalid requests and non-sensitive server errors for failures. Never convert an unknown or missing factor to zero.
+- **FR-11 — v2 input organizer:** Allow up to 25 user-declared input lines with a name, positive finite amount, and free-text unit label. Let a user manually associate an input with a selected process row, with no association by default. Display and export the association as context only; never copy, convert, or propagate its amount into calculation. Keep unassociated lines visible as not calculated, not zero. Do not add automatic factor matching, product completeness, stage mapping, or aggregation.
 
 ## Calculation and units
 
-The source provides an impact score for a particular activity and functional/reference unit. The quantity entered by the user must be expressed in units of that exact reference unit. A quantity of `0.18` against `1 kg yarn` means 0.18 kg yarn-equivalent output for that selected activity. It is not an item mass unless the source reference unit and user quantity genuinely correspond.
+The source provides an impact score for a particular activity and functional/reference unit. The quantity entered by the user must be expressed in units of that exact reference unit. A quantity of `0.18` against `1 kg yarn` means 0.18 kg yarn-equivalent output for that selected activity. It is not an item mass unless the source reference unit and user quantity genuinely correspond. The v2 worksheet's declared input quantity is a separate, free-text-unit description. Even when the user manually associates that input with a factor, the app does not assume unit equivalence or use the input amount in the factor calculation.
 
 The API retains decimal source values and calculations internally. Values are rendered for display at a readable precision; CSV export retains the API value to JSON-number precision. Factor and result units are shown in each indicator row.
 
@@ -81,6 +84,7 @@ The API retains decimal source values and calculations internally. Values are re
 - Quantity scaling matches the source factor multiplied by the entered quantity, tested using known source values.
 - Multi-row requests return the same number of independent process results; no aggregate is present.
 - Results and CSV include source attribution, source version, license, and background-database limitation.
+- V2 manual product-input context never enters the API payload or changes process quantities; unassociated lines export without indicator values and are explicitly not zero.
 - API, frontend, accessibility, lint, type-check, and production-build tests pass.
 - The UI contains no unresolved source-review or activation state; product-level conclusions remain explicitly out of scope.
 

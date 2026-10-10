@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type SyntheticEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type SyntheticEvent } from 'react';
 import {
   Alert,
   Autocomplete,
@@ -30,6 +30,7 @@ import {
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import CalculateOutlinedIcon from '@mui/icons-material/CalculateOutlined';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import ForestOutlinedIcon from '@mui/icons-material/ForestOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
@@ -48,13 +49,22 @@ import {
 import { formatProcessEstimatesCsv, downloadProcessEstimatesCsv } from './export';
 import { LandscapeScene } from './LandscapeArt';
 
+type ProductInput = {
+  id: string;
+  name: string;
+  quantity: string;
+  unit: string;
+};
+
 type SelectedProcess = {
   key: string;
   factor: ProcessFactor;
   quantity: string;
+  productInputId: string | null;
 };
 
 const MAX_PROCESS_LINES = 25;
+const MAX_PRODUCT_INPUTS = 25;
 const UNSPECIFIED_GEOGRAPHY = '__not_stated__';
 
 function numberForDisplay(value: number): string {
@@ -84,7 +94,15 @@ function dqrEntries(line: ProcessEstimateLine): Array<[string, number]> {
   return entries.filter((entry): entry is [string, number] => typeof entry[1] === 'number');
 }
 
-function ProcessResult({ line, index }: { line: ProcessEstimateLine; index: number }) {
+function ProcessResult({
+  line,
+  index,
+  productInput,
+}: {
+  line: ProcessEstimateLine;
+  index: number;
+  productInput: ProductInput | null;
+}) {
   const scores = dqrEntries(line);
   const water = line.indicators.find((item) => item.code === 'WTU');
   const headingId = `result-${index}-${line.factor_id}`;
@@ -101,6 +119,12 @@ function ProcessResult({ line, index }: { line: ProcessEstimateLine; index: numb
             <Chip size="small" label={geographyFor(line)} className="geo-chip" />
             <span>{numberForDisplay(line.quantity)} × {line.reference_unit}</span>
           </div>
+          {productInput && (
+            <p className="product-input-result-context">
+              <strong>User-associated input:</strong> {productInput.name} — {productInput.quantity} {productInput.unit}.
+              {' '}Context only; its quantity was not used to calculate this process result.
+            </p>
+          )}
         </div>
         <Chip size="small" label="Separate process result" className="separate-chip" />
       </div>
@@ -210,7 +234,7 @@ function SourceDialog({
           <section>
             <Typography component="h3" className="dialog-section-title">Implemented calculation</Typography>
             <Typography variant="body2">
-              For each selected activity and each of its 16 indicators, the app multiplies the published factor by the quantity you enter in that factor’s own reference unit. Every process row stays separate. No cross-stage sum, composite score, ranking, or complete product footprint is calculated.
+              For each selected activity and each of its 16 indicators, the app multiplies the published factor by the quantity you enter in that factor’s own reference unit. The optional product-input worksheet is user-declared context only: a manual association does not set or convert the process quantity. Every process row stays separate. No cross-stage sum, composite score, ranking, or complete product footprint is calculated.
             </Typography>
           </section>
           <section>
@@ -243,7 +267,7 @@ function SourceDialog({
           <section>
             <Typography component="h3" className="dialog-section-title">Privacy</Typography>
             <Typography variant="body2">
-              The app has no user accounts, analytics, database, or calculation history. Calculation requests are processed in memory and are not stored; the API access log is disabled and request bodies are not logged by the app. Hosting infrastructure may retain network metadata under its own operating policy.
+              The app has no user accounts, analytics, database, or calculation history. Optional product-input notes and manual associations stay in browser page memory and are not sent to the API; factor IDs and the separately entered reference-unit quantities are sent for calculation. Nothing is saved after the page is closed or reloaded. If you download a CSV, it may contain the input labels and quantities you entered. The API access log is disabled and request bodies are not logged by the app. Hosting infrastructure may retain network metadata under its own operating policy.
             </Typography>
           </section>
         </Stack>
@@ -262,6 +286,13 @@ function App() {
   const [selectedFactor, setSelectedFactor] = useState<ProcessFactor | null>(null);
   const [quantityDraft, setQuantityDraft] = useState('');
   const [selectedProcesses, setSelectedProcesses] = useState<SelectedProcess[]>([]);
+  const [productInputs, setProductInputs] = useState<ProductInput[]>([]);
+  const [productInputNameDraft, setProductInputNameDraft] = useState('');
+  const [productInputQuantityDraft, setProductInputQuantityDraft] = useState('');
+  const [productInputUnitDraft, setProductInputUnitDraft] = useState('');
+  const [editingProductInputId, setEditingProductInputId] = useState<string | null>(null);
+  const [productInputError, setProductInputError] = useState('');
+  const productInputSequence = useRef(0);
   const [result, setResult] = useState<ProcessEstimateResponse | null>(null);
   const [calculating, setCalculating] = useState(false);
   const [error, setError] = useState('');
@@ -316,6 +347,88 @@ function App() {
   const selectedFactorAlreadyAdded = selectedFactor
     ? selectedProcesses.some((line) => line.factor.id === selectedFactor.id)
     : false;
+  const productInputsById = useMemo(
+    () => new Map<string, ProductInput>(productInputs.map((item) => [item.id, item])),
+    [productInputs],
+  );
+  const associatedProductInputIds = useMemo(
+    () => new Set(selectedProcesses.flatMap((line) => line.productInputId ? [line.productInputId] : [])),
+    [selectedProcesses],
+  );
+  const unassociatedProductInputs = productInputs.filter((item) => !associatedProductInputIds.has(item.id));
+
+  const clearProductInputDraft = () => {
+    setProductInputNameDraft('');
+    setProductInputQuantityDraft('');
+    setProductInputUnitDraft('');
+    setEditingProductInputId(null);
+    setProductInputError('');
+  };
+
+  const saveProductInput = () => {
+    const name = productInputNameDraft.trim();
+    const quantity = Number(productInputQuantityDraft);
+    const unit = productInputUnitDraft.trim();
+    if (!name) {
+      setProductInputError('Enter a name for this declared input.');
+      return;
+    }
+    if (!Number.isFinite(quantity) || quantity <= 0) {
+      setProductInputError('Enter a finite quantity greater than zero.');
+      return;
+    }
+    if (!unit) {
+      setProductInputError('Enter the unit as published or provided for this input.');
+      return;
+    }
+    if (!editingProductInputId && productInputs.length >= MAX_PRODUCT_INPUTS) {
+      setProductInputError(`You can declare up to ${MAX_PRODUCT_INPUTS} product input lines.`);
+      return;
+    }
+
+    if (editingProductInputId) {
+      setProductInputs((current) => current.map((item) => item.id === editingProductInputId
+        ? { ...item, name, quantity: productInputQuantityDraft.trim(), unit }
+        : item));
+    } else {
+      productInputSequence.current += 1;
+      setProductInputs((current) => [...current, {
+        id: `product-input-${productInputSequence.current}`,
+        name,
+        quantity: productInputQuantityDraft.trim(),
+        unit,
+      }]);
+    }
+    clearProductInputDraft();
+    setResult(null);
+    setError('');
+  };
+
+  const editProductInput = (item: ProductInput) => {
+    setEditingProductInputId(item.id);
+    setProductInputNameDraft(item.name);
+    setProductInputQuantityDraft(item.quantity);
+    setProductInputUnitDraft(item.unit);
+    setProductInputError('');
+  };
+
+  const removeProductInput = (inputId: string) => {
+    setProductInputs((current) => current.filter((item) => item.id !== inputId));
+    setSelectedProcesses((current) => current.map((line) => line.productInputId === inputId
+      ? { ...line, productInputId: null }
+      : line));
+    if (editingProductInputId === inputId) clearProductInputDraft();
+    setResult(null);
+    setError('');
+  };
+
+  const updateSelectedProductInput = (key: string, productInputId: string) => {
+    setSelectedProcesses((current) => current.map((line) => line.key === key
+      ? { ...line, productInputId: productInputId || null }
+      : line));
+    setResult(null);
+    setError('');
+  };
 
   const updateSelectedQuantity = (key: string, quantity: string) => {
     setSelectedProcesses((current) => current.map((line) => line.key === key ? { ...line, quantity } : line));
@@ -343,7 +456,12 @@ function App() {
     }
     setSelectedProcesses((current) => [
       ...current,
-      { key: `${selectedFactor.id}-${Date.now()}`, factor: selectedFactor, quantity: quantityDraft },
+      {
+        key: `${selectedFactor.id}-${Date.now()}`,
+        factor: selectedFactor,
+        quantity: quantityDraft,
+        productInputId: null,
+      },
     ]);
     setSelectedFactor(null);
     setQuantityDraft('');
@@ -385,7 +503,13 @@ function App() {
 
   const exportResults = () => {
     if (!result) return;
-    const csv = formatProcessEstimatesCsv(result);
+    const csv = formatProcessEstimatesCsv(result, {
+      productInputs,
+      processLinks: selectedProcesses.map((line) => ({
+        factorId: line.factor.id,
+        productInputId: line.productInputId,
+      })),
+    });
     downloadProcessEstimatesCsv(csv, 'environmental-process-estimates.csv');
   };
 
@@ -447,6 +571,86 @@ function App() {
                 {catalogError} Reload the page to retry the bundled factor catalog.
               </Alert>
             )}
+
+            <section className="product-input-workspace" aria-labelledby="product-input-heading">
+              <div className="product-input-heading-row">
+                <div>
+                  <div className="step-label">V2 <span aria-hidden="true">·</span> DECLARED INPUTS</div>
+                  <Typography id="product-input-heading" component="h3" className="product-input-title">
+                    Optional product-input worksheet
+                  </Typography>
+                </div>
+                <Chip label={`${productInputs.length} / ${MAX_PRODUCT_INPUTS}`} size="small" className="soft-chip" />
+              </div>
+              <Typography className="product-input-explainer">
+                Record inputs you already know, with your own labels, quantities, and unit text. These notes stay in this page and are not sent to the API. You may manually associate an input with a selected process below, but its amount never sets or converts the separate process quantity. No factor matching, stage mapping, loss treatment, or product total is inferred; unassociated inputs are not calculated, not zero.
+              </Typography>
+              <div className="product-input-entry-grid">
+                <TextField
+                  size="small"
+                  label="Input or component name"
+                  value={productInputNameDraft}
+                  onChange={(event) => setProductInputNameDraft(event.target.value)}
+                  slotProps={{ htmlInput: { maxLength: 100 } }}
+                />
+                <TextField
+                  type="number"
+                  size="small"
+                  label="Declared quantity"
+                  value={productInputQuantityDraft}
+                  onChange={(event) => setProductInputQuantityDraft(event.target.value)}
+                  slotProps={{ htmlInput: { min: 0, step: 'any' } }}
+                />
+                <TextField
+                  size="small"
+                  label="Unit label"
+                  placeholder="e.g., kg, pair"
+                  value={productInputUnitDraft}
+                  onChange={(event) => setProductInputUnitDraft(event.target.value)}
+                  slotProps={{ htmlInput: { maxLength: 40 } }}
+                />
+              </div>
+              <div className="product-input-actions">
+                <Button
+                  type="button"
+                  variant="outlined"
+                  startIcon={<AddRoundedIcon />}
+                  onClick={saveProductInput}
+                  disabled={productInputs.length >= MAX_PRODUCT_INPUTS && !editingProductInputId}
+                >
+                  {editingProductInputId ? 'Save input' : 'Add input'}
+                </Button>
+                {editingProductInputId && (
+                  <Button type="button" onClick={clearProductInputDraft}>Cancel edit</Button>
+                )}
+                {productInputError && <Alert severity="error" onClose={() => setProductInputError('')}>{productInputError}</Alert>}
+              </div>
+              {productInputs.length > 0 && (
+                <Stack spacing={1} className="product-input-list" aria-label="Declared product inputs">
+                  {productInputs.map((item, index) => (
+                    <div className="product-input-item" key={item.id}>
+                      <div className="product-input-item-copy">
+                        <span className="product-input-index">{String(index + 1).padStart(2, '0')}</span>
+                        <div><strong>{item.name}</strong><span>{item.quantity} {item.unit}</span></div>
+                      </div>
+                      <div className="product-input-item-actions">
+                        <IconButton aria-label={`Edit product input ${item.name}`} onClick={() => editProductInput(item)} size="small">
+                          <EditOutlinedIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton aria-label={`Remove product input ${item.name}`} onClick={() => removeProductInput(item.id)} size="small">
+                          <DeleteOutlineRoundedIcon fontSize="small" />
+                        </IconButton>
+                      </div>
+                    </div>
+                  ))}
+                </Stack>
+              )}
+              <Typography className="product-input-summary" aria-live="polite">
+                {productInputs.length === 0
+                  ? 'No input lines recorded. This worksheet is optional.'
+                  : `${unassociatedProductInputs.length} of ${productInputs.length} declared input line(s) are not associated with a selected process. They remain outside the estimate.`}
+              </Typography>
+            </section>
 
             {catalog && (
               <form onSubmit={calculate} className="estimator-form">
@@ -609,6 +813,30 @@ function App() {
                           <IconButton aria-label={`Remove ${line.factor.activity}`} onClick={() => removeProcess(line.key)} size="small">
                             <DeleteOutlineRoundedIcon fontSize="small" />
                           </IconButton>
+                          {productInputs.length > 0 && (
+                            <FormControl fullWidth size="small" className="selected-process-input-context">
+                              <InputLabel id={`process-input-context-label-${index}`}>
+                                Input context for {line.factor.activity}
+                              </InputLabel>
+                              <Select
+                                labelId={`process-input-context-label-${index}`}
+                                id={`process-input-context-${index}`}
+                                value={line.productInputId ?? ''}
+                                label={`Input context for ${line.factor.activity}`}
+                                onChange={(event) => updateSelectedProductInput(line.key, event.target.value)}
+                              >
+                                <MenuItem value="">No input association</MenuItem>
+                                {productInputs.map((item) => (
+                                  <MenuItem key={item.id} value={item.id}>
+                                    {item.name} — {item.quantity} {item.unit}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                              <Typography component="span" className="input-context-helper">
+                                Context only; the factor quantity above is entered separately.
+                              </Typography>
+                            </FormControl>
+                          )}
                         </div>
                       ))}
                     </Stack>
@@ -665,10 +893,26 @@ function App() {
                     Download CSV
                   </Button>
                 </div>
+                {unassociatedProductInputs.length > 0 && (
+                  <Typography className="unassociated-input-note">
+                    {unassociatedProductInputs.length} declared input line(s) are not associated with these results and are not included; no zero-impact value is assigned.
+                  </Typography>
+                )}
                 <Stack spacing={2}>
-                  {result.results.map((line, index) => (
-                    <ProcessResult line={line} index={index} key={`${index}-${line.factor_id}`} />
-                  ))}
+                  {result.results.map((line, index) => {
+                    const selectedProcess = selectedProcesses.find((item) => item.factor.id === line.factor_id);
+                    const productInput = selectedProcess?.productInputId
+                      ? productInputsById.get(selectedProcess.productInputId) ?? null
+                      : null;
+                    return (
+                      <ProcessResult
+                        line={line}
+                        index={index}
+                        productInput={productInput}
+                        key={`${index}-${line.factor_id}`}
+                      />
+                    );
+                  })}
                 </Stack>
                 <div className="result-attribution">
                   <strong>Source attribution · CC BY-SA 4.0</strong>

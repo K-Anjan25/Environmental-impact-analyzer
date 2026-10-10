@@ -245,6 +245,53 @@ describe('process estimator accessibility', () => {
     expect(screen.queryByRole('option', { name: /Spinning cotton to yarn · World/ })).toBeNull();
   });
 
+  it('keeps declared product inputs local and treats a manual association as context only', async () => {
+    const fetchMock = stubApi();
+    render(<App />);
+    await screen.findByText('Build a process estimate.');
+
+    fireEvent.change(screen.getByRole('textbox', { name: 'Input or component name' }), {
+      target: { value: 'Upper cotton fabric' },
+    });
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Declared quantity' }), {
+      target: { value: '0.35' },
+    });
+    fireEvent.change(screen.getByRole('textbox', { name: 'Unit label' }), {
+      target: { value: 'kg' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Add input' }));
+    expect(screen.getByText('Upper cotton fabric')).toBeTruthy();
+
+    const factorInput = screen.getByRole('combobox', { name: 'Process activity' });
+    fireEvent.change(factorInput, { target: { value: 'Spinning cotton to yarn' } });
+    fireEvent.click(await screen.findByRole('option', { name: /Spinning cotton to yarn/ }));
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Quantity in source reference units' }), {
+      target: { value: '0.18' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Add process' }));
+
+    const inputContext = screen.getByRole('combobox', {
+      name: 'Input context for Spinning cotton to yarn',
+    });
+    fireEvent.mouseDown(inputContext);
+    fireEvent.click(await screen.findByRole('option', { name: 'Upper cotton fabric — 0.35 kg' }));
+    await expectNoAxeViolations();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Calculate separate indicators' }));
+    await screen.findByRole('table', { name: /Separate environmental indicators for Spinning cotton to yarn/ });
+    const inputContextText = screen.getByText(/User-associated input:/).closest('p')?.textContent ?? '';
+    expect(inputContextText).toContain('0.35 kg');
+    expect(inputContextText).toContain('not used to calculate');
+    expect(screen.getByText(/0\.18 × 1 kg yarn/)).toBeTruthy();
+
+    const calculationCall = fetchMock.mock.calls.find(([path]) => String(path) === '/api/v1/process-estimates');
+    const request = calculationCall?.[1] as RequestInit | undefined;
+    expect(JSON.parse(String(request?.body))).toEqual({
+      processes: [{ factor_id: factor.id, quantity: 0.18 }],
+    });
+    await expectNoAxeViolations();
+  });
+
   it('has no axe violations in the calculator and populated indicator results', async () => {
     stubApi();
     render(<App />);

@@ -9,31 +9,34 @@ Principles:
 - Source first: activity, geography, reference unit, version, DQR where published, and license remain visible around the result.
 - Units before arithmetic: the quantity field is unavailable until a factor is selected and labeled against that factor's source reference unit.
 - Separate outputs: 16 indicators are shown in a semantic table for each activity. Selected activities remain separate.
-- Honest scope: no product total, combined score, default geography, or missing-stage imputation.
+- Honest scope: no product total, combined score, default geography, or missing-stage imputation. User-entered input quantities are never substituted for process-factor quantities.
 - Accessible presentation: semantic sections, visible keyboard focus, descriptive controls, responsive tables, reduced-motion support, and no meaning conveyed only by color.
 
 ## 2. Information architecture
 
-1. **Header:** app identity, “Open process data” label, and Method & data dialog.
-2. **Hero:** apparel/footwear context, process-only purpose, and explicit separate-indicator/no-combined-score statement.
+1. **Header:** app identity and Method & data dialog.
+2. **Hero:** apparel/footwear context, process-only purpose, and separate-indicator/no-combined-score framing.
 3. **Catalog summary:** live factor count, selectable factor groups, 16 indicators, and source version.
-4. **Calculator panel:** family filter, searchable activity selector, source reference unit/geography, quantity input, and editable selected rows.
-5. **Results panel:** a separate indicator table per chosen process; data quality/source details; same-screen attribution and CSV export.
-6. **Method & data dialog:** formula, boundaries, source/license, ecoinvent-background note, WTU interpretation, DQR handling, count discrepancy, and privacy behavior.
+4. **Optional v2 input worksheet:** user-declared input labels, quantities, and free-text units, with manual context-only associations to selected processes.
+5. **Calculator panel:** family and source-geography filters, searchable activity selector, source reference unit, quantity input, and editable selected rows.
+6. **Results panel:** a separate indicator table per chosen process; optional user-input context; data quality/source details; same-screen attribution and CSV export.
+7. **Method & data dialog:** formula, boundaries, source/license, ecoinvent-background note, WTU interpretation, DQR handling, count discrepancy, and privacy behavior.
 
 ## 3. Primary journey
 
-1. Select a process family or use the activity autocomplete to search by material, process, geography, unit, or source ID.
-2. Review activity name, source geography and reference unit before entering a quantity.
-3. Add the process row; edit or remove it from the list. The same factor cannot be added twice—the selected row's quantity can be edited instead.
-4. Calculate up to 25 selected rows. Every row returns the source factor and its quantity-scaled 16 indicators.
-5. Review DQR fields and source-reported Input required (kg) if provided.
-6. Download an attributed CSV, one row per process and indicator. The export includes units, source file/ID, source version, result license, and background-data note.
+1. Optionally record up to 25 known product/component/process inputs using a user-provided label, quantity, and free-text unit; these stay in page memory.
+2. Select a process family/geography or use the activity autocomplete to search by material, process, geography, unit, or source ID.
+3. Review activity name, source geography, and exact reference unit before entering a process quantity.
+4. Add the process row; optionally choose a declared input as context. Edit or remove rows as needed. The same factor cannot be added twice—the selected row's quantity can be edited instead.
+5. Calculate up to 25 selected rows. Every row returns the source factor and its quantity-scaled 16 indicators; an input association does not alter the calculation.
+6. Review DQR fields and source-reported Input required (kg) if provided.
+7. Download an attributed CSV, one row per process and indicator, plus not-calculated/not-zero records for input lines without an associated process. The export includes units, source file/ID, source version, result license, and background-data note.
 
 ## 4. Content rules
 
 - Header message: “Separate indicators. No combined score.”
-- Quantity helper: enter the number of units of the selected factor's exact functional/reference unit.
+- Quantity helper: enter the number of units of the selected factor's exact functional/reference unit. This remains separate from any declared product-input quantity.
+- V2 input associations are always manual and context only. Do not use the declared amount for calculation, infer unit compatibility, or represent unassociated inputs as zero.
 - Result table: code and name, published factor per reference unit, quantity-scaled result, numerator unit.
 - Geography labels follow the source descriptor. Do not describe `WORLD`/`GLO` as complete global representativeness.
 - `Input required (kg)` is described as source metadata, displayed per reference unit, and not applied in this calculation.
@@ -62,6 +65,6 @@ The result table prioritizes precision and provenance over comparison. Green acc
 
 ## 7. Privacy and source dialog
 
-The dialog says the app has no accounts, analytics, database, or calculation history. Calculation requests are processed in memory; application access logging is disabled. The dialog states that hosting infrastructure can retain network metadata according to its own policies.
+The dialog says the app has no accounts, analytics, database, or calculation history. Optional declared input labels, quantities, units, and manual associations remain in browser page memory and are not sent to the API; factor IDs and separately entered factor-reference quantities are sent for calculation. A downloaded CSV may contain user-entered input context. Calculation requests are processed in memory; application access logging is disabled. The dialog states that hosting infrastructure can retain network metadata according to its own policies.
 
 The source section links to the pinned v1.1.0 repository, Zenodo record, and CC BY-SA 4.0 license. It states that source-published scores may include modeled ecoinvent 3.12 background contributions even though the underlying inventories are not distributed or included in this app.

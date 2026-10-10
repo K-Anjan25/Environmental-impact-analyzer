@@ -73,4 +73,28 @@ describe('CSV export', () => {
     expect(lines[2]).toContain('WTU');
     expect(lines[2]).toContain('m³ world-eq');
   });
+
+  it('exports a manual input association as context and leaves unassociated input results blank', () => {
+    const csv = formatProcessEstimatesCsv(estimate, {
+      productInputs: [
+        { id: 'input-1', name: 'Upper fabric', quantity: '0.35', unit: 'kg' },
+        { id: 'input-2', name: 'Rubber outsole', quantity: '0.18', unit: 'kg' },
+      ],
+      processLinks: [{ factorId: 'factor-1', productInputId: 'input-1' }],
+    });
+    const lines = csv.split('\r\n');
+    expect(lines).toHaveLength(4);
+    expect(lines[0]).toContain('declared_input_name');
+    expect(lines[0]).toContain('input_association_status');
+    expect(lines[1]).toContain('Upper fabric');
+    expect(lines[1]).toContain('user-selected context only; declared input quantity is not used in calculation');
+    expect(lines[3]).toContain('declared_input_not_calculated');
+    expect(lines[3]).toContain('Rubber outsole');
+    expect(lines[3]).toContain('not calculated and not zero');
+
+    const columns = lines[0].split(',');
+    const unassociatedFields = lines[3].split(',');
+    expect(unassociatedFields[columns.indexOf('scaled_result_value')]).toBe('');
+    expect(unassociatedFields[columns.indexOf('scaled_result_unit')]).toBe('');
+  });
 });

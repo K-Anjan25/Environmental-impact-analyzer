@@ -1,23 +1,24 @@
 # Environmental Impact Analyzer
 
-A working, open-data **process-impact estimator** for apparel and footwear manufacturing and use-phase activities. It reports all 16 EF 3.1 indicators separately, scales published source factors by an entered quantity in the factor's reference unit, and never creates a combined score or sums different process rows.
+A working, open-data **process-impact estimator** for apparel and footwear manufacturing and use-phase activities, with an optional v2 worksheet for user-declared product inputs. It reports all 16 EF 3.1 indicators separately, scales published source factors by an entered quantity in the factor's reference unit, and never creates a combined score or sums different process rows.
 
-This is the deliberately narrow, supportable product scope: the available openly licensed scores are process-level factors, not a complete open product inventory. The app therefore calculates process results—not whole-product footprints, product comparisons, or environmental claims.
+The worksheet keeps user-entered input labels, quantities, and unit text in browser memory and lets users manually associate an input with a selected process row as context only. It does not calculate from the declared input amount, infer a complete BOM, or turn process rows into whole-product footprints, comparisons, or environmental claims.
 
 ## What is included
 
 - **302 published factor rows** from 11 documented process categories in Carbonfact's pinned v1.1.0 release. The UI presents 12 selectable factor groups because sneaker assembly (per pair) and women's boots assembly (per kg) have different reference units.
 - Filter the catalog by process family and exact source geography. Geography choices preserve published codes and row counts; unstated geography stays explicitly unstated, with no inferred default.
+- **Optional v2 product-input worksheet:** record up to 25 user-declared inputs (name, quantity, free-text unit) locally; manually associate a line with a selected process as context only. Input quantities are not converted or sent to the API; the process quantity remains separately entered in the factor's exact reference unit. Unassociated input lines are exported as not calculated, not zero.
 - Apparel/textile processes: spinning, knitting, weaving, dyeing, finishing, printing, and textile assembly.
 - Footwear and material processes: sneaker and women's boots assembly, synthetic PU leather, and natural rubber.
 - Use-phase laundry, drying, ironing, and detergent factors where published.
 - Source geography, reference unit, source-reported input requirement, and DQR fields are shown when supplied. The quantity formula is `published impact factor × entered quantity`.
-- A downloadable CSV contains a separate row for each process and indicator, with the source citation, background-data note, and linked CC BY-SA 4.0 result license.
-- No account, database, analytics, or result history. The API handles calculations in memory and disables request access logging.
+- A downloadable CSV contains a separate row for each process and indicator, with the source citation, background-data note, and linked CC BY-SA 4.0 result license. When using the v2 worksheet, it adds manual context fields and marks unassociated input lines as not calculated, not zero.
+- No account, database, analytics, or result history. Product-input notes stay in page memory and are not sent to the API; the API handles factor IDs and separately entered reference-unit quantities in memory and disables request access logging.
 
 ## Important scope limits
 
-- A selection is **not** a product BOM or life-cycle model. The app never sums process rows, fills in missing stages, infers product composition or geography, or presents a product total.
+- The worksheet is not an inferred or validated product BOM or life-cycle model. Manual links are context only; the app never maps materials to processes, fills in missing stages, infers composition or geography, propagates mass/losses, sums process rows, or presents a product total.
 - Process reference units, boundaries, and geography vary. Select only the row that matches the intended activity and reference unit. `WORLD`/`GLO` and country-specific factors are distinct source choices, not a claim of complete global representativeness.
 - Source `Input required (kg)` values are displayed as published but are not applied to upstream material burdens or waste-treatment flows.
 - EF 3.1 WTU is measured in m³ world-equivalent. It is a water-use impact indicator, not physical water volume in litres.
@@ -70,12 +71,12 @@ The standalone image can also be built and run with `docker build -f services/ap
 
 ### Deployment target
 
-The standard and Vercel-targeted images pass CI smoke tests. Vercel is the selected deployment platform; its Container Runtime is Beta. The operator supplied a successful Preview build/deploy log for branch commit `3bb77c0`, showing the repository-root Dockerfile build, `PORT=8000`, a 300-second container timeout, and deployment completion. The Preview is reported running, but its authenticated health/docs/catalog/calculation/CSV and policy-page flows still need browser verification. The project's default candidate URL returned Vercel 404 in an unauthenticated probe, so do not advertise it until Vercel attaches and serves the alias. The operator selected a no-SLA early beta on the Beta runtime and no custom domain. `Dockerfile.vercel` now avoids a Docker `HEALTHCHECK` instruction that Vercel's OCI build ignores; `/healthz` remains covered by HTTP smoke tests. See the [official Container Runtime guide](https://vercel.com/docs/functions/runtimes/container) and the [release readiness and version roadmap](roadmap.md). Local Compose verifies an image only; it does not validate Vercel routing, limits, protection, or project settings.
+The standard and Vercel-targeted images pass CI smoke tests. Vercel is the selected deployment platform; its Container Runtime is Beta. The operator's build log confirms a repository-root container build, `PORT=8000`, a 300-second timeout, and deployment completion. Vercel reports deployment success for the source-geography app commit `0775d5d`; the operator's authenticated Preview acceptance on `ccb75f9` predates that filter, so the geography filter still needs a quick authenticated check. The Preview is SSO-protected from external probes. The candidate default alias `environmentalimpactanalyzer.vercel.app` last returned 404 unauthenticated; do not advertise it until Vercel attaches and serves an alias. The operator selected a no-SLA early beta and no custom domain. `Dockerfile.vercel` avoids a Docker `HEALTHCHECK` instruction that Vercel's OCI build ignores; `/healthz` remains covered by HTTP smoke tests. See the [official Container Runtime guide](https://vercel.com/docs/functions/runtimes/container) and the [release readiness and version roadmap](roadmap.md). Local Compose verifies an image only; it does not validate Vercel routing, limits, protection, or project settings.
 
 ## API
 
 - `GET /api/v1/factors` — versioned factor catalog, optionally filtered with `family`, `q`, `offset`, and `limit`.
-- `POST /api/v1/process-estimates` — accepts 1–25 `{factor_id, quantity}` selections and returns each selected process separately with 16 indicators.
+- `POST /api/v1/process-estimates` — accepts 1–25 `{factor_id, quantity}` selections and returns each selected process separately with 16 indicators. The optional product-input notes and their manual associations are not part of this API request.
 - `GET /api/v1/sources` — active source, license, attribution, dependencies, and scope.
 - `GET /api/v1/methodology` — formula, privacy behavior, and product-footprint/no-combined-score limits.
 - `GET /api/docs` — interactive OpenAPI documentation.
@@ -120,5 +121,6 @@ The application code/documentation license is separate from the bundled data lic
 - [Design](design.md)
 - [Implementation and release record](task.md)
 - [Release readiness and version roadmap](roadmap.md)
+- [v2 product-input discovery and scope record](v2-discovery.md)
 - [Coding and calculation rules](rules.md)
 - [Project memory](memory.md)

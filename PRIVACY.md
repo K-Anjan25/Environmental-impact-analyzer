@@ -15,15 +15,17 @@ Before a public Production deployment, the operator must confirm this is the cor
 
 ## What the application does
 
-The application lets a visitor select published apparel and footwear process factors, enter quantities in each factor's reference unit, and calculate separate process and indicator results. It does not create user accounts, save an assessment history, or ask for a visitor's name, email address, or product identity.
+The application lets a visitor select published apparel and footwear process factors, enter quantities in each factor's reference unit, and calculate separate process and indicator results. An optional v2 worksheet lets a visitor record input/component labels, amounts, and unit text and manually associate an input with a process row as context only. It does not create user accounts or save an assessment history, and it does not ask for a visitor's name or email address.
 
 ## Information processed
 
 ### Calculation inputs
 
-When a visitor requests an estimate, the browser sends selected factor IDs and numeric quantities to the same-origin API. Factor-catalog requests may include a process-family or search query when those API options are used. The API uses the request to calculate and return the requested results in memory. The application does not intentionally write these inputs or results to a database, file, account, or assessment history. Browser selections remain in page memory and are cleared when the page is reloaded or closed.
+When a visitor requests an estimate, the browser sends selected factor IDs and numeric quantities in the factors' exact reference units to the same-origin API. Factor-catalog requests may include a process-family or search query when those API options are used. The API uses the request to calculate and return the requested results in memory. It does not receive the optional product-input labels, quantities, unit text, or manual associations; those stay in browser page memory and are cleared when the page is reloaded or closed. The application does not intentionally write inputs or results to a database, file, account, or assessment history.
 
-Do not enter personal information, confidential business information, or other sensitive data. The calculator is not designed to receive it.
+If the visitor downloads a CSV, the file can include the declared input labels, amounts, unit text, manual associations, and records for unassociated inputs. The visitor controls where that downloaded file is saved and shared.
+
+Do not enter personal information, confidential business information, supplier secrets, or other sensitive data. The calculator is not designed to receive it.
 
 ### Technical and hosting information
 
@@ -35,11 +37,11 @@ Vercel Preview protection, if enabled, may use Vercel-managed authentication or 
 
 ## Purposes and sharing
 
-Calculation inputs are used to return the requested calculation. The browser sends them to the Vercel-hosted API; hosting and network providers handle that request to provide the service and may process technical information for delivery, reliability, abuse prevention, and security under their own terms. The application source does not send inputs to advertising or analytics services. The project does not sell personal information or use it for advertising.
+The browser sends only the selected factor IDs and their separately entered reference-unit quantities to the Vercel-hosted API to return the requested calculation. Optional product-input notes and associations remain in browser memory unless the visitor chooses to include them in a downloaded CSV. Hosting and network providers handle API requests to provide the service and may process technical information for delivery, reliability, abuse prevention, and security under their own terms. The application source does not send inputs to advertising or analytics services. The project does not sell personal information or use it for advertising.
 
 ## Storage, retention, and location
 
-The application has no persistent assessment store. Calculation inputs exist in browser memory and are processed by the running API instance to answer the request. This does not control provider-side network or deployment logs. Provider retention, processing regions, and any international transfer depend on Vercel account, deployment, and service settings; the operator must check and document those settings before production.
+The application has no persistent assessment store. Declared product-input notes exist only in browser page memory. Calculation factor IDs and process quantities are processed by the running API instance to answer the request. This does not control provider-side network or deployment logs. Provider retention, processing regions, and any international transfer depend on Vercel account, deployment, and service settings; the operator must check and document those settings before production.
 
 ## Your choices and requests
 

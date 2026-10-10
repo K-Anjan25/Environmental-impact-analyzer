@@ -2,16 +2,16 @@
 
 **Last updated:** 10 October 2026
 
-**Status:** Release draft — the operator and privacy contact below must be completed before public production.
+**Status:** Draft for operator review — confirm the operator identity and monitor the contact address; review this notice against the live Vercel settings and applicable privacy law before public Production.
 
 This notice describes the current Environmental Impact Analyzer application. It is an engineering summary, not legal advice or a statement that the service complies with every privacy law. The person or organization operating a public deployment must review it against the actual Vercel project configuration and applicable law before launch.
 
 ## Operator and contact
 
-- **Service operator:** `[Enter the legal name of the person or organization operating the service]`
-- **Privacy contact:** `[Enter a monitored privacy email address or contact URL]`
+- **Service operator:** Kyama Anjan Kumar
+- **Privacy contact:** [kyamaanjan2@gmail.com](mailto:kyamaanjan2@gmail.com)
 
-The operator must identify its role under applicable privacy law and complete these fields before a public Production deployment. Do not publish while they are placeholders.
+Before a public Production deployment, the operator must confirm this is the correct service identity, monitor the contact address for privacy requests, and review the operator's role and obligations under applicable privacy law.
 
 ## What the application does
 

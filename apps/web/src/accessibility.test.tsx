@@ -151,6 +151,7 @@ function stubApi(): ReturnType<typeof vi.fn> {
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
 });
 
 async function expectNoAxeViolations(): Promise<void> {
@@ -200,6 +201,11 @@ describe('process estimator accessibility', () => {
     const illustration = container.querySelector('.landscape-scene');
     expect(illustration?.getAttribute('aria-hidden')).toBe('true');
     expect(illustration?.getAttribute('focusable')).toBe('false');
+    const dashboardText = container.textContent ?? '';
+    expect(dashboardText).not.toContain('Source factors, not a product score');
+    expect(dashboardText).not.toContain('Separate indicators. No combined score.');
+    expect(dashboardText).not.toContain('Each selected process is reported on its own; this is not a whole-product footprint.');
+    expect(dashboardText).not.toContain('Illustration only · values come from cited process data');
     const legalNavigation = screen.getByRole('navigation', { name: 'Legal and source links' });
     expect(legalNavigation).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Privacy' }).getAttribute('href')).toBe('/legal/privacy.html');
@@ -216,6 +222,28 @@ describe('process estimator accessibility', () => {
     expect(screen.getByText('Source attribution · CC BY-SA 4.0')).toBeTruthy();
     expect(screen.getByText(/Each selected process factor is scaled/)).toBeTruthy();
     await expectNoAxeViolations();
+  });
+
+  it('downloads the calculated CSV from the results panel', async () => {
+    stubApi();
+    render(<App />);
+    await calculateExample();
+
+    const createObjectURL = vi.fn().mockReturnValue('blob:csv-download');
+    const revokeObjectURL = vi.fn();
+    vi.stubGlobal('URL', { createObjectURL, revokeObjectURL });
+    const downloadClick = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
+      expect(this.download).toBe('environmental-process-estimates.csv');
+      expect(this.href).toBe('blob:csv-download');
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Download CSV' }));
+
+    expect(createObjectURL).toHaveBeenCalledOnce();
+    expect(createObjectURL.mock.calls[0][0]).toBeInstanceOf(Blob);
+    expect((createObjectURL.mock.calls[0][0] as Blob).type).toBe('text/csv;charset=utf-8');
+    expect(downloadClick).toHaveBeenCalledOnce();
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:csv-download');
   });
 
   it('shows source and privacy details in an accessible methodology dialog', async () => {

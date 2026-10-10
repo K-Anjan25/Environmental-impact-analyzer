@@ -390,15 +390,9 @@ function App() {
             <Typography className="hero-subtitle">
               Explore 16 environmental indicators from published process data. Choose the activity, match its reference unit, and scale the factor to your quantity.
             </Typography>
-            <div className="hero-note">
-              <span className="hero-note-icon"><ScienceOutlinedIcon /></span>
-              <span><strong>Separate indicators. No combined score.</strong> Each selected process is reported on its own; this is not a whole-product footprint.</span>
-            </div>
           </div>
           <div className="hero-visual">
-            <div className="art-caption-top" aria-hidden="true"><span /> Source factors, not a product score</div>
             <LandscapeScene />
-            <div className="art-caption-bottom">Illustration only · values come from cited process data</div>
           </div>
         </section>
 

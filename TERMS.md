@@ -2,17 +2,17 @@
 
 **Last updated:** 10 October 2026
 
-**Effective date:** `[Set for public launch]`
+**Effective date:** This version takes effect when it is first published at the public Production URL; record the calendar date at launch.
 
-**Status:** Release draft — the operator, contact, and governing-law details below must be completed and reviewed before public production.
+**Status:** Draft for operator/legal review — confirm the operator/contact details, governing-law clause, live hosting configuration, and jurisdiction-specific requirements before public Production.
 
-These draft terms describe use of the Environmental Impact Analyzer website and API (the **Service**). They are not legal advice. The person or organization operating a public deployment must review these terms for the intended users, jurisdictions, and live hosting configuration. Do not publish a production deployment while the marked fields are placeholders.
+These draft terms describe use of the Environmental Impact Analyzer website and API (the **Service**). They are not legal advice. The person operating a public deployment must review these terms for the intended users, jurisdictions, and live hosting configuration before launch.
 
 ## Operator and contact
 
-- **Service operator:** `[Enter the legal name of the person or organization operating the service]`
-- **Service contact:** `[Enter a monitored contact email address or URL]`
-- **Governing law and venue:** `[Complete after review by the operator's legal adviser]`
+- **Service operator:** Kyama Anjan Kumar
+- **Service contact:** [kyamaanjan2@gmail.com](mailto:kyamaanjan2@gmail.com)
+- **Governing law and venue:** These Terms and disputes arising out of or relating to the Service are governed by the laws of India. Subject to mandatory applicable law, courts of competent jurisdiction at Hyderabad, Telangana, India shall have jurisdiction.
 
 ## Service scope and limitations
 
@@ -48,4 +48,4 @@ To the maximum extent permitted by applicable law, the operator and contributors
 
 ## Governing law and contact
 
-The governing law, venue, operator identity, and contact details must be completed above before production. For questions about these terms, use the completed service contact. For privacy matters, see [`PRIVACY.md`](PRIVACY.md).
+The operator must confirm that the selected law and venue are appropriate and obtain jurisdiction-specific legal review before public Production. For questions about these terms, use the service contact above. For privacy matters, see [`PRIVACY.md`](PRIVACY.md).

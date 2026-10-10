@@ -21,7 +21,7 @@ This roadmap separates **v1 release verification** from future discovery. A feat
 
 ### Vercel deployment attempt log
 
-The first Vercel build output cloned `main` at `102be24` and reported no `functions`, `static`, or `services` output. That commit predates this implementation and does not contain `Dockerfile.vercel`; this is a branch/root-selection issue, not a failure of the current container image. Do not promote or use that empty deployment. Retry as a **Preview** from `arena/01a0fee8-environmental-impact-analyzer` (currently `485f06b` or newer), with the project Root Directory set to the repository root. Set `PORT=8000` in the Preview environment. Keep `main` as the Production Branch for now and verify the deployment log names the feature branch before evaluating output.
+The first Vercel build output cloned `main` at `102be24` and reported no `functions`, `static`, or `services` output. That commit predates this implementation and does not contain `Dockerfile.vercel`; this was a branch/root-selection issue, not a failure of the current container image. Do not promote or use that empty deployment. A later GitHub Vercel status for feature-branch commit `cd788f0` reports `success` / “Deployment has completed.” The app routes have not yet been confirmed in the user's browser. Open that branch Preview, confirm `PORT=8000` is set for Preview, then test `/`, `/healthz`, `/api/docs`, factor search, calculation, and CSV. Keep `main` as the Production Branch for now; the project Root Directory must be the repository root.
 
 ### Local container acceptance flow
 

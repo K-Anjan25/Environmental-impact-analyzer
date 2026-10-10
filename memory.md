@@ -67,7 +67,7 @@ docker compose up --build
 - TypeScript and Vite production build: pass.
 - ASGI smoke test: static `/` serving, `/api/docs`, OpenAPI route set, 302-row catalog, a 16-indicator estimate, and 404 for unknown API routes all passed.
 - Docker/Podman/Buildah/nerdctl are unavailable in this sandbox. The user ran Compose externally: image build completed, container reported healthy, and Uvicorn startup completed. GitHub CI built both standard and Vercel-targeted images and smoke-tested health/docs/catalog/estimates; the user's browser/CSV flow has not been confirmed.
-- Vercel is the user's selected deployment platform. `Dockerfile.vercel` targets the Vercel Container Runtime (Beta) and requires project `PORT=8000` for the non-root process. The first Vercel log selected `main` at `102be24` and produced no app output; retry a Preview from the feature branch/root directory. Vercel project/domain and a valid preview remain undecided/not completed.
+- Vercel is the user's selected deployment platform. `Dockerfile.vercel` targets the Vercel Container Runtime (Beta) and requires project `PORT=8000` for the non-root process. The first Vercel log selected `main` at `102be24` and produced no app output. GitHub's Vercel status for feature-branch commit `cd788f0` is success, but browser/API/CSV route verification remains; confirm repository root and `PORT=8000`. Vercel project/domain remain undecided.
 
 ## Reference links
 

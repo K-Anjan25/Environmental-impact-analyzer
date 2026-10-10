@@ -67,8 +67,8 @@ docker compose up --build
 - TypeScript and Vite production build: pass.
 - Vite-to-API smoke test: `/` served, proxied `/api/v1/factors?limit=1` returned 302 catalog records with one factor, and proxied `/healthz` returned ready.
 - Current local code includes the v2 product-input organizer; the organizer and context links are client-only. The API receives only factor IDs and separately entered reference-unit quantities. No new source data or factor mapping was added.
-- GitHub CI run `38061931644` passed API, web, and both container checks on the prior documentation commit `ba9141b`. CI for the current v2 changes must be checked after push.
-- Vercel reports deployment success for app-code commit `0775d5d`; the new geography filter still needs the operator's authenticated Preview check. Vercel Preview is SSO-protected from external probes. The Vercel Container Runtime is Beta, authorized only for a no-SLA early beta with no custom domain; no Production deployment, PR, or merge is authorized. Check the current v2 Preview separately after the new branch deployment.
+- GitHub CI run `38063089239` passed API, web, and both container checks on v2 app-code commit `2bf2130`.
+- Vercel reports deployment success for app-code commit `0775d5d`; it was still reporting deployment in progress for `2bf2130` at last check. Both the geography filter and v2 worksheet need the operator's authenticated Preview check. Vercel Preview is SSO-protected from external probes. The Vercel Container Runtime is Beta, authorized only for a no-SLA early beta with no custom domain; no Production deployment, PR, or merge is authorized.
 - Root `LICENSE` applies MIT to original project code/documentation; Carbonfact data and derived results remain under CC BY-SA 4.0. `PRIVACY.md` and `TERMS.md` describe the browser-only worksheet and still require operator/legal review before public Production. Legal pages are generated from canonical source documents during Vite build.
 
 

@@ -6,7 +6,7 @@ This directory contains the published `impact-scores.csv` files and process-fami
 
 > Data source: The Open Source LCA Database for Footwear & Apparel, Carbonfact, version 1.1.0. https://github.com/carbonfact/lca-database-footwear-apparel, CC BY-SA 4.0.
 
-The published impact scores, process-family notes, and this dataset extraction are distributed under CC BY-SA 4.0. The application displays the attribution beside each calculation and provides the dataset-derived output under the same license. Changes or transformations are identified in the application. See [LICENSE](LICENSE) and <https://creativecommons.org/licenses/by-sa/4.0/>.
+The published impact scores, process-family notes, and this dataset extraction are distributed under CC BY-SA 4.0. The application provides the attribution, pinned release link, transformation, and background-data note in its Method, source and reuse dialog and in CSV exports; dataset-derived outputs are offered under the same license. Source DQR metadata are retained in CSV when published. See [LICENSE](LICENSE) and <https://creativecommons.org/licenses/by-sa/4.0/>.
 
 ## Included data
 
@@ -18,9 +18,9 @@ No full Brightway/Activity Browser inventories, ecoinvent database, or other bac
 
 ## Use in this application
 
-- The source supplies 16 EF 3.1 impact indicators per process reference unit. Results are scaled only by the quantity the user enters for that same reference unit.
-- Results are reported separately for each selected process. The application does not sum process rows, infer missing stages, select a product boundary, or present a whole-product footprint.
-- Source-provided `Input required (kg)` values are shown as metadata but are not used to add upstream material impacts or waste-treatment flows.
+- The source supplies 16 EF 3.1 impact indicators per process reference unit. Manually entered process quantities scale those values in the factor's own reference unit.
+- The browser preserves each selected process separately and can also sum compatible indicator values across the selected set. It calculates an EF 3.1 single score from the official JRC global normalisation factors and EF weighting percentages. The normalisation factors are in the [JRC EF 3.1 workbook](https://eplca.jrc.ec.europa.eu/permalink/EF3_1/Normalisation_Weighting_Factors_EF_3.1.xlsx); the recommended all-category final weighting factors, including robustness and scaled to 100%, follow the [JRC EF weighting report](https://eplca.jrc.ec.europa.eu/permalink/2018_JRC_Weighting_EF.pdf). The method is consistent with the JRC [2023 single-score guide](https://eplca.jrc.ec.europa.eu/uploads/JRC132621_MS_guide.pdf), which describes combining the 16 EF 3.1 categories with normalisation and weighting. These selected-row summaries do not infer stages or establish a product boundary.
+- User-confirmed product-input mappings can use the source-reported `Input required (kg)` value to convert a locally held input feed mass to process output reference units. Where the output reference unit is mass, a mass-difference diagnostic can be shown. The optional flat-BOM mass check runs only after the user confirms every declared line is a product component for the same functional unit; it compares supported declared masses with a user-entered finished-product mass. These are arithmetic/mass-flow diagnostics only; they do not validate composition or completeness, add new upstream material impacts, or calculate waste-treatment flows.
 - Process reference units and modeled boundaries vary by dataset. Use-phase data describe representative European consumer behavior even where the descriptor is tagged `GLO`.
 - Source DQR fields, where present, are relayed as data-quality metadata; they are not an environmental score.
 

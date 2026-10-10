@@ -1,33 +1,34 @@
 # Environmental Impact Analyzer
 
-A working, open-data **process-impact estimator** for apparel and footwear manufacturing and use-phase activities, with an optional v2 worksheet for user-declared product inputs. It reports all 16 EF 3.1 indicators separately, scales published source factors by an entered quantity in the factor's reference unit, and never creates a combined score or sums different process rows.
+A browser-first **process and selected-BOM-input estimator** for apparel and footwear manufacturing and use-phase activities. It preserves each of the 16 EF 3.1 indicators per process row, can subtotal selected rows by indicator, and calculates the EF 3.1 normalised-and-weighted single score for those selected rows.
 
-The worksheet keeps user-entered input labels, quantities, and unit text in browser memory and lets users manually associate an input with a selected process row as context only. It does not calculate from the declared input amount, infer a complete BOM, or turn process rows into whole-product footprints, comparisons, or environmental claims.
+Product-input names, quantities, units, and associations remain in browser memory. Users can confirm word-match suggestions, map a declared quantity as a factor's output or its mass feed, and use supported unit conversions. Mapped-input calculations run locally in the browser; those product-input values and derived quantities are not sent to the API.
 
 ## What is included
 
 - **302 published factor rows** from 11 documented process categories in Carbonfact's pinned v1.1.0 release. The UI presents 12 selectable factor groups because sneaker assembly (per pair) and women's boots assembly (per kg) have different reference units.
 - Filter the catalog by process family and exact source geography. Geography choices preserve published codes and row counts; unstated geography stays explicitly unstated, with no inferred default.
-- **Optional v2 product-input worksheet:** record up to 25 user-declared inputs (name, quantity, free-text unit) locally; manually associate a line with a selected process as context only. Input quantities are not converted or sent to the API; the process quantity remains separately entered in the factor's exact reference unit. Unassociated input lines are exported as not calculated, not zero.
+- **Product-input worksheet:** record up to 25 user-declared lines locally. Word-overlap factor suggestions require user confirmation; the selected input can be treated as process output or as a mass feed where the published factor has an input-required value.
+- **Flat-BOM mass diagnostic:** after confirming that every declared line is a product component for the same functional unit, optionally compare supported input masses with finished-product mass. Adding or removing an input resets that confirmation. The check reports arithmetic differences or unit gaps; it does not validate BOM hierarchy/composition/completeness or calculate impacts for the difference.
+- Supported unit conversion covers common mass units (kg, g, mg, metric tonnes, lb, oz), selected area units, time units, and pair/count units where the dimensions match. Incompatible, unknown, or compound units such as `kg per pair` are rejected rather than silently converted.
+- Source-reported `Input required (kg)` can convert a declared process-feed mass into the factor's reference-unit output quantity. Where the source reference unit is a mass unit, the app also shows the source-derived input/output mass difference. This is a mass diagnostic only; no waste-treatment impact is added.
 - Apparel/textile processes: spinning, knitting, weaving, dyeing, finishing, printing, and textile assembly.
-- Footwear and material processes: sneaker and women's boots assembly, synthetic PU leather, and natural rubber.
-- Use-phase laundry, drying, ironing, and detergent factors where published.
-- Source geography, reference unit, source-reported input requirement, and DQR fields are shown when supplied. The quantity formula is `published impact factor × entered quantity`.
-- A downloadable CSV contains a separate row for each process and indicator, with the source citation, background-data note, and linked CC BY-SA 4.0 result license. When using the v2 worksheet, it adds manual context fields and marks unassociated input lines as not calculated, not zero.
-- No account, database, analytics, or result history. Product-input notes stay in page memory and are not sent to the API; the API handles factor IDs and separately entered reference-unit quantities in memory and disables request access logging.
+- Footwear and material processes: sneaker and women's boots assembly, synthetic PU leather, and natural rubber. Use-phase laundry, drying, ironing, and detergent factors are included where published.
+- The results preserve all process-by-indicator rows, add selected-row indicator subtotals, and show each EF 3.1 normalisation factor, weighting percentage, and weighted contribution. Normalisation values are transcribed from the [JRC EF 3.1 workbook](https://eplca.jrc.ec.europa.eu/permalink/EF3_1/Normalisation_Weighting_Factors_EF_3.1.xlsx); weights are the recommended all-category final factors (including robustness), scaled to 100%, in the [JRC EF weighting report](https://eplca.jrc.ec.europa.eu/permalink/2018_JRC_Weighting_EF.pdf). A downloadable CSV includes process rows, subtotals, single score, source attribution, method provenance, and input-mapping status.
+- No account, database, analytics, or result history. Inputs and mappings stay in page memory and are not sent to the API. For manual process quantities, only factor IDs and explicit reference-unit quantities are sent; mapped calculations use the already-loaded catalog locally. API request-body logging is disabled.
 
 ## Important scope limits
 
-- The worksheet is not an inferred or validated product BOM or life-cycle model. Manual links are context only; the app never maps materials to processes, fills in missing stages, infers composition or geography, propagates mass/losses, sums process rows, or presents a product total.
-- Process reference units, boundaries, and geography vary. Select only the row that matches the intended activity and reference unit. `WORLD`/`GLO` and country-specific factors are distinct source choices, not a claim of complete global representativeness.
-- Source `Input required (kg)` values are displayed as published but are not applied to upstream material burdens or waste-treatment flows.
+- This is **not a complete or validated product BOM or whole-product life-cycle footprint**. The optional flat-BOM arithmetic runs only after the user confirms every declared line is a product component for one functional unit. It does not establish product composition, hierarchy, all required life-cycle stages, transport, distribution, end of life, or source coverage. Text suggestions are not scientifically validated equivalencies. Users must check process boundaries and avoid double-counting.
+- Cross-process totals and the EF 3.1 single score cover only rows the user selected. Missing or unassociated inputs are shown as not calculated, not zero. A score is not a completeness indicator or environmental claim.
+- Process reference units, boundaries, and geography vary. Select only a row that matches the intended activity and reference unit. `WORLD`/`GLO` and country-specific factors are distinct source choices, not a claim of complete global representativeness.
 - EF 3.1 WTU is measured in m³ world-equivalent. It is a water-use impact indicator, not physical water volume in litres.
-- The source says its full Brightway/Activity Browser inventories use ecoinvent 3.12 and are not distributed. Published scores may reflect those modeled background contributions. This app bundles only the published score files and process-family notes; it does not include, query, or reconstruct the underlying inventories.
+- The source says its full Brightway/Activity Browser inventories use ecoinvent 3.12 and are not distributed. Published scores may reflect those modeled background contributions. This app bundles only the published score files and process-family notes; it does not include, query, or reconstruct the underlying inventories. No ecoinvent acquisition or reconstruction is included without lawful access and redistribution rights.
 - The source's top-level documentation says 304 datasets; the rows from its documented families included here total 302. No placeholder or inferred factors are added to make the count match. The source's non-woven folder is excluded because it is listed as forthcoming and its CSV conflicts with its stated two-record summary.
 
 ## Data and licensing
 
-The included source files are pinned to Carbonfact tag `v.1.1.0`, commit `fa063ecac17ab36691a0d5c7326fedaa2e9d4ab8`, released 2026-07-01. Its published scores and included process-family notes are distributed under **CC BY-SA 4.0**. Attribution is shown next to on-screen results; CSV exports include the attribution and license. Dataset-derived results are offered under CC BY-SA 4.0. See [`services/api/data/carbonfact-v1.1.0/SOURCE.md`](services/api/data/carbonfact-v1.1.0/SOURCE.md) and its included `LICENSE`.
+The included source files are pinned to Carbonfact tag `v.1.1.0`, commit `fa063ecac17ab36691a0d5c7326fedaa2e9d4ab8`, released 2026-07-01. Its published scores and included process-family notes are distributed under **CC BY-SA 4.0**. Attribution, the pinned release link, transformation note, and background-data note are available in the app’s Method, source and reuse dialog; CSV exports include provenance and license details. Dataset-derived results are offered under CC BY-SA 4.0. See [`services/api/data/carbonfact-v1.1.0/SOURCE.md`](services/api/data/carbonfact-v1.1.0/SOURCE.md) and its included `LICENSE`.
 
 The root [`LICENSE`](LICENSE) applies the MIT License to original project code and documentation; it does **not** relicense Carbonfact data, dataset-derived results, or other third-party material. No non-open inventory files are bundled. Review [`data-sources.md`](data-sources.md) for the data license boundary.
 
@@ -76,9 +77,9 @@ The standard and Vercel-targeted images pass CI smoke tests. Vercel is the selec
 ## API
 
 - `GET /api/v1/factors` — versioned factor catalog, optionally filtered with `family`, `q`, `offset`, and `limit`.
-- `POST /api/v1/process-estimates` — accepts 1–25 `{factor_id, quantity}` selections and returns each selected process separately with 16 indicators. The optional product-input notes and their manual associations are not part of this API request.
+- `POST /api/v1/process-estimates` — accepts 1–25 `{factor_id, quantity}` selections and returns each selected process separately with 16 indicators. It receives no product-input labels, quantities, units, associations, or browser-derived mapped quantities.
 - `GET /api/v1/sources` — active source, license, attribution, dependencies, and scope.
-- `GET /api/v1/methodology` — formula, privacy behavior, and product-footprint/no-combined-score limits.
+- `GET /api/v1/methodology` — API calculation, browser subtotal/single-score scope, privacy behavior, and completeness limits.
 - `GET /api/docs` — interactive OpenAPI documentation.
 
 Example request:
@@ -94,7 +95,7 @@ Example request:
 }
 ```
 
-`quantity: 0.18` means 0.18 units of the factor's displayed reference unit (`1 kg yarn` in this example). Each indicator returns both the source factor per reference unit and the quantity-scaled result. Process rows are never aggregated.
+`quantity: 0.18` means 0.18 units of the factor's displayed reference unit (`1 kg yarn` in this example). Each indicator returns both the source factor per reference unit and the quantity-scaled result. The API keeps process rows independent; the browser separately summarizes the selected set and computes the EF 3.1 weighted single score.
 
 ## Checks
 

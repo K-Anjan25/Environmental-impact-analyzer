@@ -72,18 +72,20 @@ ACTIVE_SOURCES: tuple[DataSourceRecord, ...] = (
         license_status="applied",
         method_basis=(
             "The published process-level impact scores use EF 3.1 characterization across "
-            "16 indicators. This application scales each source value by the quantity entered "
-            "for the same source reference unit; it does not calculate or approve a product LCA."
+            "16 indicators. This application scales each source value by a process reference-unit "
+            "quantity; the browser can sum selected rows and compute an EF 3.1 single score, "
+            "but does not validate or complete a product LCA."
         ),
         use_terms_summary=(
             "The pinned v1.1.0 source release identifies its published scores and documented "
-            "foreground parameters as CC BY-SA 4.0. Source attribution is displayed on the "
-            "calculation screen. Dataset-derived calculation outputs are offered under CC BY-SA "
-            "4.0, and the source license notice is included with the data files."
+            "foreground parameters as CC BY-SA 4.0. Source attribution is available in the "
+            "Method, source and reuse dialog and in CSV exports. Dataset-derived calculation "
+            "outputs are offered under CC BY-SA 4.0, and the source license notice is included "
+            "with the data files."
         ),
         attribution_text=ATTRIBUTION,
         attribution_links=[
-            DataSourceLink(label="Pinned source repository", url=SOURCE_URL),
+            DataSourceLink(label="Pinned source release", url=SOURCE_URL),
             DataSourceLink(
                 label="Zenodo release record", url="https://zenodo.org/records/21102756"
             ),
@@ -98,7 +100,8 @@ ACTIVE_SOURCES: tuple[DataSourceRecord, ...] = (
         scope_summary=(
             "302 published score rows loaded from 11 documented process families in the pinned "
             "v1.1.0 release: material production, textile manufacturing, garment and footwear "
-            "assembly, and use phase. Each selected process is reported separately."
+            "assembly, and use phase. The browser retains separate rows and can provide a subtotal "
+            "for the user-selected set."
         ),
         factor_count=302,
         family_count=11,
@@ -121,10 +124,10 @@ ACTIVE_SOURCES: tuple[DataSourceRecord, ...] = (
             "WTU — Water use (m³ world-equivalent; not physical water volume)",
         ],
         limitations=[
-            "Results apply only to the selected published process factor and entered reference-unit quantity; selected rows are not added into a product total.",
+            "The browser can add only the process rows the user selected. The subtotal does not establish product completeness and may double-count overlapping process boundaries.",
             "This is not a full product footprint or a substitute for a product-specific life-cycle assessment. Product composition, unselected stages, distribution, and end of life are not inferred.",
-            "Process reference units, modeled boundaries, and geography differ by source dataset. Select the factor that matches the intended process; no country or material route is inferred.",
-            "The source-reported Input required (kg) parameter is displayed but not used to add upstream material burdens or waste-treatment flows.",
+            "Process reference units, modeled boundaries, and geography differ by source dataset. The user selects factors; no country, material route, or composition is automatically inferred.",
+            "Source-reported Input required (kg) values can support a user-selected feed-to-output conversion and a mass-difference diagnostic. Waste-treatment impacts and new upstream factors are not added by that diagnostic.",
             "WTU is an EF 3.1 water-use impact indicator in m³ world-equivalent; it is not litres or a direct water-volume measurement.",
             "Use-phase records describe representative European consumer behavior even where a descriptor carries a GLO tag.",
             "The source's top-level documentation says 304 datasets; the included rows from the documented v1.1.0 families total 302. The non-woven folder is excluded because it is marked forthcoming and its CSV does not match its stated two-dataset summary.",

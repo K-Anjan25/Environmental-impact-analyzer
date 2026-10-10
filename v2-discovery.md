@@ -1,42 +1,39 @@
-# v2 discovery — declared product inputs, separate process results
+# v2 expanded product-input worksheet
 
-**Status:** the first input-organization increment is implemented; this is not a v2 release or a full product LCA. A preliminary open-data/licensing screen is recorded in [v2-source-audit.md](v2-source-audit.md); no new factor source is cleared for integration.
+**Authorization:** the user explicitly expanded v2 to include mapped inputs, unit conversion, mass/yield diagnostics, selected-process totals, and a combined score. This supersedes the earlier prohibition on those prototype features. It does not supply new licensed inventory files, establish full product coverage, or authorize use of proprietary data without the relevant rights.
 
-## Intended use case
+**Status:** browser-local, user-confirmed factor mapping, a flat-BOM mass diagnostic, selected-row subtotals, and the EF 3.1 single score are implemented. This is not a full product LCA or a v2 completeness claim. The existing Carbonfact v1.1.0 published scores remain the only bundled process-factor data; the source audit has not cleared another factor dataset.
 
-An apparel or footwear practitioner already has some component or activity quantities and wants to keep those declarations visible while separately inspecting published process factors. The app lets the user label an input and optionally associate it with a manually selected process row. It does not determine whether that association is scientifically or operationally appropriate.
+## Implemented behavior
 
-## Input contract
+- Up to 25 flat user-declared lines with name, positive quantity, and free-text unit. The input form stays visually clean; scope and privacy disclosures remain in the separate Method, source and reuse dialog.
+- Factor suggestions are generated from overlapping words in the input name and published activity names. A user must confirm a suggestion; the word match is not evidence of material/process equivalence.
+- A selected input can be used as process output with supported same-dimension unit conversion, or as process feed where the chosen factor has a positive source-reported `Input required (kg)` value. Feed mass in kg is divided by that source coefficient to obtain the factor's output reference-unit quantity.
+- Supported conversions include common mass units (kg, g, mg, metric tonnes, lb, oz), selected area units, time units, and pair/count units. Unknown, compound, or cross-dimension conversions are rejected. The mapping must be reviewed by the user; a matching physical unit does not prove matching material identity.
+- An optional flat-BOM mass diagnostic runs only after the user confirms every declared line is a product component for the same functional unit. It sums only declared inputs whose units can be converted to mass and compares the sum with user-entered finished-product mass. Adding/removing an input resets confirmation. It reports the arithmetic difference, flags unconvertible lines, and does not infer components or validate a complete BOM.
+- Source-reported input requirements are scaled to the selected quantity. Where the factor output reference unit is mass, the browser displays a source-derived input/output mass difference. It is a mass diagnostic only: no waste-treatment impact or disposal scenario is added.
+- Each process row still shows its 16 indicators separately. The browser adds indicator subtotals for the selected rows and an EF 3.1 single score where all 16 categories and units are compatible.
+- The single score is `sum((selected-row indicator total / JRC global normalisation factor) × (JRC EF weighting percentage / 100))`. Normalisation values are transcribed from the official EF 3.1 workbook and reported to three significant figures; the recommended all-category final weighting factors including robustness follow the JRC EF weighting report and sum to 100%. Each normalised value, weighting percentage, and weighted contribution is shown and exported with both source links.
+- CSV exports include separate process-indicator rows, selected-row totals, score/method provenance, and unmapped inputs marked not calculated, not zero.
 
-- Up to 25 user-declared input lines, each with a user-entered name, positive finite quantity, and free-text unit label.
-- Input descriptions, amounts, and units remain in browser page memory. They are not sent to the API and are cleared on reload or page close.
-- A user may manually associate an input line with a selected factor. No link is created by default and no material, process, or geography is inferred.
-- Keep the input area visually clean: show concise field labels and direct controls, with no implementation descriptions or explanatory paragraphs beneath or around the input fields. Keep required scope/privacy disclosures in the separate Method, source and reuse dialog or documentation.
-- The process-factor quantity remains a separate, explicit value entered in the selected source factor's exact reference unit. An associated input quantity is context only: it is not copied, converted, propagated, or used in the calculation.
-- The API contract remains `factor_id` plus process reference-unit `quantity`; it does not receive product-input labels, quantities, units, or association IDs.
+## Input and privacy contract
 
-## Results and export
+- Product-input names, quantities, unit labels, association IDs, suggestion choices, and quantities derived from those inputs stay in browser page memory and are not sent to the API.
+- Mapped calculations use the already-loaded static factor catalog in the browser. The process-estimate POST endpoint is used only for manually entered process reference-unit quantities; it receives factor IDs and those manually entered quantities, never product-input fields or derived mapped quantities.
+- Inputs are cleared on reload or page close. A user-initiated CSV may contain the declared values.
+- Keep the input area concise. Do not place implementation descriptions beneath input fields.
 
-- Each selected factor still returns 16 separate indicator values. Different process rows are never summed.
-- The UI displays a linked input label and amount; the Method, source and reuse dialog documents that associations are context only. CSV identifies links as user-selected context only.
-- CSV includes unassociated declared input lines as `declared_input_not_calculated` records with blank indicator/result fields and an explicit `not calculated and not zero` status. Such lines are not treated as zero-impact results.
-- The generated CSV is a user-initiated download. It may contain the input labels, quantities, and unit text entered in the page.
+## Coverage and method limitations
 
-## Boundaries
+- The worksheet is flat, not hierarchical. It does not validate product composition, BOM completeness, allocation, system boundaries, or required life-cycle stages. A score/subtotal includes exactly the selected rows; it does not show coverage and is not a complete product footprint, comparison, ranking, or environmental claim.
+- Users must check overlap between process boundaries and repeated input mappings; adding upstream and downstream scores can double count source-included burdens.
+- Text suggestions require explicit user selection and do not infer composition, geography, supplier, or a validated factor mapping. Automatic stage completion is not implemented.
+- `Input required (kg)` is used only as a source-reported mass coefficient for an explicitly selected mapping and as a mass diagnostic; it does not add an upstream factor. Waste-treatment factors and end-of-life scenarios are unavailable and not modelled.
+- No new LCI/LCIA process factors are bundled. The USDA field-crop version-2 archive is a possible open foreground-LCI lead, but its complete provider graph and compatible open characterization method remain unaudited; the separate ecoinvent-linked crosswalk remains excluded. See [v2-source-audit.md](v2-source-audit.md).
+- Ecoinvent acquisition, reconstruction, querying, and redistribution are not implemented. No license evidence or authorized ecoinvent package is present. Do not obtain or recreate the proprietary inventory without lawful access and terms that permit the proposed processing and redistribution. Carbonfact's published score files are retained under their own source license and may reflect ecoinvent-based background contributions; their underlying inventory is not included or reconstructed here.
 
-- This worksheet is not an inferred or validated bill of materials, product footprint, or product life-cycle model.
-- No automatic factor matching, composition parsing, unit conversion, reference-unit mapping, loss-rate calculation, stage linking, upstream input propagation, waste treatment, coverage percentage, cross-process total, or combined environmental score is implemented.
-- Source-reported `Input required (kg)` remains display-only. Missing or unassociated inputs stay explicit and are never assigned a zero impact.
-- The worksheet uses no new source data. The existing Carbonfact v1.1.0 release remains the only bundled source; its published impact scores retain their separate CC BY-SA 4.0 attribution and result-license requirements. Do not add or query ecoinvent or another non-open inventory.
-- Do not enter confidential business information, supplier secrets, or personal data. The service has no persistent input store.
+## Tests and next gates
 
-## Validation
+Web tests cover unit conversion, input-feed conversion, material-mass diagnostics, the EF 3.1 score formula, compatible cross-process totals, mixed-unit rejection, text suggestions, local-only mapped calculations, export provenance, and accessibility. API tests verify the independent process-row contract and source metadata.
 
-The web tests verify that the input area stays concise, a manually associated declared input stays out of the API request, its quantity does not replace the process quantity, the UI remains axe-clean, and the CSV distinguishes unassociated inputs from calculated indicator rows without assigning numeric results.
-
-## Next v2 gates
-
-1. **Open-data/licensing audit (in progress):** a preliminary screen is recorded in [v2-source-audit.md](v2-source-audit.md). The USDA LCA Commons field-crop version-2 archive is a possible open LCI lead, but its complete provider graph and compatible open characterization method have not been cleared; its separate ecoinvent crosswalk is excluded. No new factor data is integrated.
-2. Define an explicit mapping rule only for factors whose boundary and unit genuinely match a user-declared process output. Do not assume an input mass equals a process output or material loss-adjusted mass.
-3. Add unit conversion, mass-balance, loss, or waste-treatment behavior only after the required openly licensed factors and transparent method are available and tested.
-4. Keep unsupported or unmapped stages unavailable and visible; preserve separate process-by-indicator outputs unless a new product-scope authorization and defensible open-data method explicitly change the boundary.
+Remaining gates for a defensible complete product footprint are: define a product functional unit and stage boundary; validate a hierarchical BOM and component mass balance against a declared finished output; audit and integrate suitable openly licensed upstream, transport, waste-treatment, and end-of-life factors; verify provider/dependency graphs and units; add coverage rules and non-overlap checks; and independently validate the release in the authenticated Vercel Preview. A licensed ecoinvent package could be considered only after the exact license explicitly permits the intended processing and redistribution; no credentials or private license documents should be placed in chat or Git.

@@ -47,6 +47,9 @@ export interface FactorCatalog {
   source_url: string;
   license_name: string;
   attribution_text: string;
+  license_url: string;
+  result_license: string;
+  background_database_note: string;
   total_records: number;
   offset: number;
   limit: number;

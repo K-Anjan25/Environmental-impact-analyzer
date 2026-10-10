@@ -12,8 +12,10 @@ Thanks for helping improve the Environmental Impact Analyzer. Contributions must
 
 - Use only version-pinned, openly licensed data with documented attribution, provenance, and reuse terms. Include the actual source license and a source record for every new dataset.
 - Do not download, bundle, query, infer, or reconstruct ecoinvent or another non-open inventory. Do not imply that a published score makes its underlying inventory open.
-- Keep each selected process result and each impact indicator separate. Do not add cross-stage totals, complete product footprints, rankings, product comparisons, default assumptions, or a combined score.
-- Respect source reference units, geography, process boundaries, and reported data-quality metadata. Never silently convert units, impute missing stages, apply `Input required (kg)` as an upstream burden, or invent factors.
+- Keep every selected process result and impact indicator visible separately. The supported selected-row subtotal and EF 3.1 single score are not complete-product results, coverage measures, rankings, or product comparisons. Do not add a complete-product claim without a defined boundary, validated BOM/coverage, non-overlapping factors, and cleared licenses.
+- Respect source reference units, geography, process boundaries, and reported data-quality metadata. Supported unit conversions must be explicit and dimension-safe; reject ambiguous compound units, do not infer product composition or silently impute missing stages, and do not invent factors.
+- Treat the flat-BOM mass check as arithmetic diagnostics only, and run it only after explicit confirmation that every declared line is a product component for the same functional unit. Do not turn a mass difference into waste-treatment impacts without a suitable, licensed, method-compatible factor and documented boundary.
+- Keep user-entered product inputs, finished-product mass, mappings, and derived quantities in browser memory and out of API requests unless the privacy contract is explicitly reviewed and changed.
 - Preserve attribution, the dataset's CC BY-SA 4.0 terms for source-derived material and results, and the distinction between that data license and the project's MIT-licensed code/docs.
 - Keep the service stateless. Do not add user accounts, analytics, persistent estimate history, request-body logging, or collection of personal information without an explicit product and privacy review.
 

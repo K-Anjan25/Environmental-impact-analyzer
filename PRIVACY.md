@@ -15,15 +15,15 @@ Before a public Production deployment, the operator must confirm this is the cor
 
 ## What the application does
 
-The application lets a visitor select published apparel and footwear process factors, enter quantities in each factor's reference unit, and calculate separate process and indicator results. An optional v2 worksheet lets a visitor record input/component labels, amounts, and unit text and manually associate an input with a process row as context only. It does not create user accounts or save an assessment history, and it does not ask for a visitor's name or email address.
+The application lets a visitor select published apparel and footwear process factors, enter quantities in each factor's reference unit, and calculate separate process and indicator results. The browser can also subtotal selected rows and calculate an EF 3.1 single score for that selected set; neither establishes a complete product footprint. An optional worksheet records product-input labels, amounts, and unit text in page memory. A visitor may explicitly map an input to a factor as process output or mass feed. A flat-BOM arithmetic diagnostic compares declared component masses with finished-product mass only after the visitor confirms every declared line is a product component for the same functional unit. Product-input mapping and the mass check run locally in the browser. The worksheet does not create user accounts or save an assessment history, and it does not ask for a visitor's name or email address.
 
 ## Information processed
 
 ### Calculation inputs
 
-When a visitor requests an estimate, the browser sends selected factor IDs and numeric quantities in the factors' exact reference units to the same-origin API. Factor-catalog requests may include a process-family or search query when those API options are used. The API uses the request to calculate and return the requested results in memory. It does not receive the optional product-input labels, quantities, unit text, or manual associations; those stay in browser page memory and are cleared when the page is reloaded or closed. The application does not intentionally write inputs or results to a database, file, account, or assessment history.
+For rows with manually entered reference-unit quantities, the browser sends selected factor IDs and those numeric quantities to the same-origin calculation API. If a declared product input is used to derive a process quantity, the browser uses the already-loaded factor catalog to perform the conversion and calculation locally; that mapped calculation does not call the estimate API. Factor-catalog requests may include a process-family or search query when those API options are used. The API does not receive product-input labels, quantities, unit text, finished-product mass, associations, or browser-derived mapped quantities. Those values stay in browser page memory and are cleared when the page is reloaded or closed. The application does not intentionally write inputs or results to a database, file, account, or assessment history.
 
-If the visitor downloads a CSV, the file can include the declared input labels, amounts, unit text, manual associations, and records for unassociated inputs. The visitor controls where that downloaded file is saved and shared.
+The optional flat-BOM mass diagnostic compares supported user-declared component masses with a user-entered finished-product mass entirely in the browser, and runs only after the visitor confirms every declared line is a product component for one functional unit; it does not send those values to the API. If the visitor downloads a CSV, the file can include the declared input labels, amounts, unit text, finished-product mass, associations, calculation outputs, and records for unassociated inputs. The visitor controls where that downloaded file is saved and shared.
 
 Do not enter personal information, confidential business information, supplier secrets, or other sensitive data. The calculator is not designed to receive it.
 
@@ -37,7 +37,7 @@ Vercel Preview protection, if enabled, may use Vercel-managed authentication or 
 
 ## Purposes and sharing
 
-The browser sends only the selected factor IDs and their separately entered reference-unit quantities to the Vercel-hosted API to return the requested calculation. Optional product-input notes and associations remain in browser memory unless the visitor chooses to include them in a downloaded CSV. Hosting and network providers handle API requests to provide the service and may process technical information for delivery, reliability, abuse prevention, and security under their own terms. The application source does not send inputs to advertising or analytics services. The project does not sell personal information or use it for advertising.
+For manually entered process quantities, the browser sends factor IDs and reference-unit quantities to the Vercel-hosted API. Mapped calculations and the optional BOM mass diagnostic use browser-held values locally. Optional product-input notes, finished-product mass, and associations remain in browser memory unless the visitor chooses to include them in a downloaded CSV. Hosting and network providers handle API requests to provide the service and may process technical information for delivery, reliability, abuse prevention, and security under their own terms. The application source does not send inputs to advertising or analytics services. The project does not sell personal information or use it for advertising.
 
 ## Storage, retention, and location
 

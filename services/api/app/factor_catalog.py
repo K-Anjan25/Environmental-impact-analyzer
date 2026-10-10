@@ -384,6 +384,9 @@ def query_factors(
         source_url=SOURCE_URL,
         license_name=SOURCE_LICENSE,
         attribution_text=ATTRIBUTION,
+        license_url=LICENSE_URL,
+        result_license=RESULT_LICENSE,
+        background_database_note=BACKGROUND_DATABASE_NOTE,
         total_records=len(matches),
         offset=offset,
         limit=limit,
@@ -433,8 +436,8 @@ def build_process_estimate(request: ProcessEstimateRequest) -> ProcessEstimateRe
         status="calculated",
         methodology_version=METHODOLOGY_VERSION,
         scope=(
-            "Each selected process factor is scaled independently by its entered quantity. "
-            "Results are not summed across process rows and are not a complete product footprint."
+            "The API scales each selected factor independently and returns separate process rows. "
+            "The browser may summarize selected rows, but no complete product boundary is established."
         ),
         aggregation="none",
         source_id=SOURCE_ID,

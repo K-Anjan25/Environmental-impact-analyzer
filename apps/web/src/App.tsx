@@ -3,6 +3,7 @@ import {
   Alert,
   Autocomplete,
   Button,
+  Checkbox,
   Chip,
   CircularProgress,
   Dialog,
@@ -11,6 +12,7 @@ import {
   DialogTitle,
   Divider,
   FormControl,
+  FormControlLabel,
   IconButton,
   InputLabel,
   MenuItem,
@@ -28,12 +30,16 @@ import {
   Typography,
 } from '@mui/material';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import ArrowDownwardRoundedIcon from '@mui/icons-material/ArrowDownwardRounded';
 import CalculateOutlinedIcon from '@mui/icons-material/CalculateOutlined';
+import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
-import ForestOutlinedIcon from '@mui/icons-material/ForestOutlined';
+import FactoryOutlinedIcon from '@mui/icons-material/FactoryOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import QueryStatsOutlinedIcon from '@mui/icons-material/QueryStatsOutlined';
 import OpenInNewOutlinedIcon from '@mui/icons-material/OpenInNewOutlined';
 import ScienceOutlinedIcon from '@mui/icons-material/ScienceOutlined';
 import {
@@ -47,7 +53,18 @@ import {
   type ProcessFactor,
 } from './api';
 import { formatProcessEstimatesCsv, downloadProcessEstimatesCsv } from './export';
-import { LandscapeScene } from './LandscapeArt';
+import { EF31_SINGLE_SCORE_SOURCE, EF31_WEIGHTING_SOURCE } from './ef31-score';
+import { calculateFromCatalog } from './local-estimates';
+import {
+  assessFlatBomMass,
+  describeBomMassStatus,
+  reviewProductInputUse,
+  type BomMassAssessment,
+  type ProductInputUseReview,
+} from './product-bom';
+import { deriveProcessQuantity, type ProcessQuantityBasis } from './product-quantity';
+import { summarizeSelectedProcesses, type SelectedProcessSummary } from './product-summary';
+import { suggestFactorsByInputName } from './factor-suggestions';
 
 type ProductInput = {
   id: string;
@@ -61,6 +78,7 @@ type SelectedProcess = {
   factor: ProcessFactor;
   quantity: string;
   productInputId: string | null;
+  quantityBasis: ProcessQuantityBasis;
 };
 
 const MAX_PROCESS_LINES = 25;
@@ -83,27 +101,17 @@ function factorLabel(factor: ProcessFactor): string {
   return `${factor.activity} · ${geographyFor(factor)} · ${factor.reference_unit}`;
 }
 
-function dqrEntries(line: ProcessEstimateLine): Array<[string, number]> {
-  if (!line.data_quality) return [];
-  const entries: Array<[string, number | null]> = [
-    ['Precision', line.data_quality.precision],
-    ['Time representativeness', line.data_quality.temporal_representativeness],
-    ['Technology representativeness', line.data_quality.technological_representativeness],
-    ['Geographical representativeness', line.data_quality.geographical_representativeness],
-  ];
-  return entries.filter((entry): entry is [string, number] => typeof entry[1] === 'number');
-}
-
 function ProcessResult({
   line,
   index,
   productInput,
+  quantityBasisLabel,
 }: {
   line: ProcessEstimateLine;
   index: number;
   productInput: ProductInput | null;
+  quantityBasisLabel: string;
 }) {
-  const scores = dqrEntries(line);
   const water = line.indicators.find((item) => item.code === 'WTU');
   const headingId = `result-${index}-${line.factor_id}`;
 
@@ -121,11 +129,10 @@ function ProcessResult({
           </div>
           {productInput && (
             <p className="product-input-result-context">
-              <strong>Input:</strong> {productInput.name} · {productInput.quantity} {productInput.unit}
+              <strong>Input mapping:</strong> {productInput.name} · {productInput.quantity} {productInput.unit} · {quantityBasisLabel}
             </p>
           )}
         </div>
-        <Chip size="small" label="Separate process result" className="separate-chip" />
       </div>
 
       <TableContainer className="indicator-table-wrap">
@@ -163,29 +170,193 @@ function ProcessResult({
         </Table>
       </TableContainer>
 
-      <div className="process-result-details">
-        {line.input_required_kg_per_reference_unit !== null && (
-          <p>
-            <strong>Source-reported input required:</strong>{' '}
-            {numberForDisplay(line.input_required_kg_per_reference_unit)} kg per reference unit. This source parameter is shown as published; no separate upstream-material or waste-treatment calculation is applied.
-          </p>
-        )}
-        <details>
-          <summary>Data quality and source row</summary>
-          {scores.length > 0 ? (
-            <dl className="dqr-list">
-              {scores.map(([label, value]) => (
-                <div key={label}><dt>{label}</dt><dd>{numberForDisplay(value)}</dd></div>
-              ))}
-            </dl>
-          ) : (
-            <p>No data-quality ratings were published for this factor.</p>
-          )}
-          <p className="source-row-id">Source row: <code>{line.factor_id}</code></p>
-          <p className="source-row-id">Bundled file: <code>{line.source_file}</code></p>
-        </details>
-      </div>
     </article>
+  );
+}
+
+function BomMassAssessmentCard({ assessment }: { assessment: BomMassAssessment }) {
+  if (assessment.status === 'scope-not-confirmed' || assessment.status === 'missing-product-mass') return null;
+  const severity = assessment.status === 'balanced' ? 'success' : 'warning';
+
+  return (
+    <section className="bom-mass-assessment" aria-labelledby="bom-mass-assessment-heading">
+      <Typography id="bom-mass-assessment-heading" component="h4" className="dialog-section-title">
+        Flat BOM mass diagnostic
+      </Typography>
+      <dl className="bom-mass-values">
+        <div><dt>Declared input mass</dt><dd>{assessment.declaredInputMassKg === null ? 'Incomplete' : `${numberForDisplay(assessment.declaredInputMassKg)} kg`}</dd></div>
+        <div><dt>Finished product mass</dt><dd>{assessment.finishedProductMassKg === null ? 'Not available' : `${numberForDisplay(assessment.finishedProductMassKg)} kg`}</dd></div>
+        <div><dt>Mass difference (output − inputs)</dt><dd>{assessment.differenceKg === null ? 'Not available' : `${numberForDisplay(assessment.differenceKg)} kg`}</dd></div>
+        <div><dt>Declared mass share</dt><dd>{assessment.massCoveragePercent === null ? 'Not available' : `${numberForDisplay(assessment.massCoveragePercent)}%`}</dd></div>
+      </dl>
+      <Alert severity={severity} className="bom-mass-status">{describeBomMassStatus(assessment)}</Alert>
+      {assessment.unconvertibleInputNames.length > 0 && (
+        <p className="bom-unconvertible-inputs">Mass not assessed for: {assessment.unconvertibleInputNames.join(', ')}.</p>
+      )}
+    </section>
+  );
+}
+
+function ProductInputUseCard({ review }: { review: ProductInputUseReview }) {
+  if (review.inputs.length === 0) return null;
+  const notCalculated = review.inputs.filter((input) => input.status !== 'calculated-locally');
+
+  return (
+    <section className="product-input-use-review" aria-labelledby="product-input-use-heading">
+      <Typography id="product-input-use-heading" component="h4" className="dialog-section-title">
+        Declared-input use
+      </Typography>
+      <p className="input-use-counts">
+        {review.locallyCalculatedCount} mapped locally · {review.contextOnlyCount} context-only · {review.notInSelectedRowsCount} not linked
+      </p>
+      {notCalculated.length > 0 && (
+        <Alert severity="warning" className="input-use-warning">
+          Not calculated (not zero): {notCalculated.map((input) => input.name).join(', ')}.
+        </Alert>
+      )}
+      {review.repeatedLocalMappings.length > 0 && (
+        <Alert severity="warning" className="input-use-warning">
+          Reused across multiple process rows: {review.repeatedLocalMappings.join(', ')}. Review for overlapping boundaries.
+        </Alert>
+      )}
+    </section>
+  );
+}
+
+function SelectedProcessSummaryCard({
+  summary,
+  inputUseReview,
+  bomMassAssessment,
+}: {
+  summary: SelectedProcessSummary;
+  inputUseReview: ProductInputUseReview;
+  bomMassAssessment: BomMassAssessment;
+}) {
+  return (
+    <section className="selected-process-summary" aria-labelledby="selected-process-summary-heading">
+      <div className="selected-process-summary-heading">
+        <div>
+          <div className="result-overline">CROSS-PROCESS SUBTOTAL</div>
+          <Typography id="selected-process-summary-heading" component="h3" className="process-result-title">
+            Selected-process total
+          </Typography>
+          <p className="summary-scope-copy">
+            {summary.processCount} selected rows; not a complete product footprint.
+          </p>
+        </div>
+        {summary.singleScore ? (
+          <div className="ef-score-card" aria-label="EF 3.1 single score">
+            <span>EF 3.1 single score</span>
+            <strong>{numberForDisplay(summary.singleScore.value)}</strong>
+            <small>weighted points</small>
+          </div>
+        ) : (
+          <Alert severity="warning" className="score-unavailable">
+            The EF 3.1 score is unavailable until all 16 indicators have compatible units.
+          </Alert>
+        )}
+      </div>
+      {summary.errors.length > 0 && (
+        <Alert severity="warning" className="summary-data-warning">
+          {summary.errors.join(' ')}
+        </Alert>
+      )}
+      <ProductInputUseCard review={inputUseReview} />
+      <BomMassAssessmentCard assessment={bomMassAssessment} />
+      <TableContainer className="indicator-table-wrap summary-table-wrap">
+        <Table size="small" aria-label="Selected-process indicator totals and EF 3.1 score contributions">
+          <TableHead>
+            <TableRow>
+              <TableCell>Indicator</TableCell>
+              <TableCell align="right">Selected-row total</TableCell>
+              <TableCell align="right">Normalised</TableCell>
+              <TableCell align="right">Weight</TableCell>
+              <TableCell align="right">Weighted contribution</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {summary.indicators.map((indicator) => (
+              <TableRow key={indicator.code}>
+                <TableCell>
+                  <strong className="indicator-code">{indicator.code}</strong>
+                  <span className="indicator-name">{indicator.name}</span>
+                </TableCell>
+                <TableCell align="right">
+                  <span className="numeric-value">{indicator.value === null ? 'Not comparable' : numberForDisplay(indicator.value)}</span>
+                  <span className="unit-note">{indicator.unit}</span>
+                </TableCell>
+                <TableCell align="right">
+                  <span className="numeric-value">
+                    {indicator.normalisedValue === null ? '—' : numberForDisplay(indicator.normalisedValue)}
+                  </span>
+                  {indicator.normalisationFactor !== null && indicator.normalisationUnit && (
+                    <span className="unit-note">NF {numberForDisplay(indicator.normalisationFactor)} {indicator.normalisationUnit}</span>
+                  )}
+                </TableCell>
+                <TableCell align="right" className="numeric-value">
+                  {indicator.weightPercent === null ? '—' : `${numberForDisplay(indicator.weightPercent)}%`}
+                </TableCell>
+                <TableCell align="right" className="numeric-value">
+                  {indicator.weightedContribution === null ? '—' : numberForDisplay(indicator.weightedContribution)}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </section>
+  );
+}
+
+function FactorSuggestionDialog({
+  open,
+  input,
+  suggestions,
+  selectedFactorIds,
+  onClose,
+  onSelect,
+}: {
+  open: boolean;
+  input: ProductInput | null;
+  suggestions: ReturnType<typeof suggestFactorsByInputName>;
+  selectedFactorIds: Set<string>;
+  onClose: () => void;
+  onSelect: (factor: ProcessFactor) => void;
+}) {
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth aria-labelledby="factor-suggestion-title">
+      <DialogTitle id="factor-suggestion-title" className="dialog-title">Match a process factor</DialogTitle>
+      <DialogContent dividers className="source-dialog-content">
+        <Typography variant="body2" className="suggestion-dialog-note">
+          Text matches only — confirm the process, geography, and reference unit before using a suggestion.
+        </Typography>
+        {input && <p className="suggestion-input-label"><strong>Input:</strong> {input.name}</p>}
+        {suggestions.length > 0 ? (
+          <Stack spacing={1}>
+            {suggestions.map(({ factor, sharedTerms }) => (
+              <div className="factor-suggestion-card" key={factor.id}>
+                <div>
+                  <strong>{factor.activity}</strong>
+                  <span>{factor.family_label} · {geographyFor(factor)} · {factor.reference_unit}</span>
+                  <small>{sharedTerms} shared name term{sharedTerms === 1 ? '' : 's'}</small>
+                </div>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={selectedFactorIds.has(factor.id)}
+                  onClick={() => onSelect(factor)}
+                >
+                  Use as output
+                </Button>
+              </div>
+            ))}
+          </Stack>
+        ) : (
+          <Alert severity="info">No strong name matches. Search the factor catalog manually.</Alert>
+        )}
+      </DialogContent>
+      <DialogActions><Button onClick={onClose} variant="contained">Close</Button></DialogActions>
+    </Dialog>
   );
 }
 
@@ -233,13 +404,25 @@ function SourceDialog({
           <section>
             <Typography component="h3" className="dialog-section-title">Implemented calculation</Typography>
             <Typography variant="body2">
-              For each selected activity and each of its 16 indicators, the app multiplies the published factor by the quantity you enter in that factor’s own reference unit. The optional product-input worksheet is user-declared context only: a manual association does not set or convert the process quantity. Every process row stays separate. No cross-stage sum, composite score, ranking, or complete product footprint is calculated.
+              Each published process factor is scaled by its own reference-unit quantity, and the 16 midpoint indicators remain visible separately for every process row. The browser can map a user-declared input to a process as either its output quantity or its mass feed; supported unit conversions are explicit, and mass-feed conversion uses the source-reported Input required (kg) value. The browser also sums selected rows by indicator and calculates an EF 3.1 single score from the JRC normalisation and weighting factors. These are selected-row subtotals, not a complete product footprint or ranking.
             </Typography>
           </section>
           <section>
-            <Typography component="h3" className="dialog-section-title">Data boundary</Typography>
+            <Typography component="h3" className="dialog-section-title">EF 3.1 single-score method</Typography>
             <Typography variant="body2">
-              Factor reference units, modeled boundaries, and geographies vary by source row. The source’s Input required (kg) value is displayed when present, but this app does not apply upstream material factors or add waste treatment. The source publishes WTU in m³ world-equivalent; it is an impact indicator, not litres of physical water. Use-phase records describe representative European consumer behavior. Declared inputs and manual associations are not matched, unit-converted, or included in calculations; an unassociated input is exported as not calculated, not zero.
+              For each of the 16 EF midpoint categories, the browser divides the selected-row indicator total by the JRC global normalisation factor, multiplies by its EF weighting percentage as a fraction, and sums the weighted categories. This uses the JRC report's recommended final weights including robustness, scaled to 100% for all 16 categories; the report also gives an alternative set excluding three toxicity categories. Weighting reflects value choices, so inspect the separate indicator results alongside the selected-row score. Normalisation factors are reported to three significant figures. The results table shows each normalised value, weighting percentage, and contribution.
+            </Typography>
+            <p className="source-attribution-copy">
+              Method sources: the European Commission Joint Research Centre EF 3.1 Normalisation and Weighting Factors workbook, its EF weighting report, and its 2023 guide describing a 16-category single weighted score.{' '}
+              <a href={EF31_SINGLE_SCORE_SOURCE} target="_blank" rel="noreferrer">Open normalisation workbook <OpenInNewOutlinedIcon fontSize="inherit" /></a>{' · '}
+              <a href={EF31_WEIGHTING_SOURCE} target="_blank" rel="noreferrer">Open weighting report <OpenInNewOutlinedIcon fontSize="inherit" /></a>{' · '}
+              <a href="https://eplca.jrc.ec.europa.eu/uploads/JRC132621_MS_guide.pdf" target="_blank" rel="noreferrer">Open JRC single-score guide <OpenInNewOutlinedIcon fontSize="inherit" /></a>
+            </p>
+          </section>
+          <section>
+            <Typography component="h3" className="dialog-section-title">Data boundary and limits</Typography>
+            <Typography variant="body2">
+              Product inputs are a flat, user-declared worksheet. The optional BOM mass check runs only after you confirm that every declared line is a product component for the same functional unit; it compares supported input masses with your finished-product mass and cannot validate a hierarchy, composition, or completeness. Factor suggestions compare words in the input name with activity names; they require user confirmation and do not validate supplier/material equivalence or process boundaries. Composition inference, allocation, and automatic stage completion are not performed. A source-reported input/output mass difference may be shown; it is not a waste-treatment inventory, and no waste-treatment impact is added. The bundled factors contain no transport/distribution or waste-treatment/end-of-life records and do not cover all raw materials or product-specific stages. Do not sum overlapping or incompatible process boundaries. Missing or unmapped inputs are not zero. Factor reference units, modeled boundaries, and geographies vary by row. Use-phase records describe representative European consumer behavior. WTU is an EF 3.1 water-use impact indicator in m³ world-equivalent, not physical litres. The bundled source’s full ecoinvent-based background inventories are not included or reconstructed.
             </Typography>
           </section>
           {loading && <CircularProgress size={22} aria-label="Loading source details" />}
@@ -248,7 +431,7 @@ function SourceDialog({
             <section key={source.id} className="source-dialog-card">
               <Typography component="h3" className="dialog-section-title">{source.name} · v{source.version}</Typography>
               <Typography variant="body2">{source.scope_summary}</Typography>
-              <p className="same-screen-attribution">{source.attribution_text}</p>
+              <p className="source-attribution-copy">{source.attribution_text}</p>
               <div className="source-dialog-links">
                 {source.attribution_links.map((link) => (
                   <a key={link.url} href={link.url} target="_blank" rel="noreferrer">
@@ -266,7 +449,7 @@ function SourceDialog({
           <section>
             <Typography component="h3" className="dialog-section-title">Privacy</Typography>
             <Typography variant="body2">
-              The app has no user accounts, analytics, database, or calculation history. Optional product-input notes and manual associations stay in browser page memory and are not sent to the API; factor IDs and the separately entered reference-unit quantities are sent for calculation. Nothing is saved after the page is closed or reloaded. If you download a CSV, it may contain the input labels and quantities you entered. The API access log is disabled and request bodies are not logged by the app. Hosting infrastructure may retain network metadata under its own operating policy.
+              The app has no user accounts, analytics, database, or calculation history. Product-input labels, quantities, units, associations, and the optional finished-product mass used for the flat BOM mass check stay in browser page memory and are never sent to the API; the mass check also requires your confirmation that every declared line is a product component for one functional unit. Unit conversion, mapped factor calculations, and the BOM mass diagnostic run locally in the browser. For manually entered process quantities, the API receives only selected factor IDs and those reference-unit quantities. Nothing is saved after the page is closed or reloaded. A downloaded CSV may contain the input labels, quantities, units, and finished-product mass you entered. The API access log is disabled and request bodies are not logged by the app. Hosting infrastructure may retain network metadata under its own operating policy.
             </Typography>
           </section>
         </Stack>
@@ -289,6 +472,8 @@ function App() {
   const [productInputNameDraft, setProductInputNameDraft] = useState('');
   const [productInputQuantityDraft, setProductInputQuantityDraft] = useState('');
   const [productInputUnitDraft, setProductInputUnitDraft] = useState('');
+  const [finishedProductMassDraft, setFinishedProductMassDraft] = useState('');
+  const [flatBomScopeConfirmed, setFlatBomScopeConfirmed] = useState(false);
   const [editingProductInputId, setEditingProductInputId] = useState<string | null>(null);
   const [productInputError, setProductInputError] = useState('');
   const productInputSequence = useRef(0);
@@ -296,6 +481,7 @@ function App() {
   const [calculating, setCalculating] = useState(false);
   const [error, setError] = useState('');
   const [sourceDialogOpen, setSourceDialogOpen] = useState(false);
+  const [suggestionInputId, setSuggestionInputId] = useState<string | null>(null);
 
   useEffect(() => {
     let current = true;
@@ -350,6 +536,26 @@ function App() {
     () => new Map<string, ProductInput>(productInputs.map((item) => [item.id, item])),
     [productInputs],
   );
+  const productInputUseReview = useMemo(
+    () => reviewProductInputUse(productInputs, selectedProcesses.map(({ productInputId, quantityBasis }) => ({
+      productInputId,
+      quantityBasis,
+    }))),
+    [productInputs, selectedProcesses],
+  );
+  const bomMassAssessment = useMemo(
+    () => assessFlatBomMass(productInputs, finishedProductMassDraft, flatBomScopeConfirmed),
+    [productInputs, finishedProductMassDraft, flatBomScopeConfirmed],
+  );
+  const selectedProcessSummary = useMemo(
+    () => result ? summarizeSelectedProcesses(result.results) : null,
+    [result],
+  );
+  const suggestionInput = suggestionInputId ? productInputsById.get(suggestionInputId) ?? null : null;
+  const factorSuggestions = useMemo(
+    () => suggestionInput && catalog ? suggestFactorsByInputName(suggestionInput.name, catalog.factors) : [],
+    [catalog, suggestionInput],
+  );
   const clearProductInputDraft = () => {
     setProductInputNameDraft('');
     setProductInputQuantityDraft('');
@@ -393,6 +599,7 @@ function App() {
       }]);
     }
     clearProductInputDraft();
+    setFlatBomScopeConfirmed(false);
     setResult(null);
     setError('');
   };
@@ -408,9 +615,10 @@ function App() {
   const removeProductInput = (inputId: string) => {
     setProductInputs((current) => current.filter((item) => item.id !== inputId));
     setSelectedProcesses((current) => current.map((line) => line.productInputId === inputId
-      ? { ...line, productInputId: null }
+      ? { ...line, productInputId: null, quantityBasis: 'manual' }
       : line));
     if (editingProductInputId === inputId) clearProductInputDraft();
+    setFlatBomScopeConfirmed(false);
     setResult(null);
     setError('');
   };
@@ -418,6 +626,14 @@ function App() {
   const updateSelectedProductInput = (key: string, productInputId: string) => {
     setSelectedProcesses((current) => current.map((line) => line.key === key
       ? { ...line, productInputId: productInputId || null }
+      : line));
+    setResult(null);
+    setError('');
+  };
+
+  const updateSelectedQuantityBasis = (key: string, quantityBasis: ProcessQuantityBasis) => {
+    setSelectedProcesses((current) => current.map((line) => line.key === key
+      ? { ...line, quantityBasis }
       : line));
     setResult(null);
     setError('');
@@ -454,6 +670,7 @@ function App() {
         factor: selectedFactor,
         quantity: quantityDraft,
         productInputId: null,
+        quantityBasis: 'manual',
       },
     ]);
     setSelectedFactor(null);
@@ -468,6 +685,28 @@ function App() {
     setError('');
   };
 
+  const addSuggestedFactor = (factor: ProcessFactor) => {
+    if (!suggestionInput) return;
+    if (selectedProcesses.some((line) => line.factor.id === factor.id)) {
+      setError('That factor is already in the selected process rows.');
+      return;
+    }
+    if (selectedProcesses.length >= MAX_PROCESS_LINES) {
+      setError(`A calculation can include up to ${MAX_PROCESS_LINES} process rows.`);
+      return;
+    }
+    setSelectedProcesses((current) => [...current, {
+      key: `${factor.id}-${Date.now()}`,
+      factor,
+      quantity: '',
+      productInputId: suggestionInput.id,
+      quantityBasis: 'declared-output',
+    }]);
+    setSuggestionInputId(null);
+    setResult(null);
+    setError('');
+  };
+
   const calculate = async (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError('');
@@ -475,17 +714,28 @@ function App() {
       setError('Add at least one process factor before calculating.');
       return;
     }
-    const quantities = selectedProcesses.map((line) => Number(line.quantity));
-    if (quantities.some((quantity) => !Number.isFinite(quantity) || quantity <= 0)) {
-      setError('Each selected process needs a quantity greater than zero.');
+    const selections = selectedProcesses.map((line) => {
+      const input = line.productInputId ? productInputsById.get(line.productInputId) ?? null : null;
+      const derived = deriveProcessQuantity(line.factor, line.quantity, input, line.quantityBasis);
+      return { line, derived };
+    });
+    const invalid = selections.find(({ derived }) => derived.quantity === null || derived.error);
+    if (invalid) {
+      setError(`${invalid.line.factor.activity}: ${invalid.derived.error ?? 'Enter a valid process quantity.'}`);
       return;
     }
+    const processSelections = selections.map(({ line, derived }) => ({
+      factor_id: line.factor.id,
+      quantity: derived.quantity as number,
+    }));
+
     setCalculating(true);
     setResult(null);
     try {
-      const response = await calculateProcessEstimates(
-        selectedProcesses.map((line) => ({ factor_id: line.factor.id, quantity: Number(line.quantity) })),
-      );
+      const usesDeclaredInput = selectedProcesses.some((line) => line.quantityBasis !== 'manual');
+      const response = usesDeclaredInput
+        ? calculateFromCatalog(catalog as FactorCatalog, processSelections)
+        : await calculateProcessEstimates(processSelections);
       setResult(response);
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : 'The process estimate could not be calculated.');
@@ -498,21 +748,46 @@ function App() {
     if (!result) return;
     const csv = formatProcessEstimatesCsv(result, {
       productInputs,
+      finishedProductMassKg: finishedProductMassDraft,
+      flatBomScopeConfirmed,
       processLinks: selectedProcesses.map((line) => ({
         factorId: line.factor.id,
         productInputId: line.productInputId,
+        quantityBasis: line.quantityBasis,
       })),
+      summary: selectedProcessSummary,
     });
     downloadProcessEstimatesCsv(csv, 'environmental-process-estimates.csv');
   };
 
   return (
-    <div className="app-shell">
-      <header className="site-header">
+    <div className="app-shell app-layout">
+      <aside className="sidebar" aria-label="Workspace navigation">
         <a className="brand" href="#top" aria-label="Environmental Impact Analyzer home">
-          <span className="brand-mark"><ForestOutlinedIcon fontSize="small" /></span>
-          <span className="brand-name">impact<span aria-hidden="true"> / </span>analyzer</span>
+          <img className="brand-mark-image" src="/brand/mark.svg" alt="" />
+          <span className="brand-name">Environmental Impact Analyzer</span>
         </a>
+        <div className="sidebar-kicker">APPAREL & FOOTWEAR</div>
+        <nav className="sidebar-navigation" aria-label="Main navigation">
+          <a href="#top" aria-current="page" aria-label="Overview"><DashboardOutlinedIcon fontSize="small" /><span>Overview</span></a>
+          <a href="#product-inputs" aria-label="Product inputs"><Inventory2OutlinedIcon fontSize="small" /><span>Product inputs</span></a>
+          <a href="#process-library" aria-label="Process library"><FactoryOutlinedIcon fontSize="small" /><span>Process library</span></a>
+          <a href="#results-heading" aria-label="Results"><QueryStatsOutlinedIcon fontSize="small" /><span>Results</span></a>
+        </nav>
+        <div className="sidebar-bottom">
+          <div className="sidebar-source-card">
+            <span className="sidebar-source-label">PINNED SOURCE</span>
+            <strong>Carbonfact</strong>
+            <span>Version {catalog?.source_version ?? '1.1.0'} · CC BY-SA 4.0</span>
+            <span className="sidebar-source-count"><i aria-hidden="true" /> {catalog?.total_records ?? '302'} published factors</span>
+          </div>
+          <Button variant="text" startIcon={<InfoOutlinedIcon />} onClick={() => setSourceDialogOpen(true)} className="sidebar-method-button">
+            Method, source & privacy
+          </Button>
+        </div>
+      </aside>
+
+      <header className="site-header">
         <div className="header-right">
           <Button variant="text" startIcon={<InfoOutlinedIcon />} onClick={() => setSourceDialogOpen(true)} className="method-button">
             Method & data
@@ -523,27 +798,58 @@ function App() {
       <main id="top" className="main-content estimator-main">
         <section className="hero-section estimator-hero" aria-labelledby="hero-title">
           <div className="hero-copy">
-            <div className="eyebrow"><span className="eyebrow-line" /> APPAREL & FOOTWEAR</div>
+            <div className="eyebrow"><span className="eyebrow-line" /> OPEN PROCESS DATA</div>
             <Typography id="hero-title" component="h1" className="hero-title">
-              Process impacts, <span className="hero-title-accent">with context.</span>
+              Every process has <span className="hero-title-accent">a story.</span>
             </Typography>
             <Typography className="hero-subtitle">
-              Explore 16 environmental indicators from published process data. Choose the activity, match its reference unit, and scale the factor to your quantity.
+              Explore published apparel and footwear factors across 16 EF 3.1 indicators—with source units and boundaries in view.
             </Typography>
+            <div className="hero-actions">
+              <Button component="a" href="#process-library" variant="contained" endIcon={<ArrowDownwardRoundedIcon />} className="hero-primary-action">
+                Explore factors
+              </Button>
+              <span className="hero-action-note">302 source-linked records</span>
+            </div>
           </div>
           <div className="hero-visual">
-            <LandscapeScene />
+            <img
+              className="hero-photo"
+              src="/images/textile-materials-hero.jpg"
+              alt="Cotton yarn, woven fabric swatches and natural fibres arranged in a textile studio."
+              fetchPriority="high"
+            />
+            <div className="hero-photo-note">
+              <span className="hero-photo-note-mark"><img src="/brand/mark.svg" alt="" /></span>
+              <div><span>TEXTILE STUDY · 01</span><strong>From fibre to fabric</strong></div>
+            </div>
+            <span className="hero-photo-index" aria-hidden="true">01 / 03</span>
           </div>
         </section>
 
         <div className="catalog-strip" aria-label="Loaded source coverage">
-          <div><strong>{catalog?.total_records ?? '—'}</strong><span>published process factors</span></div>
+          <div><strong>{catalog?.total_records ?? '—'}</strong><span>published factors</span></div>
           <Divider orientation="vertical" flexItem />
-          <div><strong>{catalog?.families.length ?? '—'}</strong><span>selectable factor groups</span></div>
+          <div><strong>{catalog?.families.length ?? '—'}</strong><span>selectable groups</span></div>
           <Divider orientation="vertical" flexItem />
           <div><strong>16</strong><span>EF 3.1 indicators</span></div>
-          <div className="catalog-strip-note">Source version {catalog?.source_version ?? '1.1.0'} · Global and region-specific rows where published</div>
+          <div className="catalog-strip-note">Carbonfact · v{catalog?.source_version ?? '1.1.0'} · open factor data</div>
         </div>
+
+        <section className="visual-index" aria-label="Browse apparel and footwear factor areas">
+          <a className="visual-index-card textile-index-card" href="#process-library">
+            <img src="/images/textile-process-detail.jpg" alt="" loading="lazy" />
+            <span className="visual-index-shade" />
+            <span className="visual-index-copy"><small>01 / TEXTILES</small><strong>Yarn · fabric · finishing</strong></span>
+            <span className="visual-index-arrow" aria-hidden="true">↗</span>
+          </a>
+          <a className="visual-index-card footwear-index-card" href="#process-library">
+            <img src="/images/footwear-material-detail.jpg" alt="" loading="lazy" />
+            <span className="visual-index-shade" />
+            <span className="visual-index-copy"><small>02 / FOOTWEAR</small><strong>Materials · assembly · use</strong></span>
+            <span className="visual-index-arrow" aria-hidden="true">↗</span>
+          </a>
+        </section>
 
         <div className="estimator-grid">
           <Paper component="section" elevation={0} className="form-card estimator-card" aria-labelledby="calculator-heading">
@@ -551,7 +857,6 @@ function App() {
               <div>
                 <div className="step-label">01 <span aria-hidden="true">·</span> SELECT PROCESS DATA</div>
                 <Typography id="calculator-heading" component="h2" variant="h5" className="card-title">Build a process estimate.</Typography>
-                <Typography className="card-subtitle">Each activity keeps the reference unit and source geography shown in its dataset.</Typography>
               </div>
               <div className="card-number" aria-hidden="true">01</div>
             </div>
@@ -565,7 +870,7 @@ function App() {
               </Alert>
             )}
 
-            <section className="product-input-workspace" aria-labelledby="product-input-heading">
+            <section id="product-inputs" className="product-input-workspace" aria-labelledby="product-input-heading">
               <div className="product-input-heading-row">
                 <Typography id="product-input-heading" component="h3" className="product-input-title">
                   Product inputs
@@ -621,6 +926,7 @@ function App() {
                         <div><strong>{item.name}</strong><span>{item.quantity} {item.unit}</span></div>
                       </div>
                       <div className="product-input-item-actions">
+                        <Button size="small" onClick={() => setSuggestionInputId(item.id)}>Find factor</Button>
                         <IconButton aria-label={`Edit product input ${item.name}`} onClick={() => editProductInput(item)} size="small">
                           <EditOutlinedIcon fontSize="small" />
                         </IconButton>
@@ -632,10 +938,48 @@ function App() {
                   ))}
                 </Stack>
               )}
+              <details className="bom-mass-check-workspace">
+                <summary>Product mass check</summary>
+                <FormControlLabel
+                  className="bom-mass-confirmation"
+                  control={(
+                    <Checkbox
+                      size="small"
+                      checked={flatBomScopeConfirmed}
+                      onChange={(event) => setFlatBomScopeConfirmed(event.target.checked)}
+                    />
+                  )}
+                  label="All declared lines are product components for one functional unit"
+                />
+                <TextField
+                  type="number"
+                  size="small"
+                  label="Finished product mass per functional unit (kg)"
+                  value={finishedProductMassDraft}
+                  onChange={(event) => setFinishedProductMassDraft(event.target.value)}
+                  slotProps={{ htmlInput: { min: 0, step: 'any' } }}
+                />
+                {bomMassAssessment.status === 'scope-not-confirmed' && (
+                  <div className="bom-mass-compact" aria-live="polite">
+                    <strong>{describeBomMassStatus(bomMassAssessment)}</strong>
+                  </div>
+                )}
+                {bomMassAssessment.status !== 'missing-product-mass' && bomMassAssessment.status !== 'scope-not-confirmed' && (
+                  <div className="bom-mass-compact" aria-live="polite">
+                    <span>{bomMassAssessment.declaredInputMassKg === null
+                      ? bomMassAssessment.status === 'no-declared-inputs' ? 'No declared inputs' : 'Input mass incomplete'
+                      : `Inputs ${numberForDisplay(bomMassAssessment.declaredInputMassKg)} kg`}</span>
+                    {bomMassAssessment.differenceKg !== null && (
+                      <span>Difference {numberForDisplay(bomMassAssessment.differenceKg)} kg</span>
+                    )}
+                    <strong>{describeBomMassStatus(bomMassAssessment)}</strong>
+                  </div>
+                )}
+              </details>
             </section>
 
             {catalog && (
-              <form onSubmit={calculate} className="estimator-form">
+              <form id="process-library" onSubmit={calculate} className="estimator-form">
                 <div className="form-grid two-col">
                   <FormControl fullWidth size="small">
                     <InputLabel id="family-label">Process family</InputLabel>
@@ -736,12 +1080,6 @@ function App() {
                       <Chip size="small" label="16 indicators" className="soft-chip" />
                     </div>
                     <div className="reference-unit-note"><strong>Reference unit:</strong> {selectedFactor.reference_unit}</div>
-                    <div className="factor-id-note">Source geography is shown as published; it is not inferred from the product’s market.</div>
-                    {selectedFactor.input_required_kg_per_reference_unit !== null && (
-                      <div className="factor-id-note">
-                        Source-reported input required: {numberForDisplay(selectedFactor.input_required_kg_per_reference_unit)} kg per reference unit. Display only; not separately modeled.
-                      </div>
-                    )}
                   </Paper>
                 )}
 
@@ -754,9 +1092,6 @@ function App() {
                     onChange={(event) => setQuantityDraft(event.target.value)}
                     disabled={!selectedFactor}
                     slotProps={{ htmlInput: { min: 0, step: 'any' } }}
-                    helperText={selectedFactor
-                      ? `Enter the number of units of “${selectedFactor.reference_unit}” represented by this activity.`
-                      : 'Select an activity to see its exact unit.'}
                   />
                   <Button
                     type="button"
@@ -777,47 +1112,72 @@ function App() {
                       <Chip label={`${selectedProcesses.length} / ${MAX_PROCESS_LINES}`} size="small" className="soft-chip" />
                     </div>
                     <Stack spacing={1.2}>
-                      {selectedProcesses.map((line, index) => (
-                        <div className="selected-process" key={line.key}>
-                          <div className="selected-process-copy">
-                            <span className="selected-process-index">{String(index + 1).padStart(2, '0')}</span>
-                            <div><strong>{line.factor.activity}</strong><span>{line.factor.family_label} · {geographyFor(line.factor)} · {line.factor.reference_unit}</span></div>
+                      {selectedProcesses.map((line, index) => {
+                        const linkedInput = line.productInputId ? productInputsById.get(line.productInputId) ?? null : null;
+                        const derived = deriveProcessQuantity(line.factor, line.quantity, linkedInput, line.quantityBasis);
+                        const shownQuantity = line.quantityBasis === 'manual'
+                          ? line.quantity
+                          : derived.quantity === null ? '' : String(derived.quantity);
+                        return (
+                          <div className="selected-process" key={line.key}>
+                            <div className="selected-process-copy">
+                              <span className="selected-process-index">{String(index + 1).padStart(2, '0')}</span>
+                              <div><strong>{line.factor.activity}</strong><span>{line.factor.family_label} · {geographyFor(line.factor)} · {line.factor.reference_unit}</span></div>
+                            </div>
+                            <TextField
+                              type="number"
+                              size="small"
+                              label={line.quantityBasis === 'manual' ? 'Quantity' : 'Mapped quantity'}
+                              value={shownQuantity}
+                              onChange={(event) => updateSelectedQuantity(line.key, event.target.value)}
+                              disabled={line.quantityBasis !== 'manual'}
+                              slotProps={{ htmlInput: { min: 0, step: 'any' } }}
+                              className="selected-quantity"
+                            />
+                            <IconButton aria-label={`Remove ${line.factor.activity}`} onClick={() => removeProcess(line.key)} size="small">
+                              <DeleteOutlineRoundedIcon fontSize="small" />
+                            </IconButton>
+                            {productInputs.length > 0 && (
+                              <div className="process-mapping-controls">
+                                <FormControl fullWidth size="small">
+                                  <InputLabel id={`process-input-context-label-${index}`}>Link input</InputLabel>
+                                  <Select
+                                    labelId={`process-input-context-label-${index}`}
+                                    id={`process-input-context-${index}`}
+                                    value={line.productInputId ?? ''}
+                                    label="Link input"
+                                    onChange={(event) => updateSelectedProductInput(line.key, event.target.value)}
+                                  >
+                                    <MenuItem value="">No input association</MenuItem>
+                                    {productInputs.map((item) => (
+                                      <MenuItem key={item.id} value={item.id}>
+                                        {item.name} — {item.quantity} {item.unit}
+                                      </MenuItem>
+                                    ))}
+                                  </Select>
+                                </FormControl>
+                                <FormControl fullWidth size="small">
+                                  <InputLabel id={`process-quantity-basis-label-${index}`}>Quantity basis</InputLabel>
+                                  <Select
+                                    labelId={`process-quantity-basis-label-${index}`}
+                                    id={`process-quantity-basis-${index}`}
+                                    value={line.quantityBasis}
+                                    label="Quantity basis"
+                                    onChange={(event) => updateSelectedQuantityBasis(line.key, event.target.value as ProcessQuantityBasis)}
+                                  >
+                                    <MenuItem value="manual">Manual quantity</MenuItem>
+                                    <MenuItem value="declared-output">Input is process output</MenuItem>
+                                    <MenuItem value="declared-input">Input is process feed</MenuItem>
+                                  </Select>
+                                </FormControl>
+                                {line.quantityBasis !== 'manual' && derived.error && (
+                                  <span className="quantity-mapping-error" role="alert">{derived.error}</span>
+                                )}
+                              </div>
+                            )}
                           </div>
-                          <TextField
-                            type="number"
-                            size="small"
-                            label="Quantity"
-                            value={line.quantity}
-                            onChange={(event) => updateSelectedQuantity(line.key, event.target.value)}
-                            slotProps={{ htmlInput: { min: 0, step: 'any' } }}
-                            className="selected-quantity"
-                          />
-                          <IconButton aria-label={`Remove ${line.factor.activity}`} onClick={() => removeProcess(line.key)} size="small">
-                            <DeleteOutlineRoundedIcon fontSize="small" />
-                          </IconButton>
-                          {productInputs.length > 0 && (
-                            <FormControl fullWidth size="small" className="selected-process-input-context">
-                              <InputLabel id={`process-input-context-label-${index}`}>
-                                Link input
-                              </InputLabel>
-                              <Select
-                                labelId={`process-input-context-label-${index}`}
-                                id={`process-input-context-${index}`}
-                                value={line.productInputId ?? ''}
-                                label="Link input"
-                                onChange={(event) => updateSelectedProductInput(line.key, event.target.value)}
-                              >
-                                <MenuItem value="">No input association</MenuItem>
-                                {productInputs.map((item) => (
-                                  <MenuItem key={item.id} value={item.id}>
-                                    {item.name} — {item.quantity} {item.unit}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
-                          )}
-                        </div>
-                      ))}
+                        );
+                      })}
                     </Stack>
                   </section>
                 )}
@@ -832,9 +1192,8 @@ function App() {
                     startIcon={calculating ? <CircularProgress size={16} color="inherit" /> : <CalculateOutlinedIcon />}
                     disabled={calculating || selectedProcesses.length === 0}
                   >
-                    Calculate separate indicators
+                    Calculate selected rows
                   </Button>
-                  <span>Up to {MAX_PROCESS_LINES} process rows · no cross-stage total</span>
                 </div>
               </form>
             )}
@@ -843,7 +1202,7 @@ function App() {
           <Paper component="section" elevation={0} className="result-card result-panel" aria-labelledby="results-heading">
             <div className="result-card-top">
               <div>
-                <div className="step-label">02 <span aria-hidden="true">·</span> SEPARATE INDICATORS</div>
+                <div className="step-label">02 <span aria-hidden="true">·</span> INDICATORS + SUBTOTAL</div>
                 <Typography id="results-heading" component="h2" variant="h5" className="card-title">Process results.</Typography>
               </div>
               {result && <Chip label="Calculated" size="small" className="calculated-chip" />}
@@ -854,64 +1213,81 @@ function App() {
                 <div className="empty-illustration" aria-hidden="true"><ScienceOutlinedIcon /></div>
                 <Typography component="h3" className="empty-title">Choose the source activity and its quantity.</Typography>
                 <Typography className="empty-copy">
-                  The result will show all 16 impact indicators for each selected process row, with the source factor, reference unit, geography, and attribution alongside it.
+                  16 environmental indicators for each selected process.
                 </Typography>
-                <div className="result-scope-note"><InfoOutlinedIcon fontSize="small" /> Selected process rows stay separate; no whole-product total is calculated.</div>
+                <div className="result-scope-note"><InfoOutlinedIcon fontSize="small" /> Selected rows only; not a complete product footprint.</div>
               </div>
             )}
 
             {calculating && (
-              <div className="catalog-loading calculation-loading" aria-busy="true"><CircularProgress size={24} aria-label="Calculating separate process indicators" /></div>
+              <div className="catalog-loading calculation-loading" aria-busy="true"><CircularProgress size={24} aria-label="Calculating process indicators and selected-row subtotal" /></div>
             )}
 
             {result && (
               <div className="results-output">
                 <div className="result-intro">
-                  <Typography className="result-explanation">{result.scope}</Typography>
+                  <span className="result-scope-label">Selected rows only</span>
                   <Button size="small" startIcon={<FileDownloadOutlinedIcon />} onClick={exportResults}>
                     Download CSV
                   </Button>
                 </div>
+                {selectedProcessSummary && (
+                  <SelectedProcessSummaryCard
+                    summary={selectedProcessSummary}
+                    inputUseReview={productInputUseReview}
+                    bomMassAssessment={bomMassAssessment}
+                  />
+                )}
                 <Stack spacing={2}>
                   {result.results.map((line, index) => {
                     const selectedProcess = selectedProcesses.find((item) => item.factor.id === line.factor_id);
                     const productInput = selectedProcess?.productInputId
                       ? productInputsById.get(selectedProcess.productInputId) ?? null
                       : null;
+                    const quantityMapping = selectedProcess
+                      ? deriveProcessQuantity(selectedProcess.factor, selectedProcess.quantity, productInput, selectedProcess.quantityBasis)
+                      : null;
                     return (
                       <ProcessResult
                         line={line}
                         index={index}
                         productInput={productInput}
+                        quantityBasisLabel={quantityMapping?.basisLabel ?? 'Manual process quantity'}
                         key={`${index}-${line.factor_id}`}
                       />
                     );
                   })}
                 </Stack>
-                <div className="result-attribution">
-                  <strong>Source attribution · CC BY-SA 4.0</strong>
-                  <p>{result.attribution_text}</p>
-                  <p>Calculation transformation: each published factor was scaled by the entered reference-unit quantity. The adapted result is available under <a href={result.license_url} target="_blank" rel="noreferrer">{result.result_license} <OpenInNewOutlinedIcon fontSize="inherit" /></a>.</p>
-                  <p><strong>Background-data note:</strong> {result.background_database_note}</p>
-                  <a href={result.source_url} target="_blank" rel="noreferrer">Open pinned source release <OpenInNewOutlinedIcon fontSize="inherit" /></a>
-                </div>
+
               </div>
             )}
           </Paper>
         </div>
 
         <footer className="app-footer">
-          <span>Environmental Impact Analyzer</span>
+          <div className="footer-brand">
+            <img src="/brand/mark.svg" alt="" />
+            <div><strong>Environmental Impact Analyzer</strong><span>Apparel & footwear process data</span></div>
+          </div>
           <nav className="app-footer-links" aria-label="Legal and source links">
             <a href="/legal/privacy.html">Privacy</a>
             <a href="/legal/terms.html">Terms</a>
-            <a href="/legal/license.html">License</a>
-            <button type="button" onClick={() => setSourceDialogOpen(true)}>Source, method & privacy</button>
+            <a href="/legal/license.html">Software license</a>
+            <a href="/legal/data-sources.html">Data sources</a>
+            <button type="button" onClick={() => setSourceDialogOpen(true)}>Method details</button>
           </nav>
         </footer>
       </main>
 
       <SourceDialog open={sourceDialogOpen} onClose={() => setSourceDialogOpen(false)} />
+      <FactorSuggestionDialog
+        open={suggestionInputId !== null}
+        input={suggestionInput}
+        suggestions={factorSuggestions}
+        selectedFactorIds={new Set(selectedProcesses.map((line) => line.factor.id))}
+        onClose={() => setSuggestionInputId(null)}
+        onSelect={addSuggestedFactor}
+      />
     </div>
   );
 }

@@ -39,6 +39,9 @@ const catalog: FactorCatalog = {
   source_url: 'https://example.com/release',
   license_name: 'CC BY-SA 4.0',
   attribution_text: 'Data source: Carbonfact Open Source LCA Database v1.1.0, CC BY-SA 4.0.',
+  license_url: 'https://creativecommons.org/licenses/by-sa/4.0/',
+  result_license: 'CC BY-SA 4.0',
+  background_database_note: 'Full background inventories are not included or reconstructed.',
   total_records: 1,
   offset: 0,
   limit: 500,
@@ -66,9 +69,12 @@ const source: ActiveDataSource = {
   license_terms_url: 'https://github.com/carbonfact/lca-database-footwear-apparel/blob/v.1.1.0/README.md#license',
   license_status: 'applied',
   method_basis: 'Published EF 3.1 process factors scaled by the entered reference-unit quantity.',
-  use_terms_summary: 'Same-screen attribution and ShareAlike applied to derived results.',
+  use_terms_summary: 'Attribution is provided in the Method/source dialog and CSV; ShareAlike applies to derived results.',
   attribution_text: catalog.attribution_text,
-  attribution_links: [{ label: 'Pinned source release', url: catalog.source_url }],
+  attribution_links: [
+    { label: 'Pinned source release', url: catalog.source_url },
+    { label: 'CC BY-SA 4.0 license', url: 'https://creativecommons.org/licenses/by-sa/4.0/' },
+  ],
   share_alike_required: true,
   result_license: 'CC BY-SA 4.0',
   background_database_note: 'Full background inventories are not included or reconstructed.',
@@ -102,7 +108,7 @@ const indicatorDefinitions = [
 const estimate: ProcessEstimateResponse = {
   status: 'calculated',
   methodology_version: 'published-process-factor-scaling-v1.0',
-  scope: 'Each selected process factor is scaled by its entered quantity. No cross-stage total is calculated.',
+  scope: 'The API scales each selected factor independently and returns separate process rows. The browser may summarize selected rows, but no complete product boundary is established.',
   aggregation: 'none',
   source_id: source.id,
   source_name: source.name,
@@ -173,12 +179,12 @@ async function calculateExample(): Promise<void> {
     target: { value: '0.18' },
   });
   fireEvent.click(screen.getByRole('button', { name: 'Add process' }));
-  fireEvent.click(screen.getByRole('button', { name: 'Calculate separate indicators' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Calculate selected rows' }));
   await screen.findByRole('table', { name: /Separate environmental indicators for Spinning cotton to yarn/ });
 }
 
 describe('process estimator accessibility', () => {
-  it('uses accessible theme colors and keeps the illustration decorative', () => {
+  it('uses accessible theme colors and names imagery while keeping the brand mark decorative', () => {
     const background = '#f4f1e9';
     const luminance = (hex: string) => {
       const channel = (offset: number) => {
@@ -198,9 +204,11 @@ describe('process estimator accessibility', () => {
 
     stubApi();
     const { container } = render(<App />);
-    const illustration = container.querySelector('.landscape-scene');
-    expect(illustration?.getAttribute('aria-hidden')).toBe('true');
-    expect(illustration?.getAttribute('focusable')).toBe('false');
+    const heroPhoto = container.querySelector('.hero-photo');
+    expect(heroPhoto?.getAttribute('alt')).toContain('Cotton yarn, woven fabric swatches');
+    expect(heroPhoto?.getAttribute('src')).toBe('/images/textile-materials-hero.jpg');
+    const brandMark = container.querySelector('.brand-mark-image');
+    expect(brandMark?.getAttribute('alt')).toBe('');
     const dashboardText = container.textContent ?? '';
     expect(dashboardText).not.toContain('Source factors, not a product score');
     expect(dashboardText).not.toContain('Separate indicators. No combined score.');
@@ -208,13 +216,15 @@ describe('process estimator accessibility', () => {
     expect(dashboardText).not.toContain('Illustration only · values come from cited process data');
     expect(dashboardText).not.toContain('Open-data process estimates');
     expect(dashboardText).not.toContain('Open process data');
+    expect(dashboardText).not.toContain('Open process library');
     expect(dashboardText).not.toContain('OPEN FACTORS');
-    expect(screen.getByText('Environmental Impact Analyzer')).toBeTruthy();
+    expect(screen.getAllByText('Environmental Impact Analyzer')).toHaveLength(2);
     const legalNavigation = screen.getByRole('navigation', { name: 'Legal and source links' });
     expect(legalNavigation).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Privacy' }).getAttribute('href')).toBe('/legal/privacy.html');
     expect(screen.getByRole('link', { name: 'Terms' }).getAttribute('href')).toBe('/legal/terms.html');
-    expect(screen.getByRole('link', { name: 'License' }).getAttribute('href')).toBe('/legal/license.html');
+    expect(screen.getByRole('link', { name: 'Software license' }).getAttribute('href')).toBe('/legal/license.html');
+    expect(screen.getByRole('link', { name: 'Data sources' }).getAttribute('href')).toBe('/legal/data-sources.html');
   });
 
   it('filters source factors by an exact source geography', async () => {
@@ -277,13 +287,12 @@ describe('process estimator accessibility', () => {
     const inputContext = screen.getByRole('combobox', { name: 'Link input' });
     fireEvent.mouseDown(inputContext);
     fireEvent.click(await screen.findByRole('option', { name: 'Upper cotton fabric — 0.35 kg' }));
-    await expectNoAxeViolations();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Calculate separate indicators' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Calculate selected rows' }));
     await screen.findByRole('table', { name: /Separate environmental indicators for Spinning cotton to yarn/ });
-    const inputContextText = screen.getByText('Input:').closest('p')?.textContent ?? '';
+    const inputContextText = screen.getByText('Input mapping:').closest('p')?.textContent ?? '';
     expect(inputContextText).toContain('0.35 kg');
-    expect(inputContextText).not.toMatch(/used to calculate|context only/i);
+    expect(inputContextText).toMatch(/Manual process quantity/);
     expect(screen.getByText(/0\.18 × 1 kg yarn/)).toBeTruthy();
 
     const calculationCall = fetchMock.mock.calls.find(([path]) => String(path) === '/api/v1/process-estimates');
@@ -294,14 +303,121 @@ describe('process estimator accessibility', () => {
     await expectNoAxeViolations();
   });
 
-  it('has no axe violations in the calculator and populated indicator results', async () => {
+  it('shows user-confirmed text matches for product-input factor mapping', async () => {
     stubApi();
     render(<App />);
+    await screen.findByText('Build a process estimate.');
+    await screen.findByRole('combobox', { name: 'Process activity' });
+
+    fireEvent.change(screen.getByRole('textbox', { name: 'Input or component name' }), {
+      target: { value: 'Cotton yarn' },
+    });
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Declared quantity' }), {
+      target: { value: '0.35' },
+    });
+    fireEvent.change(screen.getByRole('textbox', { name: 'Unit label' }), { target: { value: 'kg' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add input' }));
+    expect(await screen.findByText('Cotton yarn')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Find factor' }));
+
+    expect(await screen.findByRole('heading', { name: 'Match a process factor' })).toBeTruthy();
+    expect(screen.getByText(/Text matches only/)).toBeTruthy();
+    expect(screen.getByText('Spinning cotton to yarn')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Use as output' }));
+    const mappedQuantity = await screen.findByRole('spinbutton', { name: 'Mapped quantity' });
+    expect((mappedQuantity as HTMLInputElement).value).toBe('0.35');
+    expect(await screen.findByText('Input is process output')).toBeTruthy();
+  });
+
+  it('maps a declared mass input locally and never sends it to the calculation API', async () => {
+    const fetchMock = stubApi();
+    render(<App />);
+    await screen.findByText('Build a process estimate.');
+
+    fireEvent.change(screen.getByRole('textbox', { name: 'Input or component name' }), {
+      target: { value: 'Cotton feed' },
+    });
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Declared quantity' }), {
+      target: { value: '0.55' },
+    });
+    fireEvent.change(screen.getByRole('textbox', { name: 'Unit label' }), { target: { value: 'kg' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add input' }));
+
+    const factorInput = screen.getByRole('combobox', { name: 'Process activity' });
+    fireEvent.change(factorInput, { target: { value: 'Spinning cotton to yarn' } });
+    fireEvent.click(await screen.findByRole('option', { name: /Spinning cotton to yarn/ }));
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Quantity in source reference units' }), {
+      target: { value: '1' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Add process' }));
+
+    fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Link input' }));
+    fireEvent.click(await screen.findByRole('option', { name: 'Cotton feed — 0.55 kg' }));
+    fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Quantity basis' }));
+    fireEvent.click(await screen.findByRole('option', { name: 'Input is process feed' }));
+    expect((screen.getByRole('spinbutton', { name: 'Mapped quantity' }) as HTMLInputElement).value).toBe('0.5');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Calculate selected rows' }));
+    await screen.findByRole('table', { name: /Separate environmental indicators for Spinning cotton to yarn/ });
+    expect(screen.getByText(/0\.5 × 1 kg yarn/)).toBeTruthy();
+    expect(fetchMock.mock.calls.some(([path]) => String(path) === '/api/v1/process-estimates')).toBe(false);
+  });
+
+  it('checks flat BOM mass locally and keeps unmapped inputs explicitly uncalculated', async () => {
+    const fetchMock = stubApi();
+    render(<App />);
+    await screen.findByRole('combobox', { name: 'Process activity' });
+
+    for (const [name, quantity, unit] of [
+      ['Upper fabric', '250', 'g'],
+      ['Rubber sole', '0.1', 'kg'],
+    ]) {
+      fireEvent.change(screen.getByRole('textbox', { name: 'Input or component name' }), { target: { value: name } });
+      fireEvent.change(screen.getByRole('spinbutton', { name: 'Declared quantity' }), { target: { value: quantity } });
+      fireEvent.change(screen.getByRole('textbox', { name: 'Unit label' }), { target: { value: unit } });
+      fireEvent.click(screen.getByRole('button', { name: 'Add input' }));
+    }
+
+    fireEvent.click(screen.getByText('Product mass check'));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'All declared lines are product components for one functional unit' }));
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Finished product mass per functional unit (kg)' }), {
+      target: { value: '0.35' },
+    });
+    expect(await screen.findByText('Declared input mass matches finished-product mass within calculator precision.')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Edit product input Upper fabric' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save input' }));
+    expect((screen.getByRole('checkbox', { name: 'All declared lines are product components for one functional unit' }) as HTMLInputElement).checked).toBe(false);
+    expect(screen.getByText('Confirm that every declared line is a product component for one functional unit.')).toBeTruthy();
+    fireEvent.click(screen.getByRole('checkbox', { name: 'All declared lines are product components for one functional unit' }));
+    expect(await screen.findByText('Declared input mass matches finished-product mass within calculator precision.')).toBeTruthy();
+
+    await calculateExample();
+    expect(screen.getByText('Flat BOM mass diagnostic')).toBeTruthy();
+    expect(screen.getByText('Declared-input use')).toBeTruthy();
+    expect(screen.getByText(/Not calculated \(not zero\): Upper fabric, Rubber sole/)).toBeTruthy();
+    const estimateCall = fetchMock.mock.calls.find(([path]) => String(path) === '/api/v1/process-estimates');
+    expect(estimateCall).toBeTruthy();
+    expect(JSON.stringify(estimateCall?.[1])).not.toContain('0.35');
+    expect(JSON.stringify(estimateCall?.[1])).not.toContain('Upper fabric');
+    await expectNoAxeViolations();
+  });
+
+  it('has no axe violations in the calculator and populated indicator results', async () => {
+    stubApi();
+    const { container } = render(<App />);
     await expectNoAxeViolations();
     await calculateExample();
-    expect(screen.getAllByRole('row')).toHaveLength(17);
-    expect(screen.getByText('Source attribution · CC BY-SA 4.0')).toBeTruthy();
-    expect(screen.getByText(/Each selected process factor is scaled/)).toBeTruthy();
+    const processTable = screen.getByRole('table', { name: /Separate environmental indicators for Spinning cotton to yarn/ });
+    expect(processTable.querySelectorAll('tbody tr')).toHaveLength(16);
+    expect(screen.getByText('Selected rows only')).toBeTruthy();
+    expect(screen.queryByText('Source attribution · CC BY-SA 4.0')).toBeNull();
+    expect(screen.queryByRole('link', { name: /Open pinned source release/ })).toBeNull();
+    expect(container.querySelector('.result-source-card')).toBeNull();
+    expect(container.querySelector('.process-result-details')).toBeNull();
+    expect(container.querySelector('.summary-method-link')).toBeNull();
+    expect(container.querySelector('.result-attribution')).toBeNull();
+    expect(screen.getByText('Selected-process total')).toBeTruthy();
+    expect(screen.getByText('EF 3.1 single score')).toBeTruthy();
     await expectNoAxeViolations();
   });
 
@@ -334,6 +450,11 @@ describe('process estimator accessibility', () => {
     await screen.findByRole('heading', { name: 'Implemented calculation' });
     await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/v1/sources'));
     await screen.findByText(/Data source: Carbonfact Open Source LCA Database/);
+    expect(screen.getByRole('link', { name: 'Pinned source release' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'CC BY-SA 4.0 license' })).toBeTruthy();
+    expect(screen.getByText(/CC BY-SA 4.0\. Attribution and ShareAlike apply/)).toBeTruthy();
+    expect(screen.getByText(/Full background inventories are not included or reconstructed/)).toBeTruthy();
+    expect(screen.getByText(/Each published process factor is scaled by its own reference-unit quantity/)).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Privacy' })).toBeTruthy();
     await expectNoAxeViolations();
   });

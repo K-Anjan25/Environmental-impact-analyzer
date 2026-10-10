@@ -43,8 +43,15 @@ def test_health_methodology_and_security_headers_are_production_oriented() -> No
     )
     assert methodology["process_estimates_enabled"] is True
     assert methodology["product_footprint_enabled"] is False
-    assert methodology["combined_score_enabled"] is False
-    assert methodology["aggregation"] == "none; every selected process is reported separately"
+    assert methodology["combined_score_enabled"] is True
+    assert (
+        methodology["combined_score_scope"]
+        == "browser-calculated EF 3.1 single score for selected process rows only"
+    )
+    assert (
+        methodology["aggregation"]
+        == "the API returns independent rows; the browser sums only the selected rows"
+    )
     assert methodology["indicator_count"] == 16
     assert methodology["factor_record_count"] == 302
     assert methodology["privacy"]["assessment_persistence"] is False
@@ -100,6 +107,11 @@ def test_factor_catalog_contains_only_loaded_rows_and_all_16_separate_indicators
     assert response.status_code == 200
     catalog = response.json()
     assert catalog["total_records"] == 302
+    assert catalog["license_url"] == "https://creativecommons.org/licenses/by-sa/4.0/"
+    assert catalog["result_license"] == "CC BY-SA 4.0"
+    assert (
+        "may reflect those modeled background contributions" in catalog["background_database_note"]
+    )
     assert catalog["offset"] == 0
     assert catalog["limit"] == 500
     assert len(catalog["factors"]) == 302

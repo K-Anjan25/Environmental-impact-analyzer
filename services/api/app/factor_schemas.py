@@ -79,6 +79,9 @@ class FactorCatalogResponse(BaseModel):
     source_url: str
     license_name: str
     attribution_text: str
+    license_url: str
+    result_license: str
+    background_database_note: str
     total_records: int
     offset: int
     limit: int

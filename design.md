@@ -2,69 +2,71 @@
 
 ## 1. Design intent
 
-The interface is a transparent process-factor explorer, not a product scorecard. It makes each source activity and reference unit concrete, reports separate EF 3.1 indicators, and keeps the process-only boundary visible without warning icons or unresolved activation states.
+The interface is a transparent process-factor and selected-input explorer, not a complete product scorecard. It makes each published activity, geography, and reference unit concrete; preserves the 16 EF 3.1 indicator values per process; and can display an explicitly selected-row subtotal and weighted score without implying full-product coverage.
 
 Principles:
 
-- Source first: activity, geography, reference unit, version, DQR where published, and license remain visible around the result.
-- Units before arithmetic: the quantity field is unavailable until a factor is selected and labeled against that factor's source reference unit.
-- Separate outputs: 16 indicators are shown in a semantic table for each activity. Selected activities remain separate.
-- Honest scope: no product total, combined score, default geography, or missing-stage imputation. User-entered input quantities are never substituted for process-factor quantities.
+- Keep activity, geography, and reference units close to results; offer source release, attribution, license, and background-data details in the Method/source dialog and CSV.
+- Units before arithmetic: user-selected factors and reference units are visible before mapping or quantity calculation. Unknown or incompatible units are rejected.
+- Separate outputs: 16 indicators remain visible per activity; the optional subtotal identifies itself as a sum of selected rows only.
+- Honest scope: no completeness claim, ranking, default geography, or missing-stage imputation. Text-match suggestions require user confirmation and are not validated equivalencies.
+- Local privacy: product-input labels, quantities, units, associations, finished-product mass, and mapped calculations stay in page memory/browser runtime. They are not sent to the API.
+- Clean inputs: show concise field labels and direct controls; keep implementation and privacy descriptions in the separate Method, source and reuse dialog.
 - Accessible presentation: semantic sections, visible keyboard focus, descriptive controls, responsive tables, reduced-motion support, and no meaning conveyed only by color.
 
 ## 2. Information architecture
 
 1. **Header:** app identity and Method & data dialog.
-2. **Hero:** apparel/footwear context, process-only purpose, and separate-indicator/no-combined-score framing.
+2. **Hero:** apparel/footwear context and process-impact purpose.
 3. **Catalog summary:** live factor count, selectable factor groups, 16 indicators, and source version.
-4. **Optional v2 input worksheet:** user-declared input labels, quantities, and free-text units, with manual context-only associations to selected processes.
-5. **Calculator panel:** family and source-geography filters, searchable activity selector, source reference unit, quantity input, and editable selected rows.
-6. **Results panel:** a separate indicator table per chosen process; optional user-input context; data quality/source details; same-screen attribution and CSV export.
-7. **Method & data dialog:** formula, boundaries, source/license, ecoinvent-background note, WTU interpretation, DQR handling, count discrepancy, and privacy behavior.
+4. **Product-input worksheet:** user-declared labels, quantities, and free-text units; a compact “Find factor” action opens user-confirmed text suggestions. A collapsed mass-check control compares the flat input list with user-entered finished-product mass only after the user confirms all declared lines are components for the same functional unit; editing the list resets that confirmation.
+5. **Calculator panel:** family and source-geography filters, searchable activity selector, source reference unit, process quantity, selected process rows, and optional input-to-output/feed mapping controls.
+6. **Results panel:** selected-process indicator subtotal and EF 3.1 single score, separate indicator table for every process, concise process context, and CSV export. Keep attribution and explanatory text out of the table area; provide source/method details in the separate dialog.
+7. **Method & data dialog:** calculation formulas, score factors, boundaries, source/license, background-data note, WTU interpretation, DQR handling, count discrepancy, and privacy behavior.
 
 ## 3. Primary journey
 
-1. Optionally record up to 25 known product/component/process inputs using a user-provided label, quantity, and free-text unit; these stay in page memory.
-2. Select a process family/geography or use the activity autocomplete to search by material, process, geography, unit, or source ID.
-3. Review activity name, source geography, and exact reference unit before entering a process quantity.
-4. Add the process row; optionally choose a declared input as context. Edit or remove rows as needed. The same factor cannot be added twice—the selected row's quantity can be edited instead.
-5. Calculate up to 25 selected rows. Every row returns the source factor and its quantity-scaled 16 indicators; an input association does not alter the calculation.
-6. Review DQR fields and source-reported Input required (kg) if provided.
-7. Download an attributed CSV, one row per process and indicator, plus not-calculated/not-zero records for input lines without an associated process. The export includes units, source file/ID, source version, result license, and background-data note.
+1. Optionally record up to 25 known product/component/process inputs using a user-provided name, positive quantity, and free-text unit; these stay in page memory.
+2. Choose a published activity directly or open text-match suggestions from a declared input. Review and confirm the activity, geography, and exact reference unit.
+3. Choose a manual process quantity, map the declared amount as process output using dimension-compatible conversion, or map it as process feed where the selected factor has a positive input-required value.
+4. Review and add up to 25 process rows. The same factor cannot be added twice; selected rows can be edited or removed.
+5. Calculate. Manual quantities use the API; declared-input mappings use the loaded catalog locally in the browser. Product inputs and derived mapped quantities never enter the API request.
+6. Review each process's 16 indicators, the compatible selected-row totals, the normalised/weighted EF 3.1 score contributions, process/BOM mass diagnostics where supported, input-use status, and source details.
+7. Download an attributed CSV with process rows, selected-row totals, score and method provenance, input mapping status, flat-BOM mass diagnostic, and unmapped inputs marked not calculated/not zero.
 
 ## 4. Content rules
 
-- Header message: “Separate indicators. No combined score.”
-- Quantity helper: enter the number of units of the selected factor's exact functional/reference unit. This remains separate from any declared product-input quantity.
-- V2 input associations are always manual and context only. Do not use the declared amount for calculation, infer unit compatibility, or represent unassociated inputs as zero.
-- Result table: code and name, published factor per reference unit, quantity-scaled result, numerator unit.
+- The form fields remain concise; no explanatory implementation paragraphs under input fields.
+- A selected-process summary is titled **Selected-process total** and explicitly states that it includes only selected rows, may contain overlapping boundaries, and is not a complete product footprint.
+- The EF 3.1 single score is `sum((selected-row indicator total / JRC global normalisation factor) × EF weighting percentage/100)`. Normalisation values come from the official JRC EF 3.1 workbook (three significant figures); weighting percentages are the report's recommended all-category final factors, including robustness, scaled to 100%. Display normalised values, weighting percentages, score contributions, normalisation-factor units, and separate JRC source links; retain all 16 indicator results because weights reflect value choices.
+- A user-confirmed suggestion is described as a word match, not a scientific mapping or composition inference.
+- Process-feed conversion uses `output reference quantity = declared mass in kg / source Input required (kg) per reference unit`. Source input requirements are not new upstream impact factors.
+- A source-derived input/output mass difference is a mass diagnostic only. The optional flat-BOM check runs only after the user confirms all declared lines are components for the same functional unit, compares their convertible mass with finished-product mass, and leaves unconvertible inputs explicit; changes to the list reset confirmation. Neither is a complete process mass balance, BOM/composition validation, or waste-treatment impact.
+- Result tables include indicator code/name, published factor per reference unit, quantity-scaled result, and units.
 - Geography labels follow the source descriptor. Do not describe `WORLD`/`GLO` as complete global representativeness.
-- `Input required (kg)` is described as source metadata, displayed per reference unit, and not applied in this calculation.
-- DQR values appear in a collapsible details section. If absent, say no DQR was published for that factor.
-- WTU is labeled as m³ world-equivalent, with an adjacent note that it is not physical water volume.
-- Process-only scope and no-total message remain visible before and after a calculation.
-- Attribution text, source release link, ShareAlike/result license, scaling transformation, and source background note appear on the same screen as results.
-- Error alerts appear only for an actual user-input or service error; there are no pending, candidate-source, or unreviewed-gate badges in the normal interface.
+- Preserve source DQR values in CSV exports when published; keep explanatory details out from below result tables.
+- WTU is labeled as m³ world-equivalent, with a nearby note that it is not physical water volume.
+- Attribution, source release link, ShareAlike/result license, scaling transformation, background note, and the JRC normalisation and weighting method links appear on the same screen as results or within the disclosed method section.
 
 ## 5. Visual direction
 
-The existing forest/sand palette and original layered landscape SVG are retained as non-data decoration. The caption states that the illustration is not a result. It never uses plotted values, colors, or shapes to imply impact magnitude.
+The existing forest/sand palette and original layered landscape SVG are retained as non-data decoration. The illustration never uses values, colors, or shapes to imply impact magnitude.
 
-The result table prioritizes precision and provenance over comparison. Green accents identify source data and actions; no red/amber warning color is used to imply data quality. Process rows use simple numbered identifiers, and source/indicator metadata remain readable on mobile.
+The result tables prioritize precision and provenance. Green accents identify source data and actions; color is not used alone to imply data quality. Process rows use simple numbered identifiers, and source/indicator metadata remain readable on mobile.
 
 ## 6. Accessibility and responsive behavior
 
 - Use one page-level `h1`, ordered section headings, descriptive labels, and a native form submission path.
-- Factor autocomplete supports keyboard selection; result tables have activity-specific accessible names and column headers.
+- Factor autocomplete and suggestion dialogs support keyboard selection; result tables have activity-specific accessible names and column headers.
 - Icon-only removal controls have a full activity-specific accessible label.
 - Units are text, not color or tooltip alone; WTU's nonphysical-volume note is adjacent and discoverable.
 - All links identify their destination and use safe external-link attributes.
 - Focus outlines are visible; motion is reduced for `prefers-reduced-motion`.
 - On narrow screens, panels stack, controls use full width, and results remain horizontally scrollable with semantic tables.
-- Automated tests exercise the calculator, populated results, and source dialog with axe-core; decorative illustrations are hidden from assistive technology.
+- Automated tests exercise the calculator, mapping flows, subtotal, score, CSV, and source dialog with axe-core; decorative illustrations are hidden from assistive technology.
 
 ## 7. Privacy and source dialog
 
-The dialog says the app has no accounts, analytics, database, or calculation history. Optional declared input labels, quantities, units, and manual associations remain in browser page memory and are not sent to the API; factor IDs and separately entered factor-reference quantities are sent for calculation. A downloaded CSV may contain user-entered input context. Calculation requests are processed in memory; application access logging is disabled. The dialog states that hosting infrastructure can retain network metadata according to its own policies.
+The dialog says the app has no accounts, analytics, database, or calculation history. Product-input labels, amounts, units, associations, finished-product mass, and derived mapped quantities remain in browser page memory and are not sent to the API. The optional mass diagnostic runs locally. For manually entered process quantities, only factor IDs and those process reference-unit quantities are sent. A downloaded CSV may contain user-entered inputs and mass diagnostics. API calculation requests are processed in memory; application access logging is disabled. Hosting infrastructure can retain network metadata under its own policies.
 
-The source section links to the pinned v1.1.0 repository, Zenodo record, and CC BY-SA 4.0 license. It states that source-published scores may include modeled ecoinvent 3.12 background contributions even though the underlying inventories are not distributed or included in this app.
+The source section links to the pinned v1.1.0 repository, Zenodo record, CC BY-SA 4.0 license, JRC EF 3.1 normalisation workbook, and JRC weighting report. It states that source-published scores may include modeled ecoinvent 3.12 background contributions even though the underlying inventories are not distributed or included in this app.

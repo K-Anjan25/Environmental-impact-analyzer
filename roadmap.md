@@ -1,21 +1,21 @@
 # Release Readiness and Version Roadmap
 
-This roadmap separates **v1 release verification** from future discovery. A feature outside v1 is not a hidden v1 blocker, and a roadmap item is not permission to relax the current product and data constraints.
+This roadmap separates release verification from the expanded v2 product-input work. The user has explicitly authorized selected-process mapping, unit conversion, mass diagnostics, cross-process subtotals, and an EF 3.1 single score; that authorization supersedes the earlier v2 exclusions. It does not establish product completeness or grant rights to proprietary inventory data.
 
-## Current release: v1 process estimator
+## Current implementation: process estimator plus v2 subtotal prototype
 
 ### Delivered
 
 - Carbonfact v1.1.0 published factors are bundled and pinned under CC BY-SA 4.0: 302 source rows, 12 selectable factor groups, and 16 EF 3.1 indicators.
-- A quantity scales one selected factor in that factor's reference unit. Every process and indicator remains separate; there is no product total or combined score.
-- Attribution, license URL, source geography, available DQR/input metadata, CSV export, and the ecoinvent-background limitation are in the product.
+- Each factor row scales in its own reference unit, and the app preserves 16 separate indicators per process. The browser can subtotal the selected rows and calculate a JRC EF 3.1 single score; neither establishes a complete product footprint.
+- Attribution, license URL, source geography, available DQR/input metadata, CSV export, the JRC score method, and the ecoinvent-background limitation are in the product.
 - CI run `38060391993` passed API tests (11), frontend/accessibility/export tests (10), Ruff, formatting, mypy, TypeScript, and the Vite build on `f3db1d1`. The next-version geography-filter update on `0775d5d` raises the frontend suite to 11; CI run `38061673637` passed API, web, and both-container checks.
 
 ### Remaining v1 release checks
 
 1. **Container acceptance:** GitHub CI run `38052549592` passed API/web checks and built/smoke-tested both container images, including health, docs, all six policy/source pages, the catalog, and a 16-indicator estimate. Frontend tests cover the separate-indicator UI, CSV formatting, and the Download CSV action.
 2. **Vercel Preview:** GitHub reports deployment success for the geography-filter app commit `0775d5d`. The operator's build log for `3bb77c0` shows a repository-root build, image push, and deployment completion in the Beta Container Runtime (`iad1`, 300-second timeout), with `PORT=8000` in the image. The Preview is SSO-protected, so external route checks cannot inspect app content.
-3. **Authenticated Preview acceptance:** the operator confirmed the authenticated Preview passed `/`, `/healthz`, `/api/docs`, `/api/v1/factors?limit=1`, factor search/selection, calculation, CSV download, and all six policy/source pages on `ccb75f9`. This is user-reported verification; the assistant's `/healthz` probe is redirected to Vercel SSO. The new geography-filter change on `0775d5d` needs a quick authenticated Preview check by the operator. Vercel's build log says OCI output ignores Docker `HEALTHCHECK`; the Vercel Dockerfile no longer relies on that instruction, and `/healthz` is HTTP-smoke-tested in CI.
+3. **Authenticated Preview acceptance:** the operator confirmed the authenticated Preview passed `/`, `/healthz`, `/api/docs`, `/api/v1/factors?limit=1`, factor search/selection, calculation, CSV download, and all six policy/source pages on `ccb75f9`. This is user-reported verification; the assistant's `/healthz` probe is redirected to Vercel SSO. It predates the expanded mapping, selected-row subtotal, and EF 3.1 score changes in the current workspace; those need authenticated Preview verification after a deployment. No exact working Preview URL was supplied. Vercel's build log says OCI output ignores Docker `HEALTHCHECK`; the Vercel Dockerfile no longer relies on that instruction, and `/healthz` is HTTP-smoke-tested in CI.
 4. **Legal and product release readiness:** the operator name, linked contact page, and India-law/India-venue clause are now in `PRIVACY.md` and `TERMS.md` per the operator's direction. Confirm the name is the correct service identity, monitor the contact channel for privacy/service requests, review the law/venue and notice with appropriate counsel, record the actual effective date at launch, and inspect Vercel's live logging/retention and deployment-protection settings. The root MIT license applies only to original project code/documentation; the Carbonfact dataset and derived results retain CC BY-SA 4.0 obligations.
 5. **Limited beta cut:** the operator selected Vercel's Beta Container Runtime only for a no-SLA early beta, with no custom domain. The candidate project default alias `environmentalimpactanalyzer.vercel.app` still returns Vercel 404 in an unauthenticated probe, although the operator reports the Preview alias they use works. Record that exact working URL and verify/attach a stable default alias in Vercel before advertising it. Production is **not launched** and no PR/merge has been made. Once the URL/legal/configuration details are confirmed, prepare the release PR from this branch, merge to `main`, and verify the production alias and repeat health/API/calculation/CSV checks. Record the release version/date and rollback target before announcement.
 
@@ -31,7 +31,7 @@ From the repository root:
 docker compose up --build
 ```
 
-The user's first run already showed `Up ... (healthy)` and successful FastAPI startup. To complete the container smoke test, verify these routes (use `curl.exe` in Windows PowerShell):
+The user previously supplied output showing `Up ... (healthy)` and successful FastAPI startup. Docker/Compose is not installed in the current sandbox, so the image smoke test cannot be rerun here; a browser/API/CSV smoke test for the expanded build remains unverified. Where Docker is available, verify these routes (use `curl.exe` in Windows PowerShell):
 
 ```powershell
 docker compose ps
@@ -56,30 +56,33 @@ curl.exe -fsS http://localhost:8001/healthz
 
 Open `http://localhost:8001` and test one estimate/CSV. Stop the profile with `docker compose --profile vercel down`. This is still a local image test; Vercel's preview must be checked separately. To move the normal Compose app to another host port, run `ANALYZER_PORT=8001 docker compose up --build` in a POSIX shell, or set `$env:ANALYZER_PORT='8001'` before `docker compose up --build` in PowerShell.
 
-## Future versions: gated by open data and the product boundary
+## Expanded v2 work and remaining gates
 
-### v1.x — source coverage and operational polish
+### Implemented in the current workspace
 
-- **First usability increment (implemented on this branch):** an explicit source-geography filter alongside process-family filtering. It preserves published geography codes and counts, keeps missing geography unstated, adds no inferred default, and never aggregates results.
-- Add a process family only when the source is openly licensed, pinned to a version/commit, attributable, and has a clear process boundary, reference unit, geography, and compatible EF 3.1 indicators.
-- Reconcile source row counts and optional metadata; preserve original scores and document transformations.
-- Improve search, CSV usability, and accessibility without adding defaults, missing-stage imputation, cross-process sums, or a combined score.
+- **Product-input organizer:** up to 25 browser-local input lines. The input fields remain visually clean; detailed method and privacy notes stay in the disclosure dialog.
+- **User-confirmed factor suggestions:** token overlap proposes published activities, but the user confirms the selection and chooses its quantity basis. A word match does not validate the mapping.
+- **Unit/yield conversion:** supported same-dimension conversions for common mass, selected area/time, pair, and count units; source-reported `Input required (kg)` can convert a declared feed mass to factor output reference units. Unsupported dimensions are rejected.
+- **Material-flow and flat-BOM diagnostics:** source input mass, output mass, and mass difference are displayed where reference units support that arithmetic. An optional flat-BOM mass check runs only after the user confirms every declared line is a product component for the same functional unit; adding/removing an input resets confirmation. It compares supported declared inputs with user-entered finished-product mass and leaves unconvertible lines explicit. These are arithmetic diagnostics only; waste-treatment impacts are not included.
+- **Cross-process subtotal and score:** separate process/indicator rows are preserved; compatible selected rows are summed per indicator and weighted to an EF 3.1 single score using global normalisation factors from the official JRC workbook and the report's recommended all-category final weights (including robustness) from the JRC EF weighting report. The 16 weight percentages sum to 100%; the UI and CSV expose factor units, normalized totals, weights, contributions, and both method citations.
+- **Privacy:** input names, amounts, units, mappings, and derived quantities remain in the browser. Mapped calculations run locally; only manually entered reference-unit quantities are sent to the estimate API.
 
-### v2 discovery — product inputs without an aggregate score
+### Not yet a complete product footprint
 
-This is a staged discovery path, not a committed full-product LCA. The first v2 increment is implemented as a client-only product-input organizer: users can enter known input labels, quantities, and free-text units, then manually associate an input with a selected process row as context. The declaration is not a BOM validation or calculation input; process reference quantities remain separate, and every indicator/process result stays separate. See [v2-discovery.md](v2-discovery.md).
+A flat worksheet, arithmetic input-mass comparison, and selected-row score do not validate a hierarchical/composition-complete BOM or establish a complete product boundary. Missing gates include: define and verify a product functional unit and stage boundary; validate component identity and hierarchy beyond the flat mass comparison; assess stage coverage and non-overlap; integrate suitable licensed upstream, transport, waste-treatment, and end-of-life factors; and add defensible product-specific coverage rules. The selected-row subtotal is never presented as complete coverage.
 
-1. **Use case, input fields, and boundary (implemented):** define the apparel/footwear input organizer and its client-only data contract. An optional manual association never copies or converts the declared input amount into the process-factor quantity. Unassociated lines stay explicit in CSV as not calculated, not zero.
-2. **Open-source/license audit (in progress):** a preliminary screen is recorded in [v2-source-audit.md](v2-source-audit.md). The USDA LCA Commons field-crop version-2 archive is a possible open-LCI lead, not a factor-ready source; its complete provider graph and compatible open characterization method remain unverified. Exclude the separate version-1 ecoinvent crosswalk. No new factor data is integrated; record exact license, version, attribution, geography, time coverage, reference unit, and boundary before any integration.
-3. **Factor mapping (gated):** map factors to declared process outputs only where the reference unit and system boundary genuinely match. The current manual association is context-only, not a scientific mapping. Missing compositions, stage inputs, loss rates, or geography must stay explicit; do not infer them.
-4. Add loss or waste-treatment factors only when openly licensed, compatible factors and an explicit mass-balance method are available. Display those rows separately; do not silently apply `Input required (kg)` as an upstream burden.
-5. Use only openly licensed, bundled data. Do not obtain, bundle, query, or reconstruct ecoinvent or another non-open inventory. If no suitable open factor exists, leave that process unavailable rather than fabricate a result.
-6. Test any future unit conversion, factor lineage, mass balance, missing-data behavior, licensing, accessibility, and exports before release.
+### Data and licensing gates
 
-### Hard boundary under the current authorization
+The source audit in [v2-source-audit.md](v2-source-audit.md) still clears no new factor source. The USDA field-crop version-2 archive is a possible open-LCI lead, but its provider graph and compatible open characterization method are unaudited; the separate ecoinvent-linked crosswalk is excluded as supplied. No new factor values were integrated.
 
-Cross-stage totals, a complete product footprint, and any combined environmental score remain out of scope. The v2 worksheet may organize user-declared inputs and show manual context links to selected process rows, but it does not validate the BOM, derive process quantities, sum results, or imply that selected rows form a complete LCA. Reconsidering that boundary would require a separate, explicit product-scope decision and a defensible open-data method; it must not happen as an implementation detail.
+No ecoinvent license evidence or authorized dataset is present. Do not acquire, query, reconstruct, bundle, or redistribute it unless the exact license permits the intended access, processing, and redistribution. Do not bypass the terms or fabricate a proprietary inventory. Carbonfact's existing published scores may reflect ecoinvent-based background contributions, but the underlying inventory is not included or reconstructed.
+
+### Release checks
+
+The current workspace changes have local frontend/API test and build coverage, but no PR, merge, or deployment was made for this expanded increment. The previous user-reported authenticated Preview checks were on an older code version; verify the latest branch in an authenticated Preview after deployment. Vercel Container Runtime remains a no-SLA beta, not production-grade. Confirm an actual working alias before advertising. No Production launch is authorized.
+
+See [v2-discovery.md](v2-discovery.md), [v2-source-audit.md](v2-source-audit.md), and [task.md](task.md) for scope, source findings, and test status.
 
 ## Version flow
 
-`Use case and boundary → open-source/license audit → reference-unit and geography reconciliation → calculation/schema tests → accessible UI and attributed export → container smoke test → Vercel preview validation → release record and rollback plan`
+`Product boundary → source/license audit → user-confirmed mapping → unit and mass diagnostics → selected-row subtotals/EF score → completeness and non-overlap gates → API/UI/export tests → container smoke test → authenticated Vercel Preview → release and rollback record`

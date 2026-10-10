@@ -26,9 +26,9 @@ from .sources import ACTIVE_SOURCES, DataSourceRecord
 app = FastAPI(
     title="Environmental Impact Analyzer API",
     description=(
-        "Scales openly licensed published apparel and footwear process factors by user-entered "
-        "reference-unit quantities. Reports 16 EF 3.1 indicators separately. It does not "
-        "produce a whole-product footprint or combined score."
+        "Scales openly licensed published apparel and footwear process factors by reference-unit "
+        "quantities. The API returns independent process lines; the browser can display a "
+        "selected-row subtotal and EF 3.1 single score, but not a complete product footprint."
     ),
     version="1.0.0",
     docs_url="/api/docs",
@@ -63,8 +63,9 @@ def methodology() -> dict[str, object]:
         "formula": "source impact factor × user-entered quantity in the factor reference unit",
         "process_estimates_enabled": True,
         "product_footprint_enabled": False,
-        "combined_score_enabled": False,
-        "aggregation": "none; every selected process is reported separately",
+        "combined_score_enabled": True,
+        "combined_score_scope": "browser-calculated EF 3.1 single score for selected process rows only",
+        "aggregation": "the API returns independent rows; the browser sums only the selected rows",
         "indicator_count": len(INDICATORS),
         "factor_record_count": len(ALL_FACTORS),
         "source_id": SOURCE_ID,
@@ -91,8 +92,9 @@ def methodology() -> dict[str, object]:
             ),
         },
         "scope_note": (
-            "Outputs are selected-process results, not a sum across life-cycle stages and not a "
-            "complete product footprint. Source process boundaries and reference units vary."
+            "The browser can sum selected process rows by indicator and calculate an EF 3.1 "
+            "single score, but this is not a complete product footprint and no coverage is "
+            "established. Source process boundaries and reference units vary."
         ),
     }
 

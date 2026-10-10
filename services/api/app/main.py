@@ -15,8 +15,9 @@ from .sources import CANDIDATE_SOURCES, DataSourceRecord
 app = FastAPI(
     title="Environmental Impact Analyzer API",
     description=(
-        "Prototype API for reviewing product attributes. Environmental scores are "
-        "intentionally disabled until reviewed data and methodology are available."
+        "Prototype API for reviewing product attributes. Only explicitly open-licensed "
+        "data are eligible; separate indicators remain disabled until reviewed data and "
+        "methods are available. Combined scores are outside product scope."
     ),
     version="0.1.0",
 )
@@ -32,12 +33,17 @@ def methodology() -> dict[str, object]:
     return {
         "version": METHODOLOGY_VERSION,
         "scoring_enabled": False,
-        "reason": "No reviewed product-level factors, compatible reference set, or approved consumer-score method is configured.",
+        "reason": "Separate indicators require reviewed open-licensed factors, compatible methods, and product/geography coverage. Combined scores are outside the selected product scope.",
         "extractor_version": EXTRACTOR_VERSION,
         "raw_descriptions_persisted": False,
         "candidate_source_count": len(CANDIDATE_SOURCES),
         "active_source_count": sum(source.active_for_scoring for source in CANDIDATE_SOURCES),
         "source_registry": "/api/v1/sources",
+        "data_policy": {
+            "mode": "open_only",
+            "active_source_count": 0,
+            "note": "Only versioned data with explicit, item-specific open terms are eligible; non-open or unclear-license sources and dependencies are excluded.",
+        },
     }
 
 

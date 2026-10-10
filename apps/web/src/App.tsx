@@ -42,8 +42,8 @@ import {
   type ProcessMappingRequirement,
   type ProcessStage,
 } from './api';
-import { assessmentIsScored } from './assessment';
-import { buildLicensingInquiryHref } from './licensing';
+import { availableIndicatorCount } from './assessment';
+import { buildOpenLicenseInquiryHref } from './licensing';
 import { LandscapeGlyph, LandscapeScene } from './LandscapeArt';
 
 type Stage = 'input' | 'review';
@@ -526,7 +526,7 @@ onClick={openMethodology}
             </Typography>
             <div className="hero-note">
               <span className="hero-note-icon"><ScienceOutlinedIcon /></span>
-              <span><strong>Evidence before estimates.</strong> No footprint score is invented when data is missing.</span>
+              <span><strong>Separate indicators, no combined score.</strong> Individual indicators stay unavailable until data and methods are reviewed.</span>
             </div>
           </div>
           <div className="hero-visual">
@@ -981,7 +981,7 @@ onClick={openMethodology}
                 </Button>
               </div>
               <Typography className="fine-print">
-                This prototype does not calculate a product footprint. It will not turn missing data into a zero or a score.
+                This prototype does not calculate individual environmental indicators yet. A combined score is not part of the product scope, and missing data is never treated as zero.
               </Typography>
             </form>
           </Paper>
@@ -992,7 +992,7 @@ onClick={openMethodology}
                 <div className="step-label">02 <span aria-hidden="true">·</span> ENVIRONMENTAL ASSESSMENT</div>
                 <Typography id="result-heading" component="h2" variant="h5" className="card-title">What the evidence says.</Typography>
               </div>
-              {assessment && <Chip label="No score" size="small" className="result-status-chip" />}
+              {assessment && <Chip label="No combined score" size="small" className="result-status-chip" />}
             </div>
 
             {assessment ? (
@@ -1003,7 +1003,7 @@ onClick={openMethodology}
 
             <div className="method-note">
               <span className="method-note-icon"><InfoOutlinedIcon fontSize="small" /></span>
-              <span><strong>Why no score?</strong> No reviewed, licensed impact dataset is connected to this prototype.</span>
+              <span><strong>Why no indicators yet?</strong> No reviewed open dataset or approved indicator method is connected to this prototype.</span>
               <Button onClick={openMethodology} size="small" aria-label="Read the methodology explanation">Learn more</Button>
             </div>
           </Paper>
@@ -1020,23 +1020,26 @@ onClick={openMethodology}
         <DialogContent dividers>
           <Stack spacing={2} className="method-dialog-copy">
             <Alert severity="warning" icon={<WarningAmberRoundedIcon />}>
-              <strong>No environmental footprint is calculated.</strong> No consumer-score method is approved; any future index requires reviewed data and LCA methods, independent validation, and legal/claims approval.
+              <strong>No indicators are calculated in this prototype.</strong> The product direction is multiple separate indicators and no combined score. Open data rights, indicator methods, coverage, and independent validation remain unresolved.
+            </Alert>
+            <Alert severity="info">
+              <strong>Open data only.</strong> We consider versioned data with explicit, item-specific open reuse terms. Public access or an “open-source” label alone is not enough; non-open or unclear-license inputs are excluded.
             </Alert>
             <div>
               <Typography component="h3" className="dialog-section-title">Text suggestions</Typography>
               <Typography variant="body2">The current parser uses simple, deterministic patterns to find phrases such as material percentages, item mass, a “made in” country, or certification wording. Suggestions are editable and require your confirmation. They are not verified facts.</Typography>
             </div>
             <div>
-              <Typography component="h3" className="dialog-section-title">What a future score would need</Typography>
-              <Typography variant="body2">A reviewed life-cycle boundary, traceable factors, compatible climate and water indicators, a representative category reference set, and an expert-reviewed method. Missing data must never be treated as zero.</Typography>
+              <Typography component="h3" className="dialog-section-title">What separate indicators would need</Typography>
+              <Typography variant="body2">Each indicator needs an explicit definition and unit, reviewed open factors, a life-cycle boundary, product/geography coverage, and expert validation. Indicators remain separate; no combined score is produced. Missing data must never be treated as zero.</Typography>
               <Typography variant="body2" className="pefcr-limit">The <a href="https://www.carbonfact.com/hubfs/A&FW_PEFCR_v3.1.pdf" target="_blank" rel="noreferrer">Apparel &amp; Footwear PEFCR v3.1 report</a> defines a full-life-cycle EU method and states validity through 31 December 2027. The European Commission’s <a href="https://green-forum.ec.europa.eu/news/transitional-guidance-limited-availability-ef-compliant-datasets-2026-07-14_en" target="_blank" rel="noreferrer">July 2026 transition guidance</a> says existing PEFCRs remain valid until EF 4.0 is implemented; confirm current rules and EF database rights before compliance-related use.</Typography>
-              <Typography variant="body2" className="pefcr-limit">The PEFCR report does not allow a single score for business-to-consumer communication or comparisons against its representative products. This prototype is not PEFCR-compliant; any separate consumer score needs independent expert and legal review.</Typography>
+              <Typography variant="body2" className="pefcr-limit">The PEFCR report does not allow a single score for business-to-consumer communication or comparisons against its representative products. This prototype is not PEFCR-compliant; do not repurpose its single-score results or representative-product benchmarks.</Typography>
             </div>
             <div className="source-registry-block">
               <div className="source-heading-row">
                 <div>
                   <Typography component="h3" className="dialog-section-title">Candidate data source</Typography>
-                  <Typography variant="body2">Listed for transparency only. It is not loaded into the assessment.</Typography>
+                  <Typography variant="body2">Listed for transparency only. No dataset is loaded into the assessment.</Typography>
                 </div>
                 <Chip label="Not active" size="small" className="source-pending-chip" />
               </div>
@@ -1053,10 +1056,10 @@ onClick={openMethodology}
                     <a href={source.repository_url} target="_blank" rel="noreferrer">Pinned release ↗</a>
                     <a href={source.changelog_url} target="_blank" rel="noreferrer">Current changelog ↗</a>
                     <a href={source.license_url} target="_blank" rel="noreferrer">{source.license_name} ↗</a>
-                    <a href={source.license_terms_url} target="_blank" rel="noreferrer">Current license guidance ↗</a>
+                    <a href={source.license_terms_url} target="_blank" rel="noreferrer">Product integration guidance ↗</a>
                   </div>
                   <div className="source-terms">
-                    <Typography component="h4" className="dialog-section-title">Potential open-license path — not yet cleared</Typography>
+                    <Typography component="h4" className="dialog-section-title">Published CC BY-SA content — candidate only</Typography>
                     <Typography variant="body2">{source.use_terms_summary}</Typography>
                     <div className="source-attribution">
                       <strong>Attribution to display if adopted:</strong> {source.attribution_text}
@@ -1066,13 +1069,11 @@ onClick={openMethodology}
                         <a href={link.url} key={link.url} target="_blank" rel="noreferrer">{link.label} ↗</a>
                       ))}
                     </div>
-                    <Typography variant="body2"><strong>Background database:</strong> {source.background_database_note}</Typography>
                     <Typography variant="body2">
-                      <strong>Alternative:</strong> The publisher lists separate commercial terms for organizations unable to meet the open-license conditions.{' '}
-                      <a href={`mailto:${source.commercial_license_contact}`}>{source.commercial_license_contact}</a>
+                      <strong>Open-data boundary:</strong> {source.background_database_note} If open-license scope or obligations cannot be verified or met, this source will be excluded; no non-open license is considered.
                     </Typography>
-                    <a className="licensing-inquiry-link" href={buildLicensingInquiryHref(source)}>
-                      Prepare version-specific licensing questions ↗
+                    <a className="licensing-inquiry-link" href={buildOpenLicenseInquiryHref(source)}>
+                      Prepare open-license clarification questions ↗
                     </a>
                   </div>
                   <div className="source-review-gates">
@@ -1122,7 +1123,7 @@ function EmptyAssessment({ hasInput }: { hasInput: boolean }) {
         className="soft-chip"
       />
       <Typography component="h3" className="empty-title">
-        {hasInput ? 'Facts first. Footprint later.' : 'Your assessment starts here.'}
+        {hasInput ? 'Facts first. Indicators later.' : 'Your assessment starts here.'}
       </Typography>
       <Typography className="empty-copy">
         {hasInput
@@ -1147,15 +1148,15 @@ function EmptyAssessment({ hasInput }: { hasInput: boolean }) {
 }
 
 function AssessmentPanel({ result, onStartOver }: { result: AssessmentResult; onStartOver: () => void }) {
-  const scored = assessmentIsScored(result);
+  const indicatorCount = availableIndicatorCount(result);
   return (
     <div className="assessment-output">
       <div className="result-summary">
         <div className="result-summary-icon"><WarningAmberRoundedIcon /></div>
         <div>
-          <div className="result-overline">{scored ? 'SCREENING SCORE' : 'NO SCORE AVAILABLE'}</div>
+          <div className="result-overline">NO COMBINED SCORE</div>
           <Typography component="h3" className="result-headline">
-            {scored ? 'Assessment ready' : 'Score withheld'}
+            {indicatorCount > 0 ? 'Separate indicators available' : 'Indicators not calculated yet'}
           </Typography>
           <Typography className="result-explanation">{result.score_explanation}</Typography>
         </div>

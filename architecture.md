@@ -1,7 +1,7 @@
 # Project Architecture — Environmental Impact Analyzer
 
 > **Status:** Proposed architecture for the MVP
-> **Last updated:** 2026-10-03
+> **Last updated:** 2026-10-10
 > **Implementation state:** An initial stateless web/API prototype exists. PostgreSQL, environmental datasets, model inference, and numeric scoring are not connected.
 
 ## 1. Architecture goals
@@ -37,7 +37,7 @@ flowchart LR
     X --> C[User-confirmed product facts]
     C --> F[Versioned factor and reference registry]
     F --> I[Deterministic impact calculator]
-    I --> S[Eligibility and score-communication gate]
+    I --> S[Separate-indicator eligibility gate]
     S --> R[Transparent indicator / no-score response]
     A <--> D[(PostgreSQL)]
     F --> D
@@ -76,7 +76,7 @@ Keep route handlers thin. Domain logic must be callable without HTTP or a databa
 3. If text is supplied, produce candidate attributes with field name, normalized value, original evidence span, extractor/model version, and confidence. The UI must ask for confirmation before those values affect a calculation.
 4. Resolve applicable factor records by material/process, geography, year, boundary, and compatible impact method. A failed or ambiguous match remains unknown; it does not fall through to a convenient but incompatible factor.
 5. Calculate impact indicators with versioned factors and unit-safe deterministic functions. Keep factor inputs and intermediate contributions available for audit.
-6. Evaluate indicator eligibility and score-communication policy. Default to no overall consumer score. Never use PEFCR v3.1 single scores or representative-product comparisons in B2C communication; any distinct index needs separate expert/legal approval and validation.
+6. Evaluate eligibility for each indicator independently and show only compatible, reviewed indicator values. Do not calculate a combined score or aggregate ranking; it is outside the selected product scope. Never use PEFCR v3.1 single scores or representative-product comparisons in B2C communication.
 7. Persist the assessment snapshot and provenance according to retention policy; return a response that explains scope, evidence, coverage, uncertainty, and method version.
 
 ### AI boundary
@@ -88,7 +88,7 @@ The extraction adapter may identify material names, percentages, mass, origin, o
 | Entity | Key fields and purpose |
 |---|---|
 | `product` | Stable product identity, display name, brand (optional), category/subtype, and reviewed product-specific attributes. |
-| `assessment` | ID, product snapshot, normalized input snapshot, status, functional unit, boundary, `methodology_version`, optional score, confidence, creation time, expiry/deletion time. |
+| `assessment` | ID, product snapshot, normalized input snapshot, status, functional unit, boundary, `methodology_version`, confidence, creation time, expiry/deletion time. No combined-score value is stored. |
 | `assessment_indicator` | Assessment ID, indicator, value and unit, optional low/high estimate, stage, coverage, evidence class, and contributing factor/source IDs. |
 | `assessment_attribute` | User-confirmed normalized field/value, evidence class, confirmation state, and extractor/model version where applicable. Keep candidate evidence spans in the transient preview response; do not persist pasted text or snippets by default. Store an evidence reference only when the user supplies it and retention/consent rules allow it. |
 | `source_record` | Publisher, dataset/document ID and version, URL, retrieval date, geography/time coverage, license/terms, attribution, and permitted use. |
@@ -102,7 +102,7 @@ Use foreign keys and database constraints for valid categories, units, percentag
 
 All endpoints are versioned under `/api/v1`. Use JSON, documented request/response schemas, consistent error objects, and stable error codes.
 
-**Implemented prototype routes:** `GET /healthz`, `GET /api/v1/methodology`, `GET /api/v1/sources`, `POST /api/v1/extractions/preview`, and `POST /api/v1/assessments`. The assessment endpoint is stateless and always returns `score: null`; it includes known facts and a no-score process-mapping readiness checklist for the inactive candidate source. The checklist highlights input gaps but does not match factors or calculate impact. Product search, feedback, persistence, and data-backed scoring remain planned.
+**Implemented prototype routes:** `GET /healthz`, `GET /api/v1/methodology`, `GET /api/v1/sources`, `POST /api/v1/extractions/preview`, and `POST /api/v1/assessments`. The assessment endpoint is stateless and always returns `score: null` to make the no-combined-score policy explicit; it includes known facts and a non-scoring process-mapping checklist for the inactive candidate source. The checklist highlights input gaps but does not match factors or calculate impact. Product search, feedback, persistence, and data-backed scoring remain planned.
 
 ### `POST /api/v1/extractions/preview`
 
@@ -168,11 +168,11 @@ Defer arbitrary URL import and barcode lookup. If added later, use a dedicated a
 
 ## 8. Data sourcing and ingestion
 
-Maintain a source register before importing data. For each dataset, document source owner, dataset and release version, geography, time period, system boundary, impact method, license, attribution, redistribution rights, and transformation history. Review terms for both internal processing and user-facing derived results; public accessibility does not automatically grant redistribution or commercial use rights.
+Maintain an open-data source register before importing anything. For each dataset, document source owner, immutable release/version, item-specific license and licensed content scope, upstream/background dependencies, geography, time period, system boundary, impact method, attribution, ShareAlike/redistribution/downstream-user terms, and transformation history. A public URL, an “open source” label on a library, a paper license, or an older repository-wide submission policy is not enough. Review rights for the data actually used and derived results; exclude all non-open or unclear-license inputs. There is no paid/commercial-license fallback.
 
-Candidate sources are options to evaluate, not assumed dependencies: LCA Commons repositories, openLCA Nexus datasets, ecoinvent (license required for many uses), product-specific environmental declarations, and manufacturer evidence. A domain expert must decide whether process-level data and methods are comparable to the chosen product boundary. Reject incompatible or untraceable data rather than silently mixing methodologies.
+Candidate sources are options to evaluate, not assumed dependencies. LCA Commons is a repository, so check each record; some are explicitly CC0, but that does not license every record. Textile Exchange describes its LCI library as open-source but does not establish a blanket license for each included dataset. Product-specific declarations or manufacturer evidence can be considered only if their underlying data and redistribution terms are explicitly open. Do not use ecoinvent or another proprietary background database, even as an unmentioned dependency. Reject incompatible or untraceable data rather than silently mixing methodologies.
 
-The current static source registry lists Carbonfact v1.1.0 solely for transparent review; it is not imported or active for scoring. A possible route is to use only the published pre-calculated impact-score CSVs under the stated CC BY-SA 4.0 license, while satisfying its attribution and ShareAlike conditions. The v1.1.0 README permits commercial use subject to those conditions; the publisher's current README adds specific product/platform obligations (linked same-screen attribution, retaining notices and informing users, marking changes, and releasing adapted/recalculated values served to customers under CC BY-SA 4.0 or a compatible license). Confirm with Carbonfact/legal counsel that the current guidance applies to the pinned release and that the service can comply; otherwise evaluate the publisher's separate commercial license. Do not infer ecoinvent rights from Carbonfact's license: the full underlying inventories are not distributed and require separate ecoinvent 3.12 rights. The registry exposes pending rights, product/process mapping, boundary/indicator, and validation gates; the UI can prepare an editable email draft but never sends it. No factor data are imported pending this review.
+The current static source registry lists Carbonfact v1.1.0 solely for transparent review; no data are imported or active for scoring. The v1.1.0 release states CC BY-SA 4.0 for its published impact-score CSVs and key foreground parameters. The current product/platform guidance describes linked same-screen attribution, retaining notices and informing users, marking changes, and distributing adapted/recalculated dataset values served through a product under CC BY-SA 4.0 or compatible open terms. Verify the guidance's applicability to the pinned release and ability to meet every obligation before use. Only explicitly published/covered content can be considered; the full background inventories are not distributed and use ecoinvent 3.12. Do not access or reconstruct those inventories or describe Carbonfact as an open full LCI. If the use case requires a fully open underlying inventory, exclude this candidate. The registry exposes pending license, product/process mapping, boundary/indicator, and validation gates; the UI may prepare an open-license clarification email but never sends it. No data have been imported pending review.
 
 Pin an immutable release for reproducible evaluation because the current main-branch changelog records post-v1.1.0 impact-score changes and withdrawn files. The Apparel & Footwear PEFCR is a method reference rather than a factor dataset; its report restricts B2C use of its single score and comparisons against its representative products. The European Commission’s July 2026 transition guidance says existing PEFCRs remain valid until EF 4.0 is implemented and directs valid-PEFCR studies to a separate dataset hierarchy; it does not grant rights to use candidate datasets.
 

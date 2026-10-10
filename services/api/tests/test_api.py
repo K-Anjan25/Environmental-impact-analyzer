@@ -26,6 +26,11 @@ def test_health_and_methodology_disclose_disabled_scoring() -> None:
     assert response.json()["raw_descriptions_persisted"] is False
     assert response.json()["active_source_count"] == 0
     assert response.json()["candidate_source_count"] == 1
+    assert response.json()["reason"].startswith(
+        "Separate indicators require reviewed open-licensed factors"
+    )
+    assert response.json()["data_policy"]["mode"] == "open_only"
+    assert response.json()["data_policy"]["active_source_count"] == 0
 
 
 def test_candidate_source_registry_is_not_used_for_scoring() -> None:
@@ -54,7 +59,11 @@ def test_candidate_source_registry_is_not_used_for_scoring() -> None:
         "Carbonfact source repository",
         "Carbonfact database page",
     }
-    assert sources[0]["commercial_license_contact"] == "science@carbonfact.com"
+    assert sources[0]["license_clarification_contact"] == "science@carbonfact.com"
+    assert "commercial_license_contact" not in sources[0]
+    assert "published impact scores" in sources[0]["use_terms_summary"]
+    assert "exclude this source" in sources[0]["use_terms_summary"]
+    assert "will not be accessed or reconstructed" in sources[0]["background_database_note"]
     assert "ecoinvent 3.12" in sources[0]["background_database_note"]
     assert any("not a direct volume" in note for note in sources[0]["limitations"])
 
@@ -163,6 +172,8 @@ def test_assessment_withholds_score_and_does_not_turn_missing_data_into_zero() -
     assert result["status"] == "not_scored"
     assert result["methodology_version"] == "prototype-no-score-v0.4"
     assert result["score"] is None
+    assert "combined score is not part" in result["score_explanation"]
+    assert "separate indicators" in result["score_explanation"]
     assert result["confidence"]["level"] == "not_assessed"
     mapping = result["process_mapping_readiness"]
     assert mapping["source_id"] == "carbonfact-apparel-footwear-v1.1.0"

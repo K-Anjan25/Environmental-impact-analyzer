@@ -1,6 +1,6 @@
 # Environmental Impact Analyzer
 
-A consumer-facing prototype for making product-impact information easier to understand. The current interactive MVP focuses on apparel and footwear, helps users review product facts, and deliberately withholds environmental scores because no reviewed product-level factors, compatible reference set, or approved consumer-score method is connected.
+A global-market, consumer-facing apparel/footwear prototype for reviewing product-impact information. The selected direction is multiple separate environmental indicators and no combined score. This prototype helps users review product facts but withholds indicator values until open-licensed factors, compatible methods, and product coverage are reviewed.
 
 ## Current prototype
 
@@ -8,7 +8,7 @@ A consumer-facing prototype for making product-impact information easier to unde
 - Python + FastAPI backend with a rule-based description parser and validated assessment contract.
 - Users can review suggested product facts, optionally record component/material shares and supplier-stage process, output/reference-unit, input/loss, and waste-treatment notes, and see which details remain unknown. These added fields are unverified and used only in the stateless no-score response.
 - Climate and water indicators are explicitly marked **not calculated**; no water method/unit is selected. The API never invents a score or converts missing data to zero. The app has no assessment-record persistence, but deployment-level logging/retention has not been reviewed; do not enter confidential supplier details.
-- Carbonfact’s pinned v1.1.0 apparel/footwear process dataset is listed as a candidate only. Its stated CC BY-SA 4.0 terms and a separate commercial-license contact provide two possible reuse paths; the registry records attribution, ShareAlike, separate ecoinvent inventory-rights conditions, and pending activation gates. The UI can prepare a version-specific licensing email but does not send it. Assessment responses include a non-scoring mapping-readiness checklist to expose missing BOM, process-route, geography, loss/waste, use-phase, and end-of-life information. Legal review and product/method validation remain open, so no factor data is loaded or active for scoring.
+- **Open-data-only policy:** use only version-pinned data with explicit, item-specific open reuse terms; public access or an “open-source” label alone is not enough. Carbonfact v1.1.0 is an inactive candidate only for its published CC BY-SA 4.0 impact-score data and foreground parameters. Its full ecoinvent-backed inventory is not distributed and will not be accessed or reconstructed. Required attribution/ShareAlike and source/method review remain pending. There is no commercial-license fallback. Assessment responses include a non-scoring mapping-readiness checklist; no data are loaded and all scoring/claims remain disabled. See the [open data source register](data-sources.md).
 - No database, active factor set, transformer model, product catalogue, user accounts, or product-history storage is connected yet.
 
 ## Project documents
@@ -18,6 +18,7 @@ A consumer-facing prototype for making product-impact information easier to unde
 - [Coding rules](rules.md)
 - [UI/UX design](design.md)
 - [Tasks and roadmap](task.md)
+- [Open data source register](data-sources.md)
 - [Project memory and learning resources](memory.md)
 
 ## Run locally
@@ -62,4 +63,4 @@ npm --prefix apps/web run build
 
 ## Important limitation
 
-This is a functioning product-input and evidence-review prototype, **not an environmental-impact calculator yet**. Overall consumer scores are not enabled by default; any separate screening index would require appropriately licensed data, expert-approved LCA method, independent validation, and legal/claims approval. Do not repurpose PEFCR v3.1 single scores or comparisons against representative products for B2C communication. See [task.md](task.md) for open source, method, and release gates.
+This is a product-input and evidence-review prototype, **not an environmental-impact calculator yet**. The product direction is global-market, multiple separate indicators, and no combined score. No indicator values are calculated until open-data rights, method, coverage, validation, privacy, and legal/claims gates are resolved. Do not repurpose PEFCR v3.1 single scores or representative-product comparisons for B2C communication. See [data-sources.md](data-sources.md) and [task.md](task.md) for open-data, method, and release gates.

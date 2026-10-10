@@ -128,6 +128,8 @@ describe('assessment form accessibility', () => {
     await screen.findByRole('heading', { name: 'Privacy' });
 
     expect(fetchMock).toHaveBeenCalledWith('/api/v1/sources');
+    expect(screen.getByText(/Open data only\./)).toBeTruthy();
+    expect(screen.queryByText(/Alternative:/i)).toBeNull();
     await expectNoAxeViolations();
   });
 
@@ -140,7 +142,7 @@ describe('assessment form accessibility', () => {
       status: 'not_scored',
       methodology_version: 'prototype-no-score-v0.4',
       score: null,
-      score_explanation: 'No score is available in this prototype.',
+      score_explanation: 'A combined score is outside scope; separate indicators are not yet calculated.',
       functional_unit: 'One finished item (input reference only; no result calculated)',
       boundary: 'Not assessed',
       confidence: { level: 'not_assessed', drivers: [] },
@@ -195,7 +197,7 @@ describe('assessment form accessibility', () => {
       target: { value: 'Sample tee' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'Review assessment' }));
-    await screen.findByText('Score withheld');
+    await screen.findByText('Indicators not calculated yet');
     fireEvent.click(screen.getByText('Review 1 mapping requirements'));
 
     await expectNoAxeViolations();

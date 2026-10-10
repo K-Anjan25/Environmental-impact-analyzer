@@ -33,13 +33,14 @@
 
 - Use named units and dimensional conversions at explicit boundaries. Store canonical values; round only for presentation.
 - Each factor must carry source ID/version, geography, year, process/material, boundary, impact method, unit, license/attribution, and quality metadata before it can be used in a user-visible assessment.
-- Treat license terms as release gates, not citations alone: verify rights for source data and derived outputs, implement required on-screen attribution/notices and downstream-user conditions, mark adaptations, and clear underlying background databases separately. A pending rights review blocks ingestion and scoring.
+- **Open data only:** require an explicit, item-specific, versioned open license for every dataset and each dependency actually used. Public availability, an “open-source” label, an academic-paper license, or an old repository-wide submission rule is not enough. Record rights scope, attribution, ShareAlike, redistribution, and downstream-user conditions. Do not use non-open, proprietary, or unclear-license background data; do not substitute a paid/commercial license. A pending rights review blocks ingestion and scoring.
+- Treat license terms as release gates, not citations alone: implement required on-screen attribution/notices and downstream-user conditions, mark adaptations, and verify rights for derived outputs. If an openly licensed published result uses a non-open background inventory, use only the specific openly licensed published content (if otherwise approved), disclose the limitation, and do not access or reconstruct the restricted inventory.
 - A process-mapping checklist is descriptive, not a score or factor match. Keep “missing,” “partial,” “not collected,” “boundary not selected,” and “not in candidate” distinct; none may be converted to zero or environmental eligibility.
 - Reject incompatible unit, geography, time, method, functional-unit, or boundary matches. Do not select a “nearest” factor without a recorded matching rule and visible assumption.
 - Missing, unverified, or ambiguous facts remain unknown. Do not use zero as a missing-value sentinel or infer that an absent certification means a product is uncertified.
 - Keep factor versions and reference distributions immutable once used. Give each method update an explicit version; preserve the version on historical results.
 - Keep each indicator contribution inspectable. Test unit conversion, aggregation, bounds, rounding, and missing-data branches independently. Do not implement the withdrawn percentile/equal-weight score concept without a new approved method.
-- No overall consumer-score formula is currently approved. Do not show PEFCR v3.1 single scores or representative-product comparisons in B2C communication. Any independent index needs documented LCA-expert approval, legal/claims review, data rights, and validation before implementation.
+- The user selected multiple separate indicators and no combined score. Never calculate or display an aggregate score/ranking; it is outside product scope unless the user explicitly changes direction. Do not show PEFCR v3.1 single scores or representative-product comparisons in B2C communication.
 - Do not make marketing phrases, sentiment labels, certifications, or one impact indicator stand in for total sustainability.
 - Record methodological assumptions in domain code/config and documentation; avoid hidden weights and magic constants.
 
@@ -76,7 +77,7 @@
 - Unit-test all pure scoring, normalization, conversion, evidence classification, and comparability logic.
 - Use fixtures with synthetic or properly licensed data; never put restricted production data in tests.
 - Add regression tests for each discovered wrong score, misleading fallback, invalid unit, or extraction bug.
-- Test that missing data never becomes zero, that incompatible products cannot be ranked, and that scores stay disabled by default and remain withheld without every approved data, LCA, legal/claims, and validation gate.
+- Test that missing data never becomes zero, that incompatible products cannot be compared per indicator, that no combined score is produced, and that individual indicators remain withheld without every approved open-data, LCA, legal/claims, privacy, and validation gate.
 - Test API validation and stable error contracts, migration behavior, and frontend loading/error/partial states.
 - Recommended initial target: at least 80% branch coverage for the pure impact/scoring domain, with explicit tests for every eligibility and failure path. Coverage does not replace review of environmental validity.
 - CI must run formatting/lint, type checks, unit/integration tests, and a production frontend build before merge.

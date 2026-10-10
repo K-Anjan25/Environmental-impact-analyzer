@@ -23,8 +23,8 @@ CANDIDATE_SOURCE_URL = (
     "v.1.1.0/README.md#whats-included"
 )
 NO_DATA_REASON = (
-    "No reviewed, licensed environmental factor library or category reference set "
-    "is configured. This indicator was not calculated."
+    "No reviewed, open-licensed environmental factors with compatible product coverage "
+    "are configured. This indicator was not calculated."
 )
 WATER_NO_DATA_REASON = (
     "The product-level water method and unit are unresolved. A candidate EF 3.1 WTU "
@@ -392,9 +392,9 @@ def build_assessment(product: ProductInput) -> AssessmentResponse:
         methodology_version=METHODOLOGY_VERSION,
         score=None,
         score_explanation=(
-            "A responsible overall score is not available in this prototype. "
-            "No reviewed product-level factors, compatible reference set, or approved "
-            "consumer-score method is configured, so no product footprint has been calculated."
+            "A combined score is not part of this product's scope. This prototype also does not "
+            "calculate separate indicators yet because no reviewed open factors, compatible "
+            "method, and product-coverage plan are configured."
         ),
         functional_unit="One finished item (input reference only; no result calculated)",
         boundary="Not assessed — no approved life-cycle dataset is configured",
@@ -426,11 +426,11 @@ def build_assessment(product: ProductInput) -> AssessmentResponse:
         limitations=[
             "This prototype does not calculate or estimate environmental impact.",
             "User-provided and extracted product claims are not independently verified.",
-            "Any future score requires reviewed, licensed factors, a comparable category reference set, and an approved consumer-communication method.",
+            "Separate indicator values require reviewed open-licensed factors, compatible methods, product coverage, and independent validation; a combined score is out of scope.",
             "This is not a PEFCR study; PEFCR v3.1 does not allow a single score for business-to-consumer communication or comparisons against its representative products.",
         ],
         next_steps=[
-            "Review candidate LCA sources and confirm licensing, boundaries, and product/reference coverage before enabling scores.",
+            "Review open-data rights, indicator boundaries, and product coverage before enabling any separate indicator values.",
             "Where known, add component/material shares and supplier process evidence; keep undocumented stages unknown.",
             "Confirm item mass and product-origin claims before any future source matching.",
         ],

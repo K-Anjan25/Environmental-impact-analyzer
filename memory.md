@@ -5,7 +5,7 @@
 
 ## 1. One-paragraph brief
 
-Environmental Impact Analyzer is a consumer-facing apparel/footwear prototype that reviews product facts and may eventually show method-specific indicators. It uses NLP only to suggest facts from product text; deterministic, versioned calculations and documented LCA data are required for any result. No overall consumer-score method is approved. A distinct index would need independent LCA validation and legal/claims review; do not repurpose PEFCR v3.1 single scores or representative-product comparisons for B2C communication.
+Environmental Impact Analyzer is a global-market apparel/footwear prototype with multiple separate indicators and no combined score. It reviews product facts; any future indicator values require deterministic, versioned calculations and documented open LCA data. No product subtype-only pilot or production geography has been confirmed. Do not repurpose PEFCR v3.1 single scores or representative-product comparisons for B2C communication.
 
 ## 2. Current repository state
 
@@ -29,13 +29,15 @@ Environmental Impact Analyzer is a consumer-facing apparel/footwear prototype th
 | Topic | Current decision |
 |---|---|
 | Initial audience | Consumers first; business use is future scope. |
-| Initial category | Apparel and footwear, narrowed further by a data-coverage review. Food and electronics are not part of the first scoring model. |
+| Initial category | Apparel and footwear, narrowed further by a data-coverage review. Food and electronics are not part of the first scoring model; a T-shirt-only pilot is not confirmed. |
+| Target market | Global. Actual item/stage geographies must be evidence-based; do not infer or default production locations. |
+| Indicator presentation | Multiple separate environmental indicators; no combined score or aggregate ranking. |
 | Stack | The prototype uses React + TypeScript + Vite + themed MUI and Python + FastAPI. PostgreSQL is planned but not connected. See `architecture.md`. |
 | Assessment style | Transparent screening estimate, not a certified or complete LCA. |
 | NLP role | Extract candidate facts with evidence spans for user confirmation. Never generate an impact factor or score. |
 | Initial numeric indicators | Climate and a specifically defined water-use indicator only when source method, unit, boundary, and review support them. A candidate EF 3.1 WTU factor is expressed in m³ world-equivalent, not physical litres; do not relabel or convert it to litres. Other attributes such as repairability/recycled content stay separate facts until justified. |
-| Composite score | No approved overall-score formula. Withdraw the earlier percentile/equal-weight concept from MVP requirements. Default to no consumer score; any separate index needs independent LCA validation plus legal/claims approval. Do not use PEFCR v3.1 single scores or representative-product comparisons in B2C communication. |
-| Data policy | Record source/version, license, boundary, geography, year, units, and transformation history. Publicly discoverable does not mean free to redistribute. |
+| Combined score | Explicitly out of scope: multiple separate indicators only, no combined score. Do not implement an aggregate score/ranking unless the user explicitly changes direction. Do not use PEFCR v3.1 single scores or representative-product comparisons in B2C communication. |
+| Data policy | Open data only: every dataset and dependency used must have explicit, item-specific open terms for the intended use. Public access, a library “open” label, or a method/paper license is not enough. No non-open background data or paid-license fallback. Carbonfact published CC BY-SA outputs are a candidate only; its full ecoinvent inventories are excluded. |
 | Privacy direction | No account or app-level assessment persistence in the prototype; raw descriptions are sent to the suggestion API only on request. Hosting/request-log retention is unreviewed; define retention/deletion and feedback consent before a public pilot. |
 | UI direction | Calm and plain-language with original flat, poster-like landscape inline SVGs; vectors are explicitly decorative/non-data, and no artwork implies an impact value, process route, geography, or certification. Keep keyboard-visible focus, text contrast, reduced-motion support, and accessible word labels. Do not use a universal “eco-friendly” badge or color-only score labels. See `design.md`. |
 
@@ -52,35 +54,47 @@ Environmental Impact Analyzer is a consumer-facing apparel/footwear prototype th
 
 ## 5. Environmental-data guardrails
 
-1. Check source license and terms for the intended use, including software integration and derived outputs, before importing data.
+1. Enforce the open-data-only rule: verify item-specific, versioned open terms for all source data and dependencies, including software integration and derived outputs, before importing. Exclude unclear/non-open content; no paid-license fallback.
 2. Keep factor and reference versions immutable once used in an assessment; a changed source or method creates a new version.
 3. Do not mix incompatible system boundaries, geographies, years, functional units, or impact methods without an explicit, reviewed mapping.
 4. Preserve provenance through every normalization and calculation; do not make a model-produced citation look like a source.
 5. Product marketing claims and certification names can be captured as claims/evidence, but are not proof of overall product performance.
-6. If suitable climate + water reference data is unavailable, release an indicator-only assessment rather than inventing a composite.
-7. Do not show PEFCR v3.1 single scores or representative-product comparisons in consumer communication; the PEFCR report explicitly excludes those uses. Any alternative index needs independent LCA and legal/claims review.
+6. If a separate indicator lacks suitable open data/method coverage, withhold that indicator rather than inventing a value.
+7. Do not create a combined score or aggregate ranking; this is the selected product direction. Do not show PEFCR v3.1 single scores or representative-product comparisons in consumer communication.
 
-## 6. Data-source scan (2026-10-03)
+## 6. Open-data source scan (2026-10-10)
 
-This is an initial source inventory, **not** a legal review, LCA-method approval, or authorization to publish derived scores. No external dataset has been imported into the application.
+This is a source/rights inventory, **not** legal review, LCA-method approval, or authorization to publish environmental results. The user requires open data only. No external dataset has been downloaded, imported, or calculated.
 
-### Candidate: Carbonfact Open Source LCA Database for Footwear & Apparel
+### Acceptance rule
 
-- The [Zenodo v1.1.0 record](https://zenodo.org/records/21102756) (published 2026-07-01) and its [pinned GitHub release tag](https://github.com/carbonfact/lca-database-footwear-apparel/releases/tag/v.1.1.0) describe a process-level factor set with 304 apparel/footwear datasets and EF 3.1 impact indicators, including GHG (`kg CO₂e`) and WTU (`m³ world-equivalent`) per process-specific reference units. The v1.1.0 changelog added natural rubber, women’s boot and sneaker assembly, and synthetic PU leather datasets.
-- The pinned [v1.1.0 README license section](https://github.com/carbonfact/lca-database-footwear-apparel/blob/v.1.1.0/README.md#license) states CC BY-SA 4.0, permits commercial use subject to attribution and ShareAlike, strongly encourages same-screen attribution, and lists a separate commercial-license contact. The [current main README product-integration guidance](https://github.com/carbonfact/lca-database-footwear-apparel/blob/main/README.md#if-you-integrate-this-database-into-a-product-or-platform) is more explicit: linked same-screen attribution, retaining notices and informing customers about reuse obligations, marking changes, and distributing adapted/recalculated values served through a product under CC BY-SA 4.0 or compatible terms. Since that guidance postdates the pinned v1.1.0 release, ask Carbonfact/counsel which requirements apply to that snapshot before integration. Carbonfact lists `science@carbonfact.com` for a separate commercial license if the open terms do not fit. The repository openly shares the pre-calculated impact-score CSVs, while full background inventories are not distributed; use/reproduction of full inventories requires separate ecoinvent 3.12 rights, which CC BY-SA does not grant. See [ecoinvent developer licensing](https://ecoinvent.org/licenses/) and [license FAQ](https://ecoinvent.org/faqs/). No source data have been imported.
-- The [current main-branch changelog](https://github.com/carbonfact/lca-database-footwear-apparel/blob/main/CHANGELOG.md) has post-release changes marked Unreleased: sneaker GLO electricity-scenario GHG moves from 1.014 to 1.905 kg CO₂e/pair (+88%, VN unchanged), and full inventory plus per-exchange contribution files were withdrawn while sharing terms are finalized. Therefore main is not equivalent to the pinned v1.1.0 snapshot; review and cite an immutable release, and re-check updates before any later use.
-- It is not an end-to-end product footprint or a consumer comparison distribution. The pinned [process table](https://github.com/carbonfact/lca-database-footwear-apparel/blob/v.1.1.0/README.md#whats-included), [spinning docs](https://github.com/carbonfact/lca-database-footwear-apparel/tree/v.1.1.0/datasets/spinning), and [textile assembly docs](https://github.com/carbonfact/lca-database-footwear-apparel/tree/v.1.1.0/datasets/textile-assembly) show process-specific reference units (for example, 1 kg yarn, 1 kg fabric, 1 kg dyed textile, 1 kg textile assembly, and shoe assembly per pair or kg); product subtype/material alone cannot choose a route. The source's [loss-handling guidance](https://github.com/carbonfact/lca-database-footwear-apparel/blob/v.1.1.0/README.md#handling-material-losses) says `Input required (kg)` losses must be applied externally by scaling upstream input and adding waste treatment. Its [use-phase docs](https://github.com/carbonfact/lca-database-footwear-apparel/tree/v.1.1.0/datasets/use-phase) describe European consumer behavior; the v1.1.0 process-family table does not list an end-of-life stage. Source CSV headers vary in spelling/spacing, so any importer needs schema normalization and expert-reviewed loss/waste handling. A no-score mapping-readiness checklist reports product-input gaps but does not match factors or calculate impact. BOM/process-route mapping, stage geography, boundary choice, method compatibility, and reference-population design remain unresolved. WTU is not physical water volume in litres.
-- Prototype status: listed by `GET /api/v1/sources` as a candidate only; the API and methodology dialog disclose the possible CC BY-SA route, required attribution links, ShareAlike condition, separate commercial-license contact, ecoinvent boundary, and four pending activation gates. The UI can create a version-specific email draft to Carbonfact but sends nothing. `POST /api/v1/assessments` returns a `prototype-no-score-v0.4` process-mapping checklist and accepts optional component/material shares and stage-specific process/loss/waste evidence; all remain unverified and are neither saved nor used to calculate impacts. `license_review_status` and `method_review_status` remain `pending`; `active_for_scoring` remains `false`.
+Use only immutable, version-pinned data with explicit, item-specific open terms that permit the intended use. Record license scope, attribution, ShareAlike, downstream-user conditions, and all material dependencies. A public download, an “open source” description of a library, a paper's open license, or an old repository-wide submission policy does not prove rights to every data record. Do not access or silently depend on proprietary/unclear background databases. There is no separate commercial-license path; exclude a source if its open terms do not fit.
 
-### Method and raw-material references
+### Candidate: Carbonfact Open Source LCA Database v1.1.0
 
-- The European Commission’s [PEFCR announcement](https://environment.ec.europa.eu/news/new-eu-rules-measuring-environmental-impact-clothes-and-shoes-2025-06-25_en) confirms an apparel/footwear full-life-cycle method. The [PEFCR v3.1 Technical Secretariat report](https://www.carbonfact.com/hubfs/A&FW_PEFCR_v3.1.pdf) (hosted by Carbonfact; heed its disclaimer) specifies 13 subcategories, cradle-to-grave scope, and EU-27/UK/EFTA geographic validity. The report says valid to 2027-12-31 and explicitly disallows a single score for B2C communication and comparisons against its representative products. Do not reuse its single score/representative-product benchmarks for this consumer tool or claim PEFCR conformity.
-- The [European Commission’s transitional guidance (14 July 2026)](https://green-forum.ec.europa.eu/news/transitional-guidance-limited-availability-ef-compliant-datasets-2026-07-14_en) says existing PEFCRs remain valid until EF 4.0 is implemented; the Commission’s [EF data guidance](https://green-forum.ec.europa.eu/green-business/environmental-footprint-methods/data-ef-methods_en) projects EF 4.0 for 2028. The older [PEFCR project FAQ](https://pefapparelandfootwear.eu/faq-glossary/) still says validity ended in 2025, so treat it as outdated and confirm the applicable current Commission rules before compliance work. The interim alternative-dataset hierarchy applies when no valid PEFCR/OEFSR exists; valid-PEFCR studies must follow Section 2.2 of the Commission guidance. This does not grant permission to use or redistribute any candidate dataset.
-- The [EF 3.1 listing on openLCA Nexus](https://nexus.openlca.org/database/Environmental%20Footprint) says previous database-provider agreements expired 2025-12-31. EF database access/license, the Carbonfact CC BY-SA terms, and ecoinvent rights are separate reviews; do not infer that one grants the others.
-- [Textile Exchange’s LCI Library](https://textileexchange.org/lci-library/) is a candidate source for raw-material and initial-processing inventory inputs. It is LCI (inventory) data rather than ready-made impact scores; Textile Exchange states that the library does not verify/endorse the included data and recommends users understand LCA methods and data limitations.
-- The ecoinvent FAQ states that software/tool integration calls for a Developer license. Do not use ecoinvent factors in the application unless the correct license and derived-output terms are in place.
+- The [Zenodo v1.1.0 record](https://zenodo.org/records/21102756) states CC BY-SA 4.0 and describes published process-level scores across 16 EF 3.1 / PEF indicators plus documented foreground parameters. The pinned release has 304 process datasets. The potential open-data scope is the specific published, licensed content only; **the complete LCI is not open/reproducible through this release**.
+- The full Brightway/Activity Browser inventories are not distributed and are built on ecoinvent 3.12. Do not access, download, reconstruct, or describe these inventories as open. The current main repository guidance calls for same-screen linked attribution, retained notices/user-reuse information, change marking, and ShareAlike for adapted/recalculated dataset values served through a product. Confirm that the guidance and license scope apply to pinned v1.1.0 and that every obligation can be met. If not, exclude the dataset; do not seek a non-open license as a workaround.
+- The v1.1.0 database uses a global energy mix; regional production/assembly variations are incomplete or planned. It is not a ready-made product footprint or a representative product distribution. Process-specific units, BOM/process-route mapping, geography, loss/waste treatment, end of life, boundaries, and method compatibility remain unresolved. EF 3.1 WTU is m³ world-equivalent, not litres of physical water.
+- The current [main-branch changelog](https://github.com/carbonfact/lca-database-footwear-apparel/blob/main/CHANGELOG.md) contains post-release changes and withdrawn full-inventory/contribution files; main is not the immutable v1.1.0 snapshot. Pin and cite the released version for any future review.
+- Prototype status: in `GET /api/v1/sources` as an inactive candidate. The API/UI disclose the open license, ShareAlike/attribution duties, non-open inventory boundary, and four pending gates. The UI can prepare—but does not send—an open-license clarification email. No factor data are loaded; `license_review_status` and `method_review_status` remain `pending`; `active_for_scoring` remains `false`.
 
-**Decision:** keep all numeric product scoring disabled. First resolve product categories, compatible boundaries and indicator units, source licenses, process coverage, reference-population design, and expert review. The source registry is informational only.
+### Textile Exchange LCI Library
+
+- [Textile Exchange](https://textileexchange.org/lci-library/) calls this library open source, but limits it to raw-material production and initial processing and says it does not verify or endorse included data.
+- The library is an aggregator of existing records; its page does not establish a blanket open license for every included record. Treat each underlying dataset separately and exclude it until its exact license/rights allow the intended reuse and redistribution. It contains inventory inputs, not ready-made impact scores.
+
+### Federal LCA Commons / USLCI
+
+- [LCA Commons](https://www.lcacommons.gov/quick-start-guide) is a repository of different LCI/LCIA/method resources, not a uniform licensed dataset. Check each record's own metadata and terms.
+- One example, [EPA USEEIO v1.1](https://lcacommons.gov/lca-collaboration/US_Environmental_Protection_Agency/USEEIO/datasets/Processes/31-33:%20Manufacturing/3116:%20Animal%20Slaughtering%20and%20Processing), explicitly states CC0 1.0; it is a U.S. economy-wide input-output model, not a global, process-specific apparel product inventory. The 2018 LCA Commons submission-guideline PDF is a draft and does not establish a blanket license for all existing repository content.
+
+### Other reviewed references
+
+- [Cotton Incorporated's 2016 LCA/LCI update](https://cottontoday.cottoninc.com/wp-content/uploads/2019/11/2016-LCA-Full-Report-Update.pdf) is publicly reachable, but no explicit open license for its data tables was verified in this scan. Do not reuse its values until item-level data rights are clear.
+- The Apparel & Footwear PEFCR v3.1 PDF is a method reference, not a dataset license. Its EU-27/UK/EFTA boundary and B2C communication restrictions do not authorize underlying EF datasets or scores.
+- EF 3.1 characterization-factor/database rights, the Carbonfact score dataset license, and ecoinvent rights are distinct. A method paper or free download does not grant reuse rights to its background inventory.
+
+**Decision:** keep indicator calculations and environmental claims disabled until all gates close. Use only explicitly open data; non-open supplier/background data will not be introduced. Continue source-by-source provenance/licensing review and method/coverage work without importing data. See [`data-sources.md`](data-sources.md) for the detailed register.
 
 ## 7. Learning and reference links
 
@@ -88,10 +102,10 @@ These links are learning starting points and candidate data resources, not endor
 
 ### LCA and environmental data
 
-- [ecoinvent database](https://ecoinvent.org/database/) — commercial/background LCI source to evaluate; review its [license offerings](https://ecoinvent.org/licenses/) before any software integration or redistribution.
+- [ecoinvent database](https://ecoinvent.org/database/) — **excluded** from the open-data-only source pool; its license page may be consulted only to document why its inventories are not being accessed or reconstructed.
 - [openLCA software](https://www.openlca.org/) and [openLCA 2 manual](https://greendelta.github.io/openLCA2-manual/) — LCA modeling and workflow learning.
-- [openLCA Nexus: ecoinvent](https://nexus.openlca.org/database/ecoinvent) — dataset listing and access information; do not assume a listed dataset is free to reuse.
-- [Federal LCA Commons quick-start guide](https://www.lcacommons.gov/quick-start-guide) — explains repository data types and how additional analysis/modeling is needed to produce LCA results.
+- [openLCA Nexus: ecoinvent](https://nexus.openlca.org/database/ecoinvent) — excluded from data use under the open-only policy; a listing is not an open license.
+- [Federal LCA Commons quick-start guide](https://www.lcacommons.gov/quick-start-guide) — explains repository types; check item-level license metadata and coverage before considering any record.
 
 ### NLP and product engineering
 
@@ -109,6 +123,7 @@ These links are learning starting points and candidate data resources, not endor
 ## 8. Document map and source of truth
 
 - [prd.md](prd.md): product scope, score gates, functional/non-functional requirements, and release conditions.
+- [data-sources.md](data-sources.md): open-data acceptance policy and item-specific source rights/coverage register.
 - [architecture.md](architecture.md): service design, schema, API, security, and deployment proposal.
 - [rules.md](rules.md): future coding, calculation, NLP, testing, and privacy standards.
 - [design.md](design.md): user journeys, screens, content, visual direction, accessibility.
@@ -121,7 +136,7 @@ If two docs conflict, prefer the explicit product safety/data guardrails here an
 
 - Which apparel/footwear subtypes and pilot geography have enough comparable, licensed climate and water data?
 - Who will review the LCA boundary, factor mapping, water indicator, and any separately proposed screening method before release?
-- Is any independently developed consumer-facing index appropriate after legal/claims and LCA review, given the PEFCR v3.1 B2C single-score and representative-product restrictions?
+- Which separate indicators and open datasets can support a global-market apparel/footwear service without defaulting production geography?
 - What anonymous assessment retention duration and deletion behavior are appropriate?
 - Which user-reported facts or product-level evidence can be verified, and by whom?
 - What model (if any) is accurate, licensed, private, and fast enough for extraction?

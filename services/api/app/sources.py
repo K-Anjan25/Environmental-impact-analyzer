@@ -43,7 +43,7 @@ class DataSourceRecord(BaseModel):
     attribution_links: list[DataSourceLink]
     share_alike_required: Literal[True]
     background_database_note: str
-    commercial_license_contact: str
+    license_clarification_contact: str
     scope_summary: str
     impact_indicators: list[str]
     limitations: list[str]
@@ -62,16 +62,18 @@ CANDIDATE_SOURCES: tuple[DataSourceRecord, ...] = (
         changelog_url="https://github.com/carbonfact/lca-database-footwear-apparel/blob/main/CHANGELOG.md",
         license_name="CC BY-SA 4.0 (as stated by the source repository)",
         license_url="https://creativecommons.org/licenses/by-sa/4.0/",
-        license_terms_url="https://github.com/carbonfact/lca-database-footwear-apparel/blob/main/README.md#license",
+        license_terms_url="https://github.com/carbonfact/lca-database-footwear-apparel/blob/main/README.md#if-you-integrate-this-database-into-a-product-or-platform",
         license_review_status="pending",
         method_review_status="pending",
         review_gates=[
             SourceReviewGate(
                 id="license-and-distribution",
-                title="Confirm reuse and distribution terms",
+                title="Confirm open-license scope and obligations",
                 details=(
-                    "Ask whether current product-integration guidance applies to v1.1.0 "
-                    "and whether an adapted product result can be served under compatible terms."
+                    "Confirm which published v1.1.0 content is covered by CC BY-SA 4.0, "
+                    "whether current same-screen and ShareAlike guidance applies, and "
+                    "whether the service can meet those open-license obligations. Exclude "
+                    "the source if open terms are insufficient or unclear."
                 ),
                 status="pending",
             ),
@@ -104,16 +106,16 @@ CANDIDATE_SOURCES: tuple[DataSourceRecord, ...] = (
             ),
         ],
         use_terms_summary=(
-            "The v1.1.0 release states CC BY-SA 4.0 and permits commercial use subject to "
-            "attribution and ShareAlike. The publisher's current product-integration guidance "
-            "requires linked, same-screen attribution; retaining the license notice and telling "
-            "customers about reuse obligations; marking changes; and releasing adapted or "
-            "recalculated values served through a product under CC BY-SA 4.0 (or a compatible "
-            "license). Confirm whether this guidance applies to pinned v1.1.0 with the publisher "
-            "and legal counsel before integration."
+            "The pinned v1.1.0 release states CC BY-SA 4.0 for its published impact scores and "
+            "documented foreground parameters. The publisher's current product-integration "
+            "guidance calls for linked same-screen attribution, retaining notices and informing "
+            "users about reuse obligations, marking changes, and distributing adapted or "
+            "recalculated dataset values served through a product under CC BY-SA 4.0 or compatible "
+            "open terms. Confirm that this guidance and license scope apply to the pinned release "
+            "before use. If the open terms cannot be verified or met, exclude this source."
         ),
         attribution_text=(
-            "Data source: The Carbonfact Open Source LCA Database for Footwear & Apparel, "
+            "Data source: The Carbonfact Open Source LCA Database for Footwear & Apparel v1.1.0, "
             "CC BY-SA 4.0."
         ),
         attribution_links=[
@@ -128,16 +130,17 @@ CANDIDATE_SOURCES: tuple[DataSourceRecord, ...] = (
         ],
         share_alike_required=True,
         background_database_note=(
-            "The repository openly shares pre-calculated impact-score CSVs; full Brightway / "
-            "Activity Browser inventories are not distributed. Reproducing or using those "
-            "full inventories requires separate ecoinvent 3.12 rights, which this dataset "
-            "license does not grant."
+            "Only the release's published impact-score CSVs and covered foreground parameters "
+            "are candidates under its stated open license. Full Brightway / Activity Browser "
+            "inventories are not distributed and use ecoinvent 3.12 in the background. Those "
+            "inventories are not open under this release and will not be accessed or reconstructed."
         ),
-        commercial_license_contact="science@carbonfact.com",
+        license_clarification_contact="science@carbonfact.com",
         scope_summary=(
-            "Candidate process-level footwear/textile LCA factors (304 datasets in "
-            "release v1.1.0) with EF 3.1 indicator scores and data-quality metadata; "
-            "not a ready-made product footprint or category reference distribution."
+            "Candidate open-licensed published process-level footwear/textile impact scores "
+            "and foreground parameters (304 datasets in release v1.1.0) with EF 3.1 indicators "
+            "and data-quality metadata; not a full open inventory, ready-made product footprint, "
+            "or category reference distribution."
         ),
         impact_indicators=[
             "GHG — climate change (kg CO₂e per process reference unit)",
@@ -148,7 +151,8 @@ CANDIDATE_SOURCES: tuple[DataSourceRecord, ...] = (
             "Process factors require reviewed product/BOM and process-route modeling; units and boundaries vary by process.",
             "WTU is a water-use impact indicator, not a direct volume of physical water in litres.",
             "The source describes the release as early/evolving. Its current main-branch changelog includes post-v1.1.0 score updates and withdrawn inventory/contribution files; use the pinned Zenodo/tag snapshot for any reproducible review.",
-            "The source says full background inventory files are not distributed and identifies ecoinvent 3.12 as background data; verify downstream use and redistribution rights for this application.",
+            "Full background inventory files are not distributed and use ecoinvent 3.12; do not access, reconstruct, or describe them as open. Only the specifically published, CC BY-SA-covered output content may be considered.",
+            "If the open-license scope or ShareAlike obligations cannot be verified or met, exclude this source rather than seeking a non-open license.",
             "No product-level reference distribution or approved analyzer scoring method is supplied by this registry entry.",
             "CSV input-required mass fields vary in naming/spacing; loss and waste modeling needs schema normalization and expert review before scaling factors.",
         ],

@@ -107,7 +107,7 @@ export interface CandidateDataSource {
   attribution_links: DataSourceLink[];
   share_alike_required: true;
   background_database_note: string;
-  commercial_license_contact: string;
+  license_clarification_contact: string;
   scope_summary: string;
   impact_indicators: string[];
   limitations: string[];

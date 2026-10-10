@@ -1,11 +1,11 @@
 # UI/UX Design — Environmental Impact Analyzer
 
 > **Status:** Product design direction for the MVP
-> **Last updated:** 2026-10-03
+> **Last updated:** 2026-10-10
 
 ## 1. Design intent
 
-Make a complicated environmental estimate calm, understandable, and honest. The interface should help someone learn what matters and decide what to do next—not reward a brand with a simplistic “green” badge. Show a useful result even when a single composite score is not justified.
+Make separate environmental indicators calm, understandable, and honest. The interface should help someone learn what matters and decide what to do next—not reward a brand with a simplistic “green” badge. The selected direction is multiple separate indicators and no combined score.
 
 ### Experience principles
 
@@ -21,7 +21,7 @@ MVP navigation can remain intentionally small:
 
 - **Assess a product** — primary entry point.
 - **Compare** — available after at least two comparable assessments exist.
-- **How it works** — why a score is withheld, method boundaries, candidate data sources, communication restrictions, and limitations.
+- **How it works** — why no combined score is provided by design, why indicator values are currently unavailable, method boundaries, open-data sources, and limitations.
 - **Feedback** — report a data, extraction, methodology, or usability issue.
 
 Do not require an account to assess a product. Saved history, accounts, barcode scanning, and a business dashboard are outside the first release.
@@ -33,7 +33,7 @@ Do not require an account to assess a product. Saved history, accounts, barcode 
 3. **Describe item:** enter product name and known facts, or paste a description. Mark optional information as “I don’t know.” Do not fetch a pasted URL automatically.
 4. **Review extracted facts:** show each suggested attribute, the exact text span it came from, and actions to edit, confirm, reject, or mark unknown. A clear notice says extraction is not verification.
 5. **Calculate:** show a short progress state with a way to return to the form. Avoid implying model certainty while processing.
-6. **Read results:** display scope and evidence, supported method-specific indicators, explicit no-score state, assumptions, and next steps. Any future score requires separate LCA and legal/claims approval.
+6. **Read results:** display scope and evidence, supported method-specific indicators separately, the no-combined-score state, assumptions, and next steps. Explain any indicator that remains unavailable; never present an aggregate score.
 7. **Compare or give feedback:** allow comparison only when products are compatible; provide a short, non-intrusive feedback action.
 
 ## 4. Key screens and content hierarchy
@@ -63,22 +63,22 @@ Each candidate fact is a compact, editable row/card:
 Recommended top-to-bottom order:
 
 1. **Result header:** product, assessment date, functional unit, methodology version, boundary, and an “estimated screening assessment” label.
-2. **No-score state (default):** explain which method, data, reference, or communication gate is unresolved; show confirmed facts and supported indicators instead of a placeholder score. The PEFCR v3.1 report says its single score cannot be used in B2C communication and its results cannot be compared with its representative products. Any independent index requires separate LCA and legal/claims review.
+2. **No-combined-score state:** explain that the product does not produce an aggregate score. Show each separately supported indicator when available; currently, all indicator values are withheld until open-data rights, methods, coverage, validation, and communication reviews pass. Do not repurpose PEFCR v3.1 single scores or representative-product comparisons for B2C.
 3. **Impact breakdown:** show climate and water-use indicators only with source-compatible, explicitly named units and boundaries. Do not label EF 3.1 WTU as litres of physical water. Show estimate/range, included life-cycle stages, evidence source/type, and uncertainty. Use a table or text summary in addition to any bar visualization.
 4. **Process-mapping readiness:** distinguish fields the form captures from missing component BOM, process-route, stage geography, loss/waste, boundary, and end-of-life inputs. Use plain-language states such as “not collected” or “not in candidate”; do not convert this checklist into a score, confidence rating, or factor-match claim.
 5. **What is known / assumed / missing:** group facts by provenance and explain how a missing or estimated input affects the result.
 6. **Practical next steps:** a short list tied to evidence (for example, verify composition, compare similar items, repair/reuse). Mark general advice as general.
-7. **Sources and method:** show publisher, dataset/version, date, and links. For candidate sources, expose license name and review status, applicable attribution/ShareAlike conditions, any separate background-database rights, and a licensing contact/path where available. Put required attribution on the same result screen if a source is later approved for product use. Candidates that have not passed license/method review must be explicitly labeled as inactive and must not appear as evidence behind a score.
+7. **Sources and method:** show publisher, dataset/version, date, and links. Use only version-pinned records with explicit, item-specific open terms. Expose the license, rights scope, attribution/ShareAlike conditions, and any non-open or unavailable background dependencies. Public access or an “open-source” label alone is not enough. Put required attribution on the same result screen if a source is later approved for product use. Candidates that have not passed license/method review must be explicitly labeled as inactive and must not appear as evidence behind a score. Do not offer a paid/commercial-license fallback; exclude sources that cannot be used under open terms.
 8. **Feedback:** “Something look wrong?” with structured reason options and optional comment.
 
-If a score is not supported, replace the score card with a clear state such as: **“We can’t calculate a comparable overall score yet. Here are the indicators and evidence we do have.”** Never substitute a neutral-looking score, blank chart, or zero.
+Do not render a combined-score card. When an individual indicator is unavailable, show the reason beside it and retain any other supported indicators separately. Never substitute a neutral-looking score, blank chart, or zero.
 
 ### Comparison view
 
 - Require the same apparel/footwear subtype, indicator definition, functional unit, boundary, and methodology version for any indicator comparison.
 - Present items in columns on wider screens and stacked cards on mobile.
 - Align the same indicator rows and units; annotate which information differs or is estimated.
-- If inputs are not comparable, explain the mismatch and show non-ranked facts only. Do not compare products against PEFCR representative products or sort them by an unapproved composite.
+- If inputs are not comparable, explain the mismatch and show non-ranked facts only. Do not compare products against PEFCR representative products or combine separate indicators into an overall ranking.
 
 ## 5. Visual direction — flat vector landscapes
 
@@ -124,7 +124,7 @@ Use a readable system sans-serif, generous line height, clear heading hierarchy,
 - Put explanation next to the number it explains; do not hide critical caveats only in tooltips.
 - Label every indicator with a unit and functional unit, such as **“kg CO₂e per item”**.
 - Display “estimated,” “user-provided,” “suggested from text,” and “not available” in plain language.
-- Use an explicit “Why no overall score?” link when eligibility fails.
+- Explain that there is no combined score by design; explain separately why any individual indicator is unavailable.
 - Round values for readability while preserving unrounded values for calculations and audit.
 - Keep assumptions reversible: changing a confirmed input should make it clear that a recalculation is needed.
 - Provide loading, retry, partial-result, unsupported-category, no-data, and service-error states.
@@ -142,4 +142,4 @@ Use a readable system sans-serif, generous line height, clear heading hierarchy,
 
 ## 8. Design validation
 
-Before release, test with consumers unfamiliar with LCA terminology, an environmental-assessment reviewer, and legal/claims counsel. Ask users to explain why no overall score is shown, what each indicator means, what is excluded, and which facts are uncertain. If an independent index is proposed later, test its interpretation separately and confirm the approved communication scope.
+Before release, test with consumers unfamiliar with LCA terminology, an environmental-assessment reviewer, and legal/claims counsel. Ask users to explain why no combined score is shown by design, how each separate indicator is interpreted, what is excluded, and which facts are uncertain. Do not test or propose an aggregate index unless the user explicitly changes scope.

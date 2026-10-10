@@ -18,6 +18,8 @@ The v1 product is an open-data process estimator. It uses Carbonfact's pinned v1
 - [x] Added a non-root multi-stage production Docker image that serves the web build and API from one origin, with health check and access logging disabled.
 - [x] Removed inactive-source/activation-gate UX and legacy no-score routes from the active API/UI.
 - [x] Added API arithmetic/schema/catalog tests, front-end API/export tests, and axe accessibility checks.
+- [x] Added a root MIT license for original application code/project documentation, preserving the separate Carbonfact CC BY-SA 4.0 data terms.
+- [x] Added contribution guidance and draft privacy/terms documents; the operator/contact and legal-review fields remain a Production gate.
 
 ## Release verification
 
@@ -40,7 +42,7 @@ docker compose up --build
 
 `docker-compose.yml` builds and health-checks the same-origin web/API image. The user's Compose output confirmed a successful build, healthy status, and completed FastAPI startup. A browser/API/CSV smoke test in that container remains to be confirmed.
 
-Vercel is the selected deployment platform. The root `Dockerfile.vercel` targets Vercel's Container Runtime (currently Beta), and root `vercel.json` pins the Container framework preset. The Vercel status for feature-branch commit `04eb280` reported deployment success, but the user saw a Vercel edge `404 NOT_FOUND` at the Preview root. Keep the project Root Directory at the repository root and set `PORT=8000` in the Preview environment because the app runs as non-root; push the explicit preset and re-test the new Preview. The initial `main@102be24` deployment contained no app/container output and is not the implementation. Keep `main` as the Production Branch until Preview acceptance. The Vercel project/domain are undecided. Compose is local acceptance only. GitHub CI passed API checks, frontend tests/build, and builds plus HTTP smoke tests for both container images on the latest code/docs commit before this preset fix. See [roadmap.md](roadmap.md) for the release flow and future-version path.
+Vercel is the selected deployment platform. The root `Dockerfile.vercel` targets Vercel's Container Runtime (currently Beta), and root `vercel.json` pins the Container framework preset. The user confirms the Preview runs for feature-branch commit `73f9f6e` at [environmentalimpactanalyzer-gmnlxiopy.vercel.app](https://environmentalimpactanalyzer-gmnlxiopy.vercel.app); GitHub reports deployment success and CI run `38047931343` passed API, web, and both-container checks. End-to-end factor search, estimate, CSV, `PORT=8000`, and repository-root settings still need explicit acceptance. The initial `main@102be24` deployment contained no app/container output and is not the implementation. Keep `main` as the Production Branch until acceptance. Production URL/domain are undecided and no Production deployment has been made. `PRIVACY.md` and `TERMS.md` are drafts: complete operator/contact/jurisdiction details, review Vercel's actual logging/retention settings, and obtain legal review before public Production. Ensure policy links are available to site users. Compose is local acceptance only. See [roadmap.md](roadmap.md) for release gates and rollback steps.
 
 ## Fixed product boundary
 

@@ -29,7 +29,7 @@ The source attribution displayed beside results and embedded in CSV exports is:
 
 > Data source: The Open Source LCA Database for Footwear & Apparel, Carbonfact, version 1.1.0. https://github.com/carbonfact/lca-database-footwear-apparel, CC BY-SA 4.0.
 
-The app identifies its quantity-scaling transformation and offers dataset-derived results under CC BY-SA 4.0. The bundled source `LICENSE` and [reuse record](services/api/data/carbonfact-v1.1.0/SOURCE.md) travel with the published score files. This notice applies to source-derived data and results; it does not assign a license to the application code.
+The app identifies its quantity-scaling transformation and offers dataset-derived results under CC BY-SA 4.0. The bundled source `LICENSE` and [reuse record](services/api/data/carbonfact-v1.1.0/SOURCE.md) travel with the published score files. This notice applies to source-derived data and results; original project code and documentation are separately licensed under the root [MIT License](LICENSE). Neither license overrides the other or changes any third-party terms.
 
 ### Background inventory boundary
 

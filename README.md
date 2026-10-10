@@ -27,7 +27,7 @@ This is the deliberately narrow, supportable product scope: the available openly
 
 The included source files are pinned to Carbonfact tag `v.1.1.0`, commit `fa063ecac17ab36691a0d5c7326fedaa2e9d4ab8`, released 2026-07-01. Its published scores and included process-family notes are distributed under **CC BY-SA 4.0**. Attribution is shown next to on-screen results; CSV exports include the attribution and license. Dataset-derived results are offered under CC BY-SA 4.0. See [`services/api/data/carbonfact-v1.1.0/SOURCE.md`](services/api/data/carbonfact-v1.1.0/SOURCE.md) and its included `LICENSE`.
 
-No non-open inventory files are bundled. The project code is not assigned the source dataset's license by this notice.
+The root [`LICENSE`](LICENSE) applies the MIT License to original project code and documentation; it does **not** relicense Carbonfact data, dataset-derived results, or other third-party material. No non-open inventory files are bundled. Review [`data-sources.md`](data-sources.md) for the data license boundary.
 
 ## Run locally
 
@@ -69,7 +69,7 @@ The standalone image can also be built and run with `docker build -f services/ap
 
 ### Deployment target
 
-The local Compose run built the standard image and reported the API container healthy. Vercel is the selected deployment platform; the Vercel project and custom domain are not finalized. The root [`Dockerfile.vercel`](Dockerfile.vercel) is a Vercel Container Runtime entrypoint, and [`vercel.json`](vercel.json) pins the Container framework preset so the intended container route is generated. The runtime is currently Beta; configure the Vercel project environment variable `PORT=8000` for the non-root app process, then validate a Preview before production. A feature-branch deployment completed, but its root URL returned Vercel's `404 NOT_FOUND`; the preset has now been made explicit and needs a fresh Preview verification. You can locally preflight the image with `docker compose --profile vercel up --build analyzer-vercel` (host port 8001). See the [official Container Runtime guide](https://vercel.com/docs/functions/runtimes/container) and the [release readiness and version roadmap](roadmap.md). Local Compose verifies an image only; it does not validate Vercel routing, limits, or deployment configuration.
+The local Compose run built the standard image and reported the API container healthy. Vercel is the selected deployment platform; the Vercel project and custom domain are not finalized. The root [`Dockerfile.vercel`](Dockerfile.vercel) is a Vercel Container Runtime entrypoint, and [`vercel.json`](vercel.json) pins the Container framework preset. The runtime is currently Beta. The user confirmed the feature-branch Preview now runs for commit `73f9f6e` at [environmentalimpactanalyzer-gmnlxiopy.vercel.app](https://environmentalimpactanalyzer-gmnlxiopy.vercel.app); the API, estimate, and CSV browser flow still need end-to-end confirmation. Confirm the Vercel project root is the repository root and `PORT=8000` is configured before any production deployment. You can locally preflight the image with `docker compose --profile vercel up --build analyzer-vercel` (host port 8001). See the [official Container Runtime guide](https://vercel.com/docs/functions/runtimes/container) and the [release readiness and version roadmap](roadmap.md). Local Compose verifies an image only; it does not validate Vercel routing, limits, or deployment configuration.
 
 ## API
 
@@ -105,8 +105,14 @@ npm test --prefix apps/web
 npm run build --prefix apps/web
 ```
 
-## Project notes
+## License, privacy, and contributing
 
+The application code/documentation license is separate from the bundled data license. The privacy notice and terms are **release drafts** with operator/contact and jurisdiction fields that must be completed and reviewed before public Production; see the release gates in [`roadmap.md`](roadmap.md).
+
+- [MIT License for original project code and documentation](LICENSE)
+- [Privacy notice](PRIVACY.md)
+- [Terms of use](TERMS.md)
+- [Contributing guide](CONTRIBUTING.md)
 - [Product scope and requirements](prd.md)
 - [Data-source record](data-sources.md)
 - [Architecture](architecture.md)

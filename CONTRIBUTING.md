@@ -19,7 +19,7 @@ Thanks for helping improve the Environmental Impact Analyzer. Contributions must
 
 ## Development setup
 
-The API uses Python 3.11; the web app uses Node.js 22 and npm. From the repository root:
+The API uses Python 3.11; the web app uses Node.js 22 and npm. Vite's `predev`/`prebuild` scripts generate the in-app legal HTML pages from the root Markdown, license, and source-record files. Edit those source files; do not edit generated `apps/web/public/legal/` output. From the repository root:
 
 ```bash
 python -m venv .venv

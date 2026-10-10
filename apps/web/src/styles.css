@@ -421,8 +421,9 @@ button, input, textarea { font: inherit; }
 .result-attribution strong { color: #2d4b38; font-size: 11px; }
 .result-attribution p { margin: 6px 0; }
 .result-attribution a, .source-dialog-links a { display: inline-flex; align-items: center; gap: 4px; color: #245d47; font-weight: 700; text-decoration-thickness: 1px; text-underline-offset: 2px; }
-.app-footer { display: flex; justify-content: space-between; gap: 12px; padding: 23px 5px 10px; color: #637169; font-size: 10px; }
-.app-footer button { border: 0; padding: 0; background: none; color: #315e48; cursor: pointer; font: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.app-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 23px 5px 10px; color: #637169; font-size: 10px; }
+.app-footer-links { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.app-footer button, .app-footer a { border: 0; padding: 0; background: none; color: #315e48; cursor: pointer; font: inherit; text-decoration: underline; text-underline-offset: 3px; }
 .dialog-title.MuiDialogTitle-root { color: #223c2f; font-weight: 750; letter-spacing: -0.025em; }
 .source-dialog-content { color: #586860; }
 .dialog-section-title.MuiTypography-root { margin-bottom: 7px; color: #294735; font-size: 13px; font-weight: 750; }

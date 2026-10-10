@@ -107,7 +107,7 @@ npm run build --prefix apps/web
 
 ## License, privacy, and contributing
 
-The application code/documentation license is separate from the bundled data license. The privacy notice and terms are **release drafts** with operator/contact and jurisdiction fields that must be completed and reviewed before public Production; see the release gates in [`roadmap.md`](roadmap.md).
+The application code/documentation license is separate from the bundled data license. The app footer links to Privacy, Terms, and Software License pages; Vite generates those pages from the root Markdown/license sources during development and production builds. The privacy notice and terms remain **release drafts** with operator/contact and jurisdiction fields that must be completed and reviewed before public Production; see [`roadmap.md`](roadmap.md).
 
 - [MIT License for original project code and documentation](LICENSE)
 - [Privacy notice](PRIVACY.md)

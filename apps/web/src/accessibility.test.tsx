@@ -200,6 +200,11 @@ describe('process estimator accessibility', () => {
     const illustration = container.querySelector('.landscape-scene');
     expect(illustration?.getAttribute('aria-hidden')).toBe('true');
     expect(illustration?.getAttribute('focusable')).toBe('false');
+    const legalNavigation = screen.getByRole('navigation', { name: 'Legal and source links' });
+    expect(legalNavigation).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Privacy' }).getAttribute('href')).toBe('/legal/privacy.html');
+    expect(screen.getByRole('link', { name: 'Terms' }).getAttribute('href')).toBe('/legal/terms.html');
+    expect(screen.getByRole('link', { name: 'License' }).getAttribute('href')).toBe('/legal/license.html');
   });
 
   it('has no axe violations in the calculator and populated indicator results', async () => {

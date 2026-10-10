@@ -57,6 +57,18 @@ jobs:
                   assert response.status == 200
               with urlopen(f"{base_url}/api/docs", timeout=5) as response:
                   assert response.status == 200
+              legal_pages = {
+                  "/legal/privacy.html": "Privacy notice",
+                  "/legal/terms.html": "Terms of use",
+                  "/legal/license.html": "Software license",
+                  "/legal/data-sources.html": "Open-data source record",
+                  "/legal/source-record.html": "Carbonfact source record",
+                  "/legal/source-license.html": "Carbonfact dataset license",
+              }
+              for route, marker in legal_pages.items():
+                  with urlopen(f"{base_url}{route}", timeout=5) as response:
+                      assert response.status == 200
+                      assert marker in response.read().decode()
               with urlopen(f"{base_url}/api/v1/factors?limit=1", timeout=5) as response:
                   catalog = json.load(response)
               assert catalog["total_records"] == 302

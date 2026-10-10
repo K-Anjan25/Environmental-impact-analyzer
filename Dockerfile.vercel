@@ -5,6 +5,8 @@ WORKDIR /workspace/apps/web
 COPY apps/web/package.json apps/web/package-lock.json ./
 RUN npm ci
 COPY apps/web/ ./
+COPY LICENSE PRIVACY.md TERMS.md data-sources.md /workspace/
+COPY services/api/data/carbonfact-v1.1.0/LICENSE services/api/data/carbonfact-v1.1.0/SOURCE.md /workspace/services/api/data/carbonfact-v1.1.0/
 RUN npm run build
 
 FROM python:3.11-slim AS runtime

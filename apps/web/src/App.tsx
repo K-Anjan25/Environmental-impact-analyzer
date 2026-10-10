@@ -642,7 +642,12 @@ function App() {
 
         <footer className="app-footer">
           <span>Environmental Impact Analyzer · Open-data process estimates</span>
-          <button type="button" onClick={() => setSourceDialogOpen(true)}>Source, method & privacy</button>
+          <nav className="app-footer-links" aria-label="Legal and source links">
+            <a href="/legal/privacy.html">Privacy</a>
+            <a href="/legal/terms.html">Terms</a>
+            <a href="/legal/license.html">License</a>
+            <button type="button" onClick={() => setSourceDialogOpen(true)}>Source, method & privacy</button>
+          </nav>
         </footer>
       </main>
 

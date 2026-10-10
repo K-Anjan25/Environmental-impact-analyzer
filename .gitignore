@@ -10,6 +10,7 @@ __pycache__/
 node_modules/
 apps/web/node_modules/
 apps/web/dist/
+apps/web/public/legal/
 coverage/
 
 # Local configuration and logs

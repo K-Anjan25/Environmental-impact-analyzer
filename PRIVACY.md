@@ -29,13 +29,13 @@ Do not enter personal information, confidential business information, or other s
 
 The application source does not include advertising trackers, analytics services, or application-set cookies/local-storage persistence. The API container disables Uvicorn access logging and does not log calculation request bodies.
 
-The hosting provider, Vercel, and network infrastructure may process technical request information needed to deliver, secure, and troubleshoot the service. This can include an IP address, request time, URL/path, browser or device headers, response status, and related diagnostics. The exact information and retention period depend on the live project configuration and Vercel's current policies; this project does not claim that infrastructure logs are disabled or that network metadata is never retained. Vercel's [Privacy Notice](https://vercel.com/legal/privacy-policy) and [Terms of Service](https://vercel.com/legal/terms) apply to its services.
+Vercel's infrastructure routes the HTTP request—including the calculation payload—to the running container so it can return a result. Vercel and network infrastructure may also process technical request information needed to deliver, secure, and troubleshoot the service. This can include an IP address, request time, URL/path, browser or device headers, response status, and related diagnostics. The application itself does not log or persist calculation bodies, but this project has not independently verified whether the live Vercel configuration records request bodies or what its exact retention periods are. The operator must check Vercel's live logs/settings before production; this notice does not claim provider-side logging is disabled. Vercel's [Privacy Notice](https://vercel.com/legal/privacy-policy) and [Terms of Service](https://vercel.com/legal/terms) apply to its services.
 
 Vercel Preview protection, if enabled, may use Vercel-managed authentication or cookies. Those are controlled by Vercel, not by this application's code. Links opened to Carbonfact, GitHub, Zenodo, Creative Commons, or other external sites are subject to those sites' own privacy practices.
 
 ## Purposes and sharing
 
-Calculation inputs are used to return the requested calculation. Hosting and network providers process technical information for delivery, reliability, abuse prevention, and security under their own terms. The project does not sell personal information or use it for advertising. The project does not otherwise disclose calculation inputs to third parties through application code.
+Calculation inputs are used to return the requested calculation. The browser sends them to the Vercel-hosted API; hosting and network providers handle that request to provide the service and may process technical information for delivery, reliability, abuse prevention, and security under their own terms. The application source does not send inputs to advertising or analytics services. The project does not sell personal information or use it for advertising.
 
 ## Storage, retention, and location
 

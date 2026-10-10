@@ -1,60 +1,172 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { getCandidateSources, type CandidateDataSource } from './api';
+import {
+  calculateProcessEstimates,
+  getActiveSources,
+  getFactorCatalog,
+  type ActiveDataSource,
+  type FactorCatalog,
+  type ProcessEstimateResponse,
+} from './api';
 
-const candidate: CandidateDataSource = {
+const source: ActiveDataSource = {
   id: 'carbonfact-apparel-footwear-v1.1.0',
-  name: 'Carbonfact Open Source LCA Database for Footwear & Apparel',
+  name: 'The Open Source LCA Database for Footwear & Apparel',
   version: '1.1.0',
   release_date: '2026-07-01',
   publisher: 'Carbonfact',
   source_url: 'https://zenodo.org/records/21102756',
   repository_url: 'https://github.com/carbonfact/lca-database-footwear-apparel/releases/tag/v.1.1.0',
-  changelog_url: 'https://github.com/carbonfact/lca-database-footwear-apparel/blob/main/CHANGELOG.md',
-  license_name: 'CC BY-SA 4.0 (as stated by the source repository)',
+  changelog_url: 'https://github.com/carbonfact/lca-database-footwear-apparel/blob/v.1.1.0/CHANGELOG.md',
+  license_name: 'Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)',
   license_url: 'https://creativecommons.org/licenses/by-sa/4.0/',
-  license_terms_url: 'https://github.com/carbonfact/lca-database-footwear-apparel/blob/main/README.md#if-you-integrate-this-database-into-a-product-or-platform',
-  license_review_status: 'pending',
-  method_review_status: 'pending',
-  review_gates: [
+  license_terms_url: 'https://github.com/carbonfact/lca-database-footwear-apparel/blob/v.1.1.0/README.md#license',
+  license_status: 'applied',
+  method_basis: 'Source factors are scaled independently by reference-unit quantities.',
+  use_terms_summary: 'Source attribution is shown with results; derived values use CC BY-SA 4.0.',
+  attribution_text: 'Data source: Carbonfact Open Source LCA Database v1.1.0, CC BY-SA 4.0.',
+  attribution_links: [{ label: 'Pinned source repository', url: 'https://example.com/source' }],
+  share_alike_required: true,
+  result_license: 'CC BY-SA 4.0',
+  background_database_note: 'Underlying inventories are not included or reconstructed.',
+  scope_summary: 'Published process-level factors.',
+  factor_count: 302,
+  family_count: 11,
+  impact_indicators: ['GHG — Climate change', 'WTU — Water use'],
+  limitations: ['Not a complete product footprint.'],
+  active_for_process_estimates: true,
+};
+
+const catalog: FactorCatalog = {
+  source_id: source.id,
+  source_name: source.name,
+  source_version: source.version,
+  source_url: source.repository_url,
+  license_name: source.license_name,
+  attribution_text: source.attribution_text,
+  total_records: 1,
+  offset: 0,
+  limit: 500,
+  families: [
     {
-      id: 'license-and-distribution',
-      title: 'Confirm open-license scope and obligations',
-      details: 'Confirm which terms apply to the pinned release.',
-      status: 'pending',
+      id: 'spinning',
+      label: 'Yarn spinning',
+      group: 'textile-manufacturing',
+      record_count: 1,
+      reference_unit_note: 'Per 1 kg yarn.',
     },
   ],
-  use_terms_summary: 'Published scores and foreground parameters state CC BY-SA 4.0; product integration terms remain under review.',
-  attribution_text: 'Data source: The Carbonfact Open Source LCA Database for Footwear & Apparel v1.1.0, CC BY-SA 4.0.',
-  attribution_links: [
-    { label: 'Carbonfact source repository', url: 'https://github.com/carbonfact/lca-database-footwear-apparel' },
-    { label: 'Carbonfact database page', url: 'https://www.carbonfact.com/database' },
+  factors: [
+    {
+      id: 'MATERIAL_PROCESS_STEP:YARN_FORMATION/SPINNING#COTTON@WORLD',
+      family_id: 'spinning',
+      family_label: 'Yarn spinning',
+      activity: 'Spinning cotton to yarn',
+      source_descriptor: 'MATERIAL_PROCESS_STEP:YARN_FORMATION/SPINNING#COTTON@WORLD',
+      geography_code: 'WORLD',
+      geography_label: 'World',
+      reference_unit: '1 kg yarn',
+      indicator_factors: [
+        { code: 'GHG', name: 'Climate change', unit: 'kg CO₂ eq', source_factor_value: 2.5 },
+      ],
+      data_quality: {
+        precision: 2,
+        technological_representativeness: 2,
+        temporal_representativeness: 2,
+        geographical_representativeness: 3,
+      },
+      input_required_kg_per_reference_unit: 1.1,
+      source_file: 'datasets/spinning/impact-scores.csv',
+    },
   ],
-  share_alike_required: true,
-  background_database_note: 'Full ecoinvent 3.12 inventories are not distributed and will not be accessed or reconstructed.',
-  license_clarification_contact: 'science@carbonfact.com',
-  scope_summary: 'Process-level factors; not a product footprint.',
-  impact_indicators: ['GHG', 'WTU'],
-  limitations: ['Not active for scoring.'],
-  active_for_scoring: false,
+};
+
+const estimate: ProcessEstimateResponse = {
+  status: 'calculated',
+  methodology_version: 'published-process-factor-scaling-v1.0',
+  scope: 'Each process factor is scaled separately. No product total is calculated.',
+  aggregation: 'none',
+  source_id: source.id,
+  source_name: source.name,
+  source_version: source.version,
+  source_url: source.repository_url,
+  license_name: source.license_name,
+  attribution_text: source.attribution_text,
+  license_url: source.license_url,
+  background_database_note: source.background_database_note,
+  result_license: 'CC BY-SA 4.0',
+  results: [
+    {
+      factor_id: catalog.factors[0].id,
+      family_id: 'spinning',
+      family_label: 'Yarn spinning',
+      activity: 'Spinning cotton to yarn',
+      geography_code: 'WORLD',
+      geography_label: 'World',
+      quantity: 0.18,
+      reference_unit: '1 kg yarn',
+      input_required_kg_per_reference_unit: 1.1,
+      data_quality: catalog.factors[0].data_quality,
+      indicators: [
+        {
+          code: 'GHG',
+          name: 'Climate change',
+          factor_value: 2.5,
+          factor_unit: 'kg CO₂ eq per 1 kg yarn',
+          result_value: 0.45,
+          result_unit: 'kg CO₂ eq',
+        },
+      ],
+      source_file: 'datasets/spinning/impact-scores.csv',
+    },
+  ],
 };
 
 afterEach(() => vi.unstubAllGlobals());
 
-describe('candidate source API', () => {
-  it('loads the informational registry using a relative API path', async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => [candidate],
-    });
+describe('process factor API', () => {
+  it('loads the open factor catalog using a relative path', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => catalog });
     vi.stubGlobal('fetch', fetchMock);
 
-    await expect(getCandidateSources()).resolves.toEqual([candidate]);
+    await expect(getFactorCatalog()).resolves.toEqual(catalog);
+    expect(fetchMock).toHaveBeenCalledWith('/api/v1/factors?limit=500');
+  });
+
+  it('loads the active source registry and its attribution terms', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => [source] });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(getActiveSources()).resolves.toEqual([source]);
     expect(fetchMock).toHaveBeenCalledWith('/api/v1/sources');
   });
 
-  it('surfaces a registry error instead of silently treating it as empty', async () => {
+  it('sends selected factors and quantities to the stateless estimate endpoint', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => estimate });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(calculateProcessEstimates([{ factor_id: catalog.factors[0].id, quantity: 0.18 }]))
+      .resolves.toEqual(estimate);
+    expect(fetchMock).toHaveBeenCalledWith('/api/v1/process-estimates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ processes: [{ factor_id: catalog.factors[0].id, quantity: 0.18 }] }),
+    });
+  });
+
+  it('surfaces server validation errors to the user', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: false,
+      status: 422,
+      json: async () => ({ detail: 'One or more factor IDs are not in this catalog.' }),
+    }));
+
+    await expect(calculateProcessEstimates([{ factor_id: 'bad-id', quantity: 1 }]))
+      .rejects.toThrow('One or more factor IDs are not in this catalog.');
+  });
+
+  it('reports catalog outages rather than returning an empty factor set', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 503 }));
 
-    await expect(getCandidateSources()).rejects.toThrow('Could not load source registry (503).');
+    await expect(getFactorCatalog()).rejects.toThrow('Could not load process factors (503).');
   });
 });

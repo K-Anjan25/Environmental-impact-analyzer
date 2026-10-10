@@ -1,210 +1,104 @@
 # Project Architecture — Environmental Impact Analyzer
 
-> **Status:** Proposed architecture for the MVP
-> **Last updated:** 2026-10-10
-> **Implementation state:** An initial stateless web/API prototype exists. PostgreSQL, environmental datasets, model inference, and numeric scoring are not connected.
+## 1. Implemented boundary
 
-## 1. Architecture goals
+The application is an open-data process-factor estimator. It does not create a whole-product LCA, sum different activities, infer a product bill of materials, or output a combined score. The calculation is a direct scale of one published impact factor by a user quantity in that factor's source reference unit.
 
-- Keep environmental calculations deterministic, testable, and separate from language-model behavior.
-- Preserve evidence and factor provenance from input through result.
-- Ship a small, maintainable modular application before introducing separate services, queues, or caching infrastructure.
-- Make missing data and incompatible assumptions explicit.
-- Keep the browser independent of local machine URLs so the app can run behind a preview proxy or production reverse proxy.
+## 2. Runtime components
 
-## 2. Proposed stack
+- **Web:** React 19, TypeScript, Vite, Material UI. It loads the factor catalog from a relative `/api/v1/factors` path, manages selections in browser memory, posts quantities to the estimate endpoint, displays separate indicators, and exports CSV in the browser.
+- **API:** Python 3.11, FastAPI, Pydantic v2. It validates process IDs and positive quantities, loads the bundled static data at startup, calculates with `Decimal`, and returns indicator values separately.
+- **Data:** pinned CSV score files and family README files in `services/api/data/carbonfact-v1.1.0/`. No runtime provider fetch, background database, product catalogue, or database connection exists.
+- **Production serving:** a multi-stage container builds the web client and serves it from FastAPI's static-file fallback, on the same origin as the API. The Vite dev server proxies relative `/api` paths to port 8000.
 
-| Layer | Proposal | Rationale |
-|---|---|---|
-| Web client | React + TypeScript + Vite | Component-based, typed UI; simple static build and development workflow. |
-| UI components and styling | Material UI (MUI) with a custom theme and CSS variables | Accessible, consistent form/layout primitives with the project’s warm editorial visual tokens; avoid default green “eco badge” styling. |
-| API | Python + FastAPI + Pydantic | Typed request/response contracts, validation, and automatically generated OpenAPI docs; Python ecosystem supports data and NLP work. FastAPI is the selected Python API framework for this proposal. |
-| Persistence | PostgreSQL; SQLAlchemy + Alembic | Relational provenance and assessment records, JSONB for controlled source metadata, versioned schema migrations. |
-| NLP | Extraction interface with deterministic baseline; optional Hugging Face Transformers/PyTorch model behind that interface | Models can help find candidate fields but never determine numeric impact scores. Pin model, revision, and license before use. |
-| Testing | pytest for API/domain; Vitest and React Testing Library for UI; API integration tests | Validate calculations, contracts, and user-visible states at the appropriate layer. |
-| Local deployment | Docker Compose for web/API/database during development | Reproducible local setup. Production hosting and secrets management remain deployment decisions. |
-
-This is a starting proposal. Prefer existing repository conventions if application code is added later, unless an explicit architecture decision record changes this stack.
-
-## 3. System context
-
-```mermaid
-flowchart LR
-    U[Consumer] -->|product facts / description| W[React web client]
-    W -->|relative /api/v1 requests| A[FastAPI modular monolith]
-    A --> V[Input validation and normalization]
-    V --> X[Attribute extraction adapter]
-    X --> C[User-confirmed product facts]
-    C --> F[Versioned factor and reference registry]
-    F --> I[Deterministic impact calculator]
-    I --> S[Separate-indicator eligibility gate]
-    S --> R[Transparent indicator / no-score response]
-    A <--> D[(PostgreSQL)]
-    F --> D
-    R --> W
-    W -->|optional feedback| A
-```
-
-The React app calls the API using same-origin relative paths such as `/api/v1/assessments`; it must not call `localhost` or `127.0.0.1` from browser code. In development, configure the Vite proxy to forward `/api` to the API service. Bind preview/deployment servers to `0.0.0.0` and configure accepted hosts/origins for the actual environment.
-
-## 4. Application boundaries
-
-Start as one API deployable with domain modules; do not split into microservices until measured scale or ownership needs justify it.
+## 3. Repository layout
 
 ```text
-apps/web/                         React client
+docker-compose.yml          Local same-origin container acceptance setup
+roadmap.md                  Release readiness and future-version flow
+apps/web/
+  src/App.tsx              Factor search, selection, calculation UI, results, source dialog
+  src/api.ts               API/data contracts and same-origin fetch functions
+  src/export.ts            CC BY-SA CSV export formatter/download
+  src/styles.css           Responsive and accessible visual system
 services/api/
-  app/
-    api/                           routes, request/response schemas
-    products/                      product catalogue and matching
-    assessments/                   orchestration and persistence
-    extraction/                    NLP adapter and user-confirmed facts
-    impact/                        units, factors, calculations, scoring
-    sources/                       provenance and license metadata
-    feedback/                      feedback intake
-    core/                          settings, errors, logging, security
-  migrations/                      Alembic migrations
-  tests/
+  app/main.py              FastAPI app, endpoints, security headers, static SPA serving
+  app/factor_catalog.py    Versioned CSV loader, family/index registry, Decimal calculator
+  app/factor_schemas.py   Request/response contracts and JSON number serialization
+  app/sources.py           Active source/license/provenance disclosure
+  data/carbonfact-v1.1.0/  Included CC BY-SA 4.0 source files, license, SOURCE.md
+  tests/                   API, factor-catalog, and arithmetic tests
 ```
 
-Keep route handlers thin. Domain logic must be callable without HTTP or a database so it can be unit-tested. External model execution and source-dataset imports sit behind explicit adapters.
+## 4. Factor load and calculation flow
 
-## 5. Assessment data flow
+1. At API import/startup, `factor_catalog.py` reads an explicit allowlist of CSV paths from the pinned data directory. Non-woven preview files are not on the allowlist.
+2. The loader checks required headers, all 16 indicator columns, finite decimal values, stable descriptor IDs, and reference-unit mappings. Missing or malformed required data fails startup rather than serving an empty catalog.
+3. `GET /api/v1/factors` returns up to 500 factor records with source values, units, geography tags, DQR fields, family metadata, license/attribution metadata, and optional filters/pagination.
+4. The client posts `[{factor_id, quantity}, ...]` to `POST /api/v1/process-estimates`.
+5. The API validates 1–25 positive quantities, finds each exact factor ID, and computes each indicator value as `source_factor_value × quantity` using Python `Decimal`.
+6. The response has one result line per submitted process selection. The API exposes `aggregation: none`; it does not calculate a cross-process total or any product-level score.
+7. The client renders one 16-row table per line and can export one CSV row per process/indicator pair. Attribution, ShareAlike license, transformation, and background-database note accompany the output.
 
-1. Validate request size, category, enums, units, numeric bounds, and text length.
-2. Normalize known product facts (for example, material synonyms and mass units) without discarding the user's original stated value or evidence.
-3. If text is supplied, produce candidate attributes with field name, normalized value, original evidence span, extractor/model version, and confidence. The UI must ask for confirmation before those values affect a calculation.
-4. Resolve applicable factor records by material/process, geography, year, boundary, and compatible impact method. A failed or ambiguous match remains unknown; it does not fall through to a convenient but incompatible factor.
-5. Calculate impact indicators with versioned factors and unit-safe deterministic functions. Keep factor inputs and intermediate contributions available for audit.
-6. Evaluate eligibility for each indicator independently and show only compatible, reviewed indicator values. Do not calculate a combined score or aggregate ranking; it is outside the selected product scope. Never use PEFCR v3.1 single scores or representative-product comparisons in B2C communication.
-7. Persist the assessment snapshot and provenance according to retention policy; return a response that explains scope, evidence, coverage, uncertainty, and method version.
+## 5. API contract
 
-### AI boundary
+- `GET /healthz` — readiness and loaded factor count/source version.
+- `GET /api/v1/methodology` — formula, indicator count, privacy behavior, data policy, and product-footprint boundary.
+- `GET /api/v1/sources` — active source license, attribution, source background dependency, scope, and limitations.
+- `GET /api/v1/factors?family=&q=&offset=&limit=` — source factor catalog; default page size 500 and maximum 500.
+- `POST /api/v1/process-estimates` — validated selections, maximum 25 rows; separate process/indicator response.
+- `GET /api/docs` — OpenAPI UI. ReDoc is disabled.
+- When the production web build exists, `/assets/*` serves static bundles and unmatched browser routes return `index.html`; unknown API/health paths return 404.
 
-The extraction adapter may identify material names, percentages, mass, origin, or certification wording. It must return structured candidates with evidence spans. It must not decide that a claim is true, infer absent facts without labeling them, or generate factors, impact values, scores, citations, or recommendations. A deterministic rules/dictionary fallback must remain available. Model ID, immutable revision, license, and extraction configuration must be recorded for each extraction run.
+## 6. Logical models
 
-## 6. Data model (logical)
+### Process factor
 
-| Entity | Key fields and purpose |
-|---|---|
-| `product` | Stable product identity, display name, brand (optional), category/subtype, and reviewed product-specific attributes. |
-| `assessment` | ID, product snapshot, normalized input snapshot, status, functional unit, boundary, `methodology_version`, confidence, creation time, expiry/deletion time. No combined-score value is stored. |
-| `assessment_indicator` | Assessment ID, indicator, value and unit, optional low/high estimate, stage, coverage, evidence class, and contributing factor/source IDs. |
-| `assessment_attribute` | User-confirmed normalized field/value, evidence class, confirmation state, and extractor/model version where applicable. Keep candidate evidence spans in the transient preview response; do not persist pasted text or snippets by default. Store an evidence reference only when the user supplies it and retention/consent rules allow it. |
-| `source_record` | Publisher, dataset/document ID and version, URL, retrieval date, geography/time coverage, license/terms, attribution, and permitted use. |
-| `impact_factor` | Material/process, indicator and unit, geography, reference year, system boundary, method, source record, factor value, uncertainty/quality metadata, and immutable version. |
-| `reference_distribution` | Product subtype, indicator, functional unit, boundary, distribution/version, eligible population, and reviewer approval state. |
-| `feedback` | Assessment reference if available, structured reason, optional comment, consent/retention fields, and status; avoid personal identifiers. |
+`id`, `family_id`, `family_label`, `activity`, `source_descriptor`, source geography code/label, exact reference unit, 16 source indicator factors, optional DQR fields, optional `Input required (kg)` per source reference unit, and bundled source-file path.
 
-Use foreign keys and database constraints for valid categories, units, percentage sums where applicable, and factor/source relationships. Never overwrite a factor or reference distribution already used by an assessment; publish a new version and retain enough metadata to reproduce previous results.
+### Process selection
 
-## 7. API outline
+`factor_id` (exact catalog descriptor) and `quantity` (finite positive decimal; maximum 1,000,000,000 and 8 decimal places). The UI prevents duplicate factor rows and the API limits requests to 25 selections.
 
-All endpoints are versioned under `/api/v1`. Use JSON, documented request/response schemas, consistent error objects, and stable error codes.
+### Process estimate line
 
-**Implemented prototype routes:** `GET /healthz`, `GET /api/v1/methodology`, `GET /api/v1/sources`, `POST /api/v1/extractions/preview`, and `POST /api/v1/assessments`. The assessment endpoint is stateless and always returns `score: null` to make the no-combined-score policy explicit; it includes known facts and a non-scoring process-mapping checklist for the inactive candidate source. The checklist highlights input gaps but does not match factors or calculate impact. Product search, feedback, persistence, and data-backed scoring remain planned.
+Source factor identity and metadata, entered quantity and reference unit, and 16 separate indicator records. Each indicator returns source factor value/unit and scaled result value/unit. No result type contains a cross-process total or combined score.
 
-### `POST /api/v1/extractions/preview`
+## 7. Data lineage and licensing
 
-Accepts a category and pasted description; returns candidate facts, evidence spans, and extraction metadata for the UI review step. It does **not** calculate an impact result and does not persist raw text or candidate snippets by default.
+The bundled snapshot is Carbonfact v1.1.0 tag `v.1.1.0`, commit `fa063ecac17ab36691a0d5c7326fedaa2e9d4ab8`. The active files are published impact-score CSVs and process-family README files licensed CC BY-SA 4.0. The exact license text is shipped alongside them.
 
-### `POST /api/v1/assessments`
+The source says its complete Brightway/Activity Browser inventories are not distributed and use ecoinvent 3.12. Published impact scores may reflect those modeled background contributions. The app uses the published outputs only; it does not bundle, query, or reconstruct full inventories. This limitation is returned by both source and calculation APIs and shown in the UI.
 
-Accepts structured product facts, including optional component/material shares and supplier process, output/reference-unit, input/loss, and waste-treatment notes, and returns a stateless no-score response with known facts, ordinary data gaps, and process-mapping readiness for the pinned candidate. It does not calculate environmental impact or accept unreviewed model output as authoritative. The checklist distinguishes absent evidence from user-provided but unverified loss/waste notes; it is not a factor-eligibility result. The client may submit confirmed values entered manually or suggested by the preview endpoint. Product/process evidence references are text only and are never fetched or persisted by the prototype.
+Schema normalization is documented in `SOURCE.md`: header variants for `Input required (kg)` and DQR names are normalized, reference-unit metadata are assigned from source family documentation, and indicator values are loaded unchanged. Derived results are licensed CC BY-SA 4.0 with linked attribution displayed beside on-screen values and included in CSV exports.
 
-Example confirmed assessment input:
+## 8. Privacy and security
 
-```json
-{
-  "category": "apparel",
-  "subtype": "t_shirt",
-  "name": "Everyday T-shirt",
-  "attributes": {
-    "material_composition": [{"material": "cotton", "share_percent": 100, "provenance": "user_confirmed_extraction"}],
-    "mass_g": 180,
-    "manufacturing_country": null,
-    "component_bom": [],
-    "process_evidence": []
-  }
-}
+- No database, user accounts, analytics, cookie-based identity, or result history.
+- Product descriptions, BOMs, certification claims, and supplier text are not part of the shipped estimator input.
+- Request bodies and quantities are processed in memory and not written to application storage. Uvicorn access logging is disabled in the production container; the API has no request-body logging middleware.
+- Deployment infrastructure may retain network metadata under its own operating policy; the application does not claim control over external platform logs.
+- API requests are same-origin in the production container and use relative paths in the browser. No permissive CORS policy is enabled.
+- Response headers set `X-Content-Type-Options`, `Referrer-Policy`, and `Permissions-Policy`. No `X-Frame-Options: DENY` header is set so the hosted preview can be embedded by Arena.
+
+## 9. Deployment and operation
+
+Run the local container acceptance test from the repository root:
+
+```bash
+docker compose up --build
 ```
 
-Excerpt from the actual response (no environmental values are calculated):
+The Compose service builds the Node web stage and Python API runtime into one same-origin image, exposes port 8000 by default, runs as non-root, and provides an HTTP health check. Uvicorn binds `0.0.0.0`, uses two workers, and disables access logging. Docker was unavailable in the development sandbox, so the image build has not yet been verified; see [roadmap.md](roadmap.md) for the acceptance steps.
 
-```json
-{
-  "status": "not_scored",
-  "methodology_version": "prototype-no-score-v0.4",
-  "score": null,
-  "process_mapping_readiness": {
-    "source_id": "carbonfact-apparel-footwear-v1.1.0",
-    "source_version": "1.1.0",
-    "source_url": "https://github.com/carbonfact/lca-database-footwear-apparel/blob/v.1.1.0/README.md#whats-included",
-    "status": "not_ready",
-    "scoring_enabled": false,
-    "note": "This checklist reports mapping inputs only; it is not an LCA result, does not estimate impact, and cannot activate the candidate source. License and method gates remain separate.",
-    "requirements": [
-      {
-        "id": "process-route",
-        "label": "Fiber, textile, and assembly process route",
-        "status": "not_collected",
-        "details": "The source has process-specific factors and reference units (for example, yarn, fabric, dyed textile, and assembled product). Material name or product subtype alone does not identify spinning, knitting/weaving, wet processing, or assembly.",
-        "next_step": "Use supplier or product-spec evidence to identify applicable process technologies and archetypes; do not infer a route from the product label."
-      }
-    ]
-  }
-}
-```
+Vercel is the selected deployment platform; its project configuration and custom domain are undecided, and the app has not been deployed there. Vercel documents a Python Functions/FastAPI runtime and static-asset support ([official guide](https://vercel.com/docs/frameworks/backend/fastapi)), but the repository-specific entrypoint, build output, routing, and headers still need a Vercel preview validation. Docker Compose is not a substitute for that Vercel check.
 
-### Other routes
+For local development, run the API on `0.0.0.0:8000` with `--no-access-log`, then Vite on `0.0.0.0:5173`; Vite proxies `/api` and `/healthz`. The Vite server permits the Arena `.e2b.app` preview host and no browser code contacts localhost.
 
-- `GET /api/v1/products?category=apparel&query=...` — search reviewed product/reference records.
-- `GET /api/v1/products/{product_id}` — retrieve a product and available evidence.
-- `GET /api/v1/assessments/{assessment_id}` — retrieve an assessment snapshot if persistence is enabled and the record has not expired.
-- `POST /api/v1/feedback` — submit structured feedback.
-- `GET /healthz` — liveness; a separate readiness check may validate required dependencies.
+## 10. Resolved architecture decisions
 
-Defer arbitrary URL import and barcode lookup. If added later, use a dedicated allowlisted fetcher, block private/link-local IP ranges and redirects to them, limit response size/time, sanitize HTML, respect site terms, and never let the API make unrestricted server-side requests.
-
-## 8. Data sourcing and ingestion
-
-Maintain an open-data source register before importing anything. For each dataset, document source owner, immutable release/version, item-specific license and licensed content scope, upstream/background dependencies, geography, time period, system boundary, impact method, attribution, ShareAlike/redistribution/downstream-user terms, and transformation history. A public URL, an “open source” label on a library, a paper license, or an older repository-wide submission policy is not enough. Review rights for the data actually used and derived results; exclude all non-open or unclear-license inputs. There is no paid/commercial-license fallback.
-
-Candidate sources are options to evaluate, not assumed dependencies. LCA Commons is a repository, so check each record; some are explicitly CC0, but that does not license every record. Textile Exchange describes its LCI library as open-source but does not establish a blanket license for each included dataset. Product-specific declarations or manufacturer evidence can be considered only if their underlying data and redistribution terms are explicitly open. Do not use ecoinvent or another proprietary background database, even as an unmentioned dependency. Reject incompatible or untraceable data rather than silently mixing methodologies.
-
-The current static source registry lists Carbonfact v1.1.0 solely for transparent review; no data are imported or active for scoring. The v1.1.0 release states CC BY-SA 4.0 for its published impact-score CSVs and key foreground parameters. The current product/platform guidance describes linked same-screen attribution, retaining notices and informing users, marking changes, and distributing adapted/recalculated dataset values served through a product under CC BY-SA 4.0 or compatible open terms. Verify the guidance's applicability to the pinned release and ability to meet every obligation before use. Only explicitly published/covered content can be considered; the full background inventories are not distributed and use ecoinvent 3.12. Do not access or reconstruct those inventories or describe Carbonfact as an open full LCI. If the use case requires a fully open underlying inventory, exclude this candidate. The registry exposes pending license, product/process mapping, boundary/indicator, and validation gates; the UI may prepare an open-license clarification email but never sends it. No data have been imported pending review.
-
-Pin an immutable release for reproducible evaluation because the current main-branch changelog records post-v1.1.0 impact-score changes and withdrawn files. The Apparel & Footwear PEFCR is a method reference rather than a factor dataset; its report restricts B2C use of its single score and comparisons against its representative products. The European Commission’s July 2026 transition guidance says existing PEFCRs remain valid until EF 4.0 is implemented and directs valid-PEFCR studies to a separate dataset hierarchy; it does not grant rights to use candidate datasets.
-
-Ingestion should be an offline/admin workflow initially: validate schema and units, check duplicates and source terms, run data-quality checks, produce an import report, then publish an immutable factor/reference version. Do not scrape retailer sites for MVP.
-
-## 9. Persistence, caching, and retention
-
-PostgreSQL is the source of truth for reviewed products, assessments, feedback, factor metadata, and method versions. Do not add Redis or a distributed cache before load testing demonstrates a need. Cache keys, if introduced, must include normalized input hash, factor/reference version, and methodology version; invalidate on version change. Do not cache personal/free-text data without an explicit policy.
-
-Default privacy direction: no account, no raw description retention by default, and a configured expiry/deletion path for anonymous assessment snapshots. The current API has no application persistence; hosting/proxy request-log retention has not been reviewed and must not be inferred from that fact. Final retention duration and user-facing deletion flow are release blockers, not implicit defaults.
-
-## 10. Security, privacy, and operations
-
-- Enforce request-size limits, input validation, output encoding, dependency updates, and rate limits on assessment/feedback routes.
-- Do not log raw product text, secrets, or unnecessary identifiers. Log request IDs, timings, method versions, and non-sensitive error context.
-- Keep secrets in environment/host secret management; commit only a documented `.env.example` with placeholders.
-- Restrict CORS to the deployed app origin in production; use same-origin proxying where possible.
-- Track health, latency, extraction failure, factor match/coverage rate, and calculation errors. Alert on errors that could produce misleading output.
-- Keep the calculation library deterministic. A model/network outage must not change calculation results for confirmed inputs.
-
-## 11. Deployment and testing strategy
-
-- Local: Docker Compose for web, API, and Postgres; seed only explicitly licensed/synthetic development data.
-- CI: formatting/lint/type checks, unit tests, API integration tests, migration checks, and a production build.
-- Production: serve UI and API behind HTTPS/reverse proxy; use managed database backups, secret management, migration review, and a documented rollback path.
-- Domain tests: unit conversions, material/process matching, boundary compatibility, indicator eligibility, no-score communication gates, missing-data behavior, and repeatability by method version.
-- Integration tests: endpoint validation, persistence, source traceability, feedback flow, and error responses.
-- UI tests: extraction review, unsupported-score state, partial results, comparison compatibility, keyboard access, and responsive layouts.
-
-## 12. Architecture decisions to revisit
-
-- Select the pilot geography and data providers after a licensing and coverage review.
-- Decide whether extraction runs locally in the API or through a separate model service based on privacy, latency, cost, and model license.
-- Choose a concrete retention duration and consent flow before enabling persisted anonymous assessments.
-- Split out background jobs only if model/data import latency or throughput warrants it.
+- Process-only calculations are the shipped alternative to unsupported full product LCA.
+- Carbonfact published v1.1.0 score outputs are active under CC BY-SA 4.0; ShareAlike and linked attribution are applied.
+- A product total, cross-stage sum, product score, full LCI reconstruction, and non-open background data integration are out of scope.
+- The v1.1.0 count discrepancy is handled by loading exact included CSV rows (302) and documenting the source's 304 headline; no placeholders are created.
+- Global and country-specific factors remain explicit source choices; no default geography is inferred.

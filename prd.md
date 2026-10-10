@@ -1,150 +1,89 @@
 # Product Requirements — Environmental Impact Analyzer
 
-> **Status:** Draft MVP proposal
-> **Last updated:** 2026-10-10
-> **Product stage:** Documentation / discovery; no production score or dataset exists yet.
+## Product decision
 
-## 1. Product summary
+The requested global-market apparel/footwear product footprint cannot be derived responsibly from the open published score files alone. The shipped product is a **process-factor estimator** using 302 openly licensed Carbonfact v1.1.0 records. It is useful for inspecting separate activity impacts, but it does not claim to calculate a complete product LCA.
 
-Environmental Impact Analyzer helps people in a global market understand separate environmental-impact indicators for apparel and footwear and the evidence behind them. A user enters product details or a description; the system suggests candidate facts for review, then may return separately reported, method-specific indicators with data-quality notes and practical next steps. A combined score is not part of the selected product scope.
+The required direction remains: apparel and footwear context, multiple distinct indicators, **no combined score**, and open data only. The estimator scales a selected source factor by a user-entered quantity in the factor's stated reference unit. Each selected process stays separate; there is no cross-stage sum, ranking, or product total.
 
-The product must prefer an honest **“not enough evidence”** result over an unsupported score. It is a decision-support tool, not a certification, regulatory disclosure, or substitute for a complete life-cycle assessment (LCA).
+## Goals
 
-## 2. Problem and opportunity
+1. Make published open process factors immediately usable without external data approval or hidden license assumptions.
+2. Show factor activity, source geography, reference unit, data-quality ratings, input-required metadata, source version, and license attribution with results.
+3. Calculate each of the 16 EF 3.1 impact indicators independently and transparently.
+4. Keep application behavior stateless and avoid retaining user-entered calculation quantities.
+5. Keep scope limits visible so process results cannot be mistaken for whole-product footprints.
 
-Environmental product information is fragmented, expressed in inconsistent units, and often presented as marketing claims without comparable evidence. Consumers need a quick way to understand what is known, what is estimated, and where meaningful choices may exist. Businesses may later use the same foundation to review product portfolios, but the first release is optimized for individual consumers.
+## Non-goals
 
-## 3. Product goals
+- Complete product or cradle-to-gate/cradle-to-grave life-cycle assessment.
+- Inferring a garment or shoe bill of materials, material composition, stage route, country, losses, or waste treatment.
+- Adding source factors across process stages or representing selected rows as a product total.
+- A combined score, ranking, benchmark, product comparison, certification verification, or consumer-facing environmental claim.
+- Reconstructing Carbonfact's full inventory model, acquiring ecoinvent, or introducing any non-open dependency.
+- Accounts, saved assessments, product catalogues, analytics, or long-lived user inputs.
 
-1. Make an initial product assessment understandable in under two minutes.
-2. Show the impact dimensions, scope, sources, assumptions, and uncertainty—not just a single number.
-3. Distinguish user-provided and model-extracted facts from verified or reference data.
-4. Offer useful, evidence-aligned actions without implying that a product is “green” or “sustainable” overall.
-5. Create an auditable, versioned foundation for improving data coverage and methodology.
+## Supported source scope
 
-### Non-goals for the MVP
+The pinned data snapshot includes 302 rows from 11 documented source categories: spinning, knitting, weaving, dyeing, finishing, printing, textile assembly, footwear assembly, synthetic PU leather, natural rubber, and use phase. The UI exposes 12 factor groups because sneaker and women's-boots assembly use different functional units. See [`data-sources.md`](data-sources.md) and the bundled [`SOURCE.md`](services/api/data/carbonfact-v1.1.0/SOURCE.md) for row counts, license, background dependency, and exclusions.
 
-- A certified, ISO-conformant, or full cradle-to-grave LCA.
-- Claims that a brand, product, or certification is independently verified unless an approved source establishes that fact.
-- General-purpose assessments across food, electronics, buildings, and all other categories.
-- Automated scraping of arbitrary retailer pages, barcode scanning, or retailer integrations.
-- A business analytics dashboard, user accounts, social features, or a public prediction API.
-- Treating sentiment, “eco-friendly” wording, or an LLM response as evidence of environmental performance.
+All published EF 3.1 indicators are available as separate rows: acidification (ACD), freshwater ecotoxicity (ETF), fossil resource use (FRU), freshwater eutrophication (FWE), climate change (GHG), human toxicity cancer (HTC), human toxicity non-cancer (HTN), ionising radiation (IOR), land use (LDU), mineral resource use (MRU), ozone depletion (OZD), photochemical ozone formation (PCO), particulate matter (PMA), marine eutrophication (SWE), terrestrial eutrophication (TRE), and water use (WTU).
 
-## 4. Initial scope and assumptions
+## Primary user journey
 
-| Decision | MVP direction |
-|---|---|
-| First product category | Apparel and footwear; begin with a narrow set of garment types for which comparable factors can be reviewed. |
-| Primary audience | Consumers comparing an item or learning what product information matters. |
-| Secondary audience | Sustainability practitioners who can review a pilot; not a separate product persona yet. |
-| Target market | Global. Actual product and stage geographies must come from evidence or remain unknown; do not apply a default production geography. |
-| Assessment input | Structured fields and/or pasted product text. No automatic URL fetching in the initial release. |
-| Life-cycle boundary | Target a clearly stated, consistently supported production boundary (raw-material supply through finished item at the factory gate). Include distribution only when route and data are available and disclose it separately. Use phase and end of life are excluded by default. |
-| Result | Evidence-backed product facts and multiple method-specific indicators shown separately where supportable. **No combined score.** Individual indicator values remain disabled until open-data rights, method, coverage, validation, privacy, and legal/claims gates are resolved. |
-| Data rights | **Open data only:** use version-pinned data with explicit, item-specific open terms that permit the intended use. Verify the rights scope for every dataset and background dependency; exclude non-open or unclear-license inputs. Public access, an “open-source” label, or a method/paper license is not a blanket data license. No separate commercial-license fallback. |
-| Accounts and privacy | No account required. Do not retain raw pasted text by default. Retention and deletion rules for saved assessment snapshots must be configured before a public pilot. |
+1. Filter the pinned catalog by process family and search activity, material, or geography.
+2. Select an exact source row and read its reference unit and geography.
+3. Enter a positive quantity in units of that reference unit. Add up to 25 distinct factor rows.
+4. Calculate. The app returns a separate 16-indicator table for each row, including the source factor, scaled result, source DQR values where available, and source-reported input requirement where available.
+5. Review the on-screen attribution/license and download a CSV that preserves one row per process and indicator.
 
-These are planning assumptions, not verified facts about available data. The scoring method and reference set must be reviewed before user-facing numeric results are enabled.
+## Functional requirements
 
-## 5. Target users and needs
+- **FR-01 — Pinned catalog:** Load the committed Carbonfact v1.1.0 score files at API startup. Fail startup if a required included source file or indicator column is missing, nonnumeric, or malformed. Do not fetch live factor data at runtime.
+- **FR-02 — Factor discovery:** Provide family filtering and text search over activity, geography, and source descriptor. Preserve the exact source descriptor as the stable factor ID.
+- **FR-03 — Quantity input:** Require a finite positive quantity for each selected factor. Display the exact source reference unit alongside the input. Limit a request to 25 process rows.
+- **FR-04 — Calculation:** For factor value `F` and user quantity `Q`, compute `F × Q` for each indicator. Use Decimal arithmetic internally. Return the source factor value and scaled indicator result with the numerator units and source reference unit.
+- **FR-05 — Separate indicators and processes:** Return all 16 indicators separately for each selected factor. Never return cross-indicator scores, cross-process totals, product totals, or ranks.
+- **FR-06 — Provenance and uncertainty metadata:** Show source activity, geography descriptor, version, source row/file, DQR fields as supplied, and Input required (kg) per reference unit if available. Missing DQR values remain absent.
+- **FR-07 — Boundaries:** State that selected-process outputs are not whole-product footprints. Do not apply Input required (kg) to upstream factors or add waste treatment. State that WTU is m³ world-equivalent, not physical litres.
+- **FR-08 — Attribution and licensing:** Display linked CC BY-SA 4.0 attribution beside results. Mark quantity scaling as the transformation. Include attribution, source URL, result license and license URL, and background-dependency note in CSV exports.
+- **FR-09 — Privacy:** Store no users, selected quantities, calculations, or history. Do not log request bodies. Disable application-server access logging in the production container.
+- **FR-10 — Error handling:** Validate IDs and quantities; return clear client errors for invalid requests and non-sensitive server errors for failures. Never convert an unknown or missing factor to zero.
 
-### Consumer making a purchase decision
+## Calculation and units
 
-- Wants to compare similar items without needing to understand LCA terminology.
-- Needs to see what facts came from a product description and what was inferred.
-- Wants actionable information such as material, durability, repair, or care considerations, with the limits of each suggestion made clear.
+The source provides an impact score for a particular activity and functional/reference unit. The quantity entered by the user must be expressed in units of that exact reference unit. A quantity of `0.18` against `1 kg yarn` means 0.18 kg yarn-equivalent output for that selected activity. It is not an item mass unless the source reference unit and user quantity genuinely correspond.
 
-### Sustainability reviewer (pilot partner)
+The API retains decimal source values and calculations internally. Values are rendered for display at a readable precision; CSV export retains the API value to JSON-number precision. Factor and result units are shown in each indicator row.
 
-- Needs reproducible calculations, source/version traceability, and a way to identify weak or missing data.
-- Must be able to flag incorrect factors, assumptions, or product mappings before the system scales.
+## Data, claims, and uncertainty rules
 
-## 6. Core user journeys
+- Only the pinned score outputs and process-family notes covered by the source's CC BY-SA 4.0 release are bundled.
+- The source says its full Brightway/Activity Browser inventories are unavailable and built on ecoinvent 3.12. Published scores may reflect those background contributions; this app does not include/query/reconstruct the underlying inventory.
+- Source geography is descriptive, not inferred. `WORLD`, `GLO`, and country rows must remain distinct.
+- The source Input required (kg) field is reported as metadata. Loss, upstream input, and waste-treatment calculations are not applied.
+- DQR values are data-quality metadata, not a score or confidence estimate calculated by this app.
+- WTU cannot be described as litres or physical water consumption.
+- Missing product stages are outside the estimator boundary, not zero-impact stages.
 
-1. **Assess an item:** open the assessor → choose apparel/footwear subtype → enter known product facts or paste a description → review and correct extracted fields → request assessment → inspect confirmed facts, any supported indicators, assumptions, sources, or an explicit no-score explanation.
-2. **Compare items:** assess or select two sufficiently similar items → confirm their functional unit and boundary match → compare only eligible, method-compatible indicators → review the evidence differences. If they are not comparable, explain why and do not present a misleading ranking or PEFCR representative-product comparison.
-3. **Improve an assessment:** edit a missing or incorrect fact → recalculate → see which parts of the result changed.
-4. **Give feedback:** report an incorrect extraction, source, or result without submitting unnecessary personal information.
+## Non-functional requirements
 
-## 7. Functional requirements
+- **Accessibility:** Keyboard-accessible factor search and forms, programmatic labels, visible focus, semantic result tables, screen-reader-readable units, reduced-motion support, and automated axe checks.
+- **Performance:** Load the small bundled catalog once per app session; calculate a request synchronously from in-memory data; support browser CSV export.
+- **Security/privacy:** Same-origin relative requests, no CORS allowlist, no user-facing request logs, no account/auth state, no database or analytics.
+- **Deployment:** Multi-stage Docker build serves the production React bundle and API from one origin; non-root runtime; health check and Uvicorn access logging disabled.
+- **Reproducibility:** Version and commit of the source snapshot are recorded with the bundled data and in source responses.
 
-### Assessment input and extraction
+## Acceptance criteria
 
-- **FR-01 — Product details:** Accept a product name, apparel/footwear subtype, optional brand, description, aggregate material composition, item mass, and product-origin claim. Allow optional component/material shares and supplier process notes (route, stage output/reference unit, geography, year, process-input/loss note, waste-treatment note, and text evidence reference) for future mapping. Label these entries user-provided/unverified, do not fetch references, do not persist them in the prototype, and never interpret unknown as zero.
-- **FR-02 — Text extraction:** Identify candidate product attributes (for example, material names, composition percentages, mass, origin, and certification language) from pasted text. Extraction is assistive only.
-- **FR-03 — Human confirmation:** Show each extracted fact with its evidence span and allow the user to edit, reject, or mark it unknown before scoring.
-- **FR-04 — Validation:** Validate percentages, units, length limits, and supported category values. Explain invalid input inline and preserve valid form entries.
+- Exactly 302 bundled rows load from the documented source families; no inferred or placeholder factors are created.
+- Each loaded factor contains 16 finite source indicator values and an explicit reference unit.
+- Quantity scaling matches the source factor multiplied by the entered quantity, tested using known source values.
+- Multi-row requests return the same number of independent process results; no aggregate is present.
+- Results and CSV include source attribution, source version, license, and background-database limitation.
+- API, frontend, accessibility, lint, type-check, and production-build tests pass.
+- The UI contains no unresolved source-review or activation state; product-level conclusions remain explicitly out of scope.
 
-### Assessment and results
+## Future scope changes
 
-- **FR-05 — Reproducible calculation:** Calculate supported impact indicators from versioned factors and documented assumptions. Record the factor/source IDs and method version used for each result.
-- **FR-06 — Transparent result:** Show the functional unit, life-cycle boundary, indicators and units, data coverage, evidence classes, estimate/range when available, and the major exclusions. When factor matching is not approved, show missing process-mapping inputs as a plain-language checklist (not a score, confidence rating, or factor-match claim).
-- **FR-07 — No combined score:** Never calculate or present an aggregate environmental score or ranking. The selected output is multiple separate indicators only. Keep each indicator unavailable until its open-licensed factors, method, geography/coverage, and validation are approved. Do not use a PEFCR-derived single score or representative-product comparisons in B2C communication.
-- **FR-08 — Confidence and coverage:** Provide a separate qualitative evidence/confidence label and explain its drivers. Do not present it as a statistical probability unless it has been calibrated as one.
-- **FR-09 — Alternatives and actions:** Offer practical, conditional advice tied to supported information (for example, care/repair guidance or a lower-impact material option where data supports the comparison). Label generic advice as generic; do not invent a product alternative.
-- **FR-10 — Comparison:** Compare only products with matching category, functional unit, boundary, and method version, or clearly flag mismatches and suppress an overall rank. Do not present PEFCR representative-product benchmarks as consumer product comparisons.
-- **FR-11 — Feedback:** Accept structured feedback for extraction, data, methodology, and usability. Do not require name, email, or account.
-- **FR-12 — Method page:** Provide a plain-language explanation of score meaning, scope, sources, limitations, and methodology version.
-
-## 8. Scoring and evidence policy
-
-### Indicators and functional unit
-
-The intended quantitative indicators are **climate impact** and a specifically defined **water-use impact** where the source method supports a product-level result. Their units, characterization method, and system boundary must be selected before scoring; do not assume all “water” indicators mean physical litres. For example, a candidate EF 3.1 WTU source reports m³ world-equivalent per process reference unit, which is not interchangeable with litres of water consumed and cannot be relabelled as such. Store calculations in canonical source-compatible units and convert only when dimensionally valid. Material durability, recycled content, repairability, and certifications may be shown as separate evidence-backed facts; they are not converted into environmental-impact numbers or combined into an aggregate score.
-
-“One finished item” is only a proposed screening reference unit; it must not be described as PEFCR-compliant without applying the category-specific functional-unit and duration-of-service requirements. The Apparel & Footwear PEFCR v3.1 is a full cradle-to-grave method with EU-27, UK, and EFTA geographic validity, while this prototype’s proposed factory-gate boundary is narrower. A product type and mass alone do not establish comparability; any independent screening method must document its functional unit, reference population, boundary, and geography.
-
-### Combined-score policy — excluded from selected scope
-
-The user selected multiple separate indicators with **no combined score**. Do not implement percentile rankings, equal-weight composites, an aggregate index, or a ranked product badge. Results may show method-specific indicators separately and must withhold unsupported indicators; missing data is never zero. A future scope change would require an explicit user decision before any other review.
-
-The Apparel & Footwear PEFCR v3.1 report describes the method as voluntary and states that it does not allow a single score for business-to-consumer communication or comparisons against its representative products. Do not repurpose its single-score or representative-product benchmark results for this consumer app, and do not claim PEF/PEFCR conformity for this prototype. The report states validity through 31 December 2027, while the European Commission’s July 2026 transitional guidance says existing PEFCRs remain valid until EF 4.0 is implemented and directs valid-PEFCR studies to a separate data hierarchy. Confirm current Commission guidance and EF database rights before any compliance-related use; this transition does not grant rights to candidate datasets.
-
-Do not reconsider a combined index unless the user explicitly changes the product direction. Individual indicator values still require open-data rights, a reviewed method and boundary, fit-for-purpose coverage, independent validation, and legal/claims review. If a gate is unmet, withhold that indicator. Missing data is never zero burden.
-
-### Evidence classes
-
-1. **Product-specific evidence:** a source tied to this item, with its date and verification status.
-2. **User-provided:** entered or confirmed by the user; not independently verified.
-3. **Model-extracted:** candidate fact derived from text; user confirmation required.
-4. **Dataset estimate:** matched to a documented background factor or category reference.
-5. **Unknown / unsupported:** no eligible evidence; never silently imputed as zero.
-
-Confidence is based on evidence quality, completeness, geographic/temporal fit, and source/method coverage. It is displayed separately from the impact score. Any category-average imputation must be disclosed and reduce confidence.
-
-## 9. Non-functional requirements
-
-- **Clarity:** Plain language, named units, and an explanation for every score or missing score.
-- **Performance:** Target a warm-request p95 below 5 seconds for a standard assessment during pilot conditions; measure before setting a production SLA.
-- **Accessibility:** Keyboard-operable UI, screen-reader labels, non-color-only status, and WCAG 2.2 AA as the design target.
-- **Privacy:** Minimize collection; no account requirement; do not store pasted raw text by default; define retention, deletion, and consent behavior before deployment.
-- **Security:** Validate input, protect against injection/SSRF if URL import is added, limit request size/rate, and keep secrets out of source control.
-- **Auditability:** Preserve method/factor/source versions needed to reproduce an assessment.
-- **Reliability:** If reference data or an assessment dependency is unavailable, return a helpful partial/error response—not a fabricated estimate.
-
-## 10. Success measures
-
-Establish a baseline during moderated pilot tests, then track:
-
-- Assessment completion rate and median time to a result.
-- Percentage of users who understand that no combined score is provided by design and can interpret each separate indicator’s unit, boundary, and evidence; indicator values remain withheld until their gates pass.
-- Percentage of assessments with complete, traceable source and method metadata.
-- Extraction correction rate by field and category.
-- User-reported usefulness of the breakdown and actions.
-- Rate of unsupported or misleading score incidents (target: zero known unresolved incidents).
-
-Do not optimize for score positivity, number of products rated, or user engagement at the expense of accuracy and transparency.
-
-## 11. Release gates and open questions
-
-Before exposing scores publicly:
-
-- Select and license a suitable factor/reference dataset; record reuse, attribution, storage, and redistribution terms.
-- Recruit an LCA reviewer to approve boundaries, factors, normalization, reference cohort, uncertainty handling, and comparison rules.
-- Complete legal/claims review for any intended consumer-facing score or comparison. Do not use PEFCR v3.1 single-score or representative-product results in B2C communication.
-- Test calculations against independently reviewed examples and document error/coverage limits.
-- Finalize retention, deletion, and feedback-consent behavior.
-- Validate that all UI states communicate scope and evidence accessibly.
-
-Open questions: Which garment/footwear subtypes and separate indicators have adequate open data and comparable global coverage? Should water be represented as physical water consumption or a method-specific water-use impact indicator, and in which unit/boundary? What pilot cohort, languages, and stage-geography coverage are supportable without defaulting unknown locations?
+Adding a whole-product footprint would require compatible openly licensed raw-material and process factors, justified stage linking/loss/waste treatment, product composition, boundary consistency, and reproducible method data. It is not an unclosed requirement for this release and must not be approximated by summing the current process results.

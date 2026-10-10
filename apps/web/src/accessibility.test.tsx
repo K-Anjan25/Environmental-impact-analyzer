@@ -1,205 +1,226 @@
 // @vitest-environment jsdom
 
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import axe from 'axe-core';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
+import type {
+  ActiveDataSource,
+  FactorCatalog,
+  ProcessEstimateResponse,
+  ProcessFactor,
+} from './api';
 import theme from './theme';
 
-const styles = readFileSync(resolve(process.cwd(), 'src/styles.css'), 'utf8');
+const factor: ProcessFactor = {
+  id: 'MATERIAL_PROCESS_STEP:YARN_FORMATION/SPINNING#COTTON@WORLD',
+  family_id: 'spinning',
+  family_label: 'Yarn spinning',
+  activity: 'Spinning cotton to yarn',
+  source_descriptor: 'MATERIAL_PROCESS_STEP:YARN_FORMATION/SPINNING#COTTON@WORLD',
+  geography_code: 'WORLD',
+  geography_label: 'World',
+  reference_unit: '1 kg yarn',
+  indicator_factors: [{ code: 'GHG', name: 'Climate change', unit: 'kg CO₂ eq', source_factor_value: 2.5 }],
+  data_quality: {
+    precision: 2,
+    technological_representativeness: 2,
+    temporal_representativeness: 2,
+    geographical_representativeness: 3,
+  },
+  input_required_kg_per_reference_unit: 1.1,
+  source_file: 'datasets/spinning/impact-scores.csv',
+};
+
+const catalog: FactorCatalog = {
+  source_id: 'carbonfact-apparel-footwear-v1.1.0',
+  source_name: 'The Open Source LCA Database for Footwear & Apparel',
+  source_version: '1.1.0',
+  source_url: 'https://example.com/release',
+  license_name: 'CC BY-SA 4.0',
+  attribution_text: 'Data source: Carbonfact Open Source LCA Database v1.1.0, CC BY-SA 4.0.',
+  total_records: 1,
+  offset: 0,
+  limit: 500,
+  families: [{
+    id: 'spinning',
+    label: 'Yarn spinning',
+    group: 'textile-manufacturing',
+    record_count: 1,
+    reference_unit_note: 'Per 1 kg yarn.',
+  }],
+  factors: [factor],
+};
+
+const source: ActiveDataSource = {
+  id: 'carbonfact-apparel-footwear-v1.1.0',
+  name: 'The Open Source LCA Database for Footwear & Apparel',
+  version: '1.1.0',
+  release_date: '2026-07-01',
+  publisher: 'Carbonfact',
+  source_url: 'https://zenodo.org/records/21102756',
+  repository_url: 'https://github.com/carbonfact/lca-database-footwear-apparel/releases/tag/v.1.1.0',
+  changelog_url: 'https://github.com/carbonfact/lca-database-footwear-apparel/blob/v.1.1.0/CHANGELOG.md',
+  license_name: 'Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)',
+  license_url: 'https://creativecommons.org/licenses/by-sa/4.0/',
+  license_terms_url: 'https://github.com/carbonfact/lca-database-footwear-apparel/blob/v.1.1.0/README.md#license',
+  license_status: 'applied',
+  method_basis: 'Published EF 3.1 process factors scaled by the entered reference-unit quantity.',
+  use_terms_summary: 'Same-screen attribution and ShareAlike applied to derived results.',
+  attribution_text: catalog.attribution_text,
+  attribution_links: [{ label: 'Pinned source release', url: catalog.source_url }],
+  share_alike_required: true,
+  result_license: 'CC BY-SA 4.0',
+  background_database_note: 'Full background inventories are not included or reconstructed.',
+  scope_summary: 'Published process factors; each selected process is returned separately.',
+  factor_count: 302,
+  family_count: 11,
+  impact_indicators: ['16 EF 3.1 indicators'],
+  limitations: ['Outputs are not a whole-product footprint.'],
+  active_for_process_estimates: true,
+};
+
+const indicatorDefinitions = [
+  ['ACD', 'Acidification', 'mol H⁺ eq'],
+  ['ETF', 'Ecotoxicity, freshwater', 'CTUe'],
+  ['FRU', 'Fossil resource use', 'MJ'],
+  ['FWE', 'Eutrophication, freshwater', 'kg P eq'],
+  ['GHG', 'Climate change', 'kg CO₂ eq'],
+  ['HTC', 'Human toxicity, cancer', 'CTUhtc'],
+  ['HTN', 'Human toxicity, non-cancer', 'CTUhtn'],
+  ['IOR', 'Ionising radiation', 'kBq U-235 eq'],
+  ['LDU', 'Land use', 'Pt'],
+  ['MRU', 'Mineral resource use', 'kg Sb eq'],
+  ['OZD', 'Ozone depletion', 'kg CFC-11 eq'],
+  ['PCO', 'Photochemical ozone formation', 'kg NMVOC eq'],
+  ['PMA', 'Particulate matter', 'disease incidence'],
+  ['SWE', 'Eutrophication, marine', 'kg N eq'],
+  ['TRE', 'Eutrophication, terrestrial', 'mol N eq'],
+  ['WTU', 'Water use', 'm³ world-eq'],
+] as const;
+
+const estimate: ProcessEstimateResponse = {
+  status: 'calculated',
+  methodology_version: 'published-process-factor-scaling-v1.0',
+  scope: 'Each selected process factor is scaled by its entered quantity. No cross-stage total is calculated.',
+  aggregation: 'none',
+  source_id: source.id,
+  source_name: source.name,
+  source_version: source.version,
+  source_url: source.repository_url,
+  license_name: source.license_name,
+  attribution_text: source.attribution_text,
+  license_url: source.license_url,
+  background_database_note: source.background_database_note,
+  result_license: 'CC BY-SA 4.0',
+  results: [{
+    factor_id: factor.id,
+    family_id: factor.family_id,
+    family_label: factor.family_label,
+    activity: factor.activity,
+    geography_code: factor.geography_code,
+    geography_label: factor.geography_label,
+    quantity: 0.18,
+    reference_unit: factor.reference_unit,
+    input_required_kg_per_reference_unit: 1.1,
+    data_quality: factor.data_quality,
+    indicators: indicatorDefinitions.map(([code, name, unit]) => ({
+      code,
+      name,
+      factor_value: code === 'GHG' ? 2.5 : 0.1,
+      factor_unit: `${unit} per ${factor.reference_unit}`,
+      result_value: code === 'GHG' ? 0.45 : 0.018,
+      result_unit: unit,
+    })),
+    source_file: factor.source_file,
+  }],
+};
+
+function stubApi(): ReturnType<typeof vi.fn> {
+  const fetchMock = vi.fn().mockImplementation(async (input: RequestInfo | URL) => {
+    const path = String(input);
+    if (path === '/api/v1/factors?limit=500') return { ok: true, json: async () => catalog };
+    if (path === '/api/v1/sources') return { ok: true, json: async () => [source] };
+    if (path === '/api/v1/process-estimates') return { ok: true, json: async () => estimate };
+    return { ok: false, status: 404, json: async () => ({ detail: 'Not found.' }) };
+  });
+  vi.stubGlobal('fetch', fetchMock);
+  return fetchMock;
+}
 
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
 });
 
-const DECORATIVE_SELECTORS = [
-  '.brand-name span',
-  '.step-label span',
-  '.card-number',
-  '.preview-dash',
-  '.indicator-result-value',
-  '.footer-dot',
-];
-
-function luminance(hex: string): number {
-  const channel = (offset: number) => {
-    const value = Number.parseInt(hex.slice(offset, offset + 2), 16) / 255;
-    return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
-  };
-  return 0.2126 * channel(1) + 0.7152 * channel(3) + 0.0722 * channel(5);
-}
-
-function contrastRatio(foreground: string, background: string): number {
-  const [lighter, darker] = [luminance(foreground), luminance(background)].sort((a, b) => b - a);
-  return (lighter + 0.05) / (darker + 0.05);
-}
-
-function isSixDigitHex(value: string): boolean {
-  return value.startsWith('#') && value.length === 7 && [...value.slice(1)].every((digit) => /[\da-f]/i.test(digit));
-}
-
 async function expectNoAxeViolations(): Promise<void> {
   const report = await axe.run(document.body, {
     rules: {
-      // JSDOM cannot calculate rendered color contrast; a static CSS check covers the page palette below.
+      // JSDOM cannot calculate rendered color contrast; theme colors are checked explicitly below.
       'color-contrast': { enabled: false },
     },
   });
   expect(report.violations).toEqual([]);
 }
 
-describe('assessment form accessibility', () => {
-  it('keeps declared non-decorative CSS text colors legible on the light page surface', () => {
-    const failures: string[] = [];
-    let selector = '';
-    let selectionForeground = '';
-    let selectionBackground = '';
-
-    for (const line of styles.split('\n')) {
-      const openBrace = line.indexOf('{');
-      const text = openBrace >= 0 ? line.slice(openBrace + 1) : line;
-      if (openBrace >= 0) {
-        const nextSelector = line.slice(0, openBrace).trim();
-        if (nextSelector) selector = nextSelector;
-      }
-      const declarations = text.split('}')[0];
-      for (const rawDeclaration of declarations.split(';')) {
-        const separator = rawDeclaration.indexOf(':');
-        if (separator < 0) continue;
-        const property = rawDeclaration.slice(0, separator).trim();
-        const value = rawDeclaration.slice(separator + 1).trim();
-        if (property === 'color' && isSixDigitHex(value)) {
-          if (selector.includes('::selection')) {
-            selectionForeground = value;
-          } else if (!DECORATIVE_SELECTORS.some((item) => selector.includes(item))) {
-            if (contrastRatio(value, '#f4f1e9') < 4.5) failures.push(`${selector}: ${value}`);
-          }
-        }
-        if (selector.includes('::selection') && property === 'background' && isSixDigitHex(value)) {
-          selectionBackground = value;
-        }
-      }
-      if (line.includes('}')) selector = '';
-    }
-
-    expect(failures).toEqual([]);
-    expect(selectionForeground).not.toBe('');
-    expect(selectionBackground).not.toBe('');
-    expect(contrastRatio(selectionForeground, selectionBackground)).toBeGreaterThanOrEqual(4.5);
-    expect(contrastRatio(theme.palette.secondary.main, '#f4f1e9')).toBeGreaterThanOrEqual(4.5);
-    expect(contrastRatio(theme.palette.text.secondary, '#f4f1e9')).toBeGreaterThanOrEqual(4.5);
-    expect(contrastRatio('#ffffff', theme.palette.primary.main)).toBeGreaterThanOrEqual(4.5);
-    expect(contrastRatio('#ffffff', '#438064')).toBeGreaterThanOrEqual(4.5);
+async function calculateExample(): Promise<void> {
+  await screen.findByText('Build a process estimate.');
+  const factorInput = screen.getByRole('combobox', { name: 'Process activity' });
+  fireEvent.change(factorInput, { target: { value: 'Spinning cotton to yarn' } });
+  fireEvent.click(await screen.findByRole('option', { name: /Spinning cotton to yarn/ }));
+  fireEvent.change(screen.getByRole('spinbutton', { name: 'Quantity in source reference units' }), {
+    target: { value: '0.18' },
   });
+  fireEvent.click(screen.getByRole('button', { name: 'Add process' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Calculate separate indicators' }));
+  await screen.findByRole('table', { name: /Separate environmental indicators for Spinning cotton to yarn/ });
+}
 
-  it('keeps decorative vector illustrations out of the accessibility tree and tab order', () => {
-    const { container } = render(<App />);
-
-    for (const selector of ['.landscape-scene', '.landscape-glyph']) {
-      const illustration = container.querySelector(selector);
-      expect(illustration?.getAttribute('aria-hidden')).toBe('true');
-      expect(illustration?.getAttribute('focusable')).toBe('false');
-    }
-  });
-
-  it('has no axe violations in the initial and expanded supplier-evidence form', async () => {
-    const { container } = render(<App />);
-    const details = container.querySelector('details');
-    const summary = details?.querySelector('summary');
-    expect(summary).not.toBeNull();
-    fireEvent.click(summary!);
-    fireEvent.click(screen.getByRole('button', { name: /Add process evidence/ }));
-
-    await expectNoAxeViolations();
-  });
-
-  it('has no axe violations in the methodology dialog', async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => [],
-    });
-    vi.stubGlobal('fetch', fetchMock);
-
-    render(<App />);
-    fireEvent.click(screen.getByRole('button', { name: 'How it works' }));
-    await screen.findByRole('heading', { name: 'Privacy' });
-
-    expect(fetchMock).toHaveBeenCalledWith('/api/v1/sources');
-    expect(screen.getByText(/Open data only\./)).toBeTruthy();
-    expect(screen.queryByText(/Alternative:/i)).toBeNull();
-    await expectNoAxeViolations();
-  });
-
-  it('has no axe violations in the no-score results and expanded mapping checklist', async () => {
-    const result = {
-      assessment_id: 'sample-assessment-id',
-      product_name: 'Sample tee',
-      category: 'apparel',
-      subtype: 't_shirt',
-      status: 'not_scored',
-      methodology_version: 'prototype-no-score-v0.4',
-      score: null,
-      score_explanation: 'A combined score is outside scope; separate indicators are not yet calculated.',
-      functional_unit: 'One finished item (input reference only; no result calculated)',
-      boundary: 'Not assessed',
-      confidence: { level: 'not_assessed', drivers: [] },
-      indicators: [
-        {
-          name: 'climate',
-          label: 'Climate impact',
-          unit: 'kg CO₂e/item',
-          status: 'unavailable',
-          value: null,
-          reason: 'No reviewed climate factors are configured.',
-        },
-        {
-          name: 'water',
-          label: 'Water-use impact',
-          unit: 'Not selected',
-          status: 'unavailable',
-          value: null,
-          reason: 'The product-level water method is unresolved.',
-        },
-      ],
-      process_mapping_readiness: {
-        source_id: 'carbonfact-apparel-footwear-v1.1.0',
-        source_version: '1.1.0',
-        source_url: 'https://example.com/process-families',
-        status: 'not_ready',
-        scoring_enabled: false,
-        note: 'Mapping checklist only; no impact calculated.',
-        requirements: [
-          {
-            id: 'process-route',
-            label: 'Fiber, textile, and assembly process route',
-            status: 'not_collected',
-            details: 'No process routes were recorded.',
-            next_step: 'Review supplier evidence.',
-          },
-        ],
-      },
-      known_facts: [],
-      data_gaps: ['material composition'],
-      limitations: ['This prototype does not calculate environmental impact.'],
-      next_steps: ['Review source rights and method before scoring.'],
+describe('process estimator accessibility', () => {
+  it('uses accessible theme colors and keeps the illustration decorative', () => {
+    const background = '#f4f1e9';
+    const luminance = (hex: string) => {
+      const channel = (offset: number) => {
+        const value = Number.parseInt(hex.slice(offset, offset + 2), 16) / 255;
+        return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+      };
+      return 0.2126 * channel(1) + 0.7152 * channel(3) + 0.0722 * channel(5);
     };
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => result,
-    });
-    vi.stubGlobal('fetch', fetchMock);
+    const contrast = (foreground: string, surface: string) => {
+      const [lighter, darker] = [luminance(foreground), luminance(surface)].sort((a, b) => b - a);
+      return (lighter + 0.05) / (darker + 0.05);
+    };
 
+    expect(contrast(theme.palette.primary.main, background)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(theme.palette.text.primary, background)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(theme.palette.text.secondary, background)).toBeGreaterThanOrEqual(4.5);
+
+    stubApi();
+    const { container } = render(<App />);
+    const illustration = container.querySelector('.landscape-scene');
+    expect(illustration?.getAttribute('aria-hidden')).toBe('true');
+    expect(illustration?.getAttribute('focusable')).toBe('false');
+  });
+
+  it('has no axe violations in the calculator and populated indicator results', async () => {
+    stubApi();
     render(<App />);
-    fireEvent.change(screen.getByRole('textbox', { name: 'Product name' }), {
-      target: { value: 'Sample tee' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Review assessment' }));
-    await screen.findByText('Indicators not calculated yet');
-    fireEvent.click(screen.getByText('Review 1 mapping requirements'));
+    await expectNoAxeViolations();
+    await calculateExample();
+    expect(screen.getAllByRole('row')).toHaveLength(17);
+    expect(screen.getByText('Source attribution · CC BY-SA 4.0')).toBeTruthy();
+    expect(screen.getByText(/Each selected process factor is scaled/)).toBeTruthy();
+    await expectNoAxeViolations();
+  });
 
+  it('shows source and privacy details in an accessible methodology dialog', async () => {
+    const fetchMock = stubApi();
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: 'Method & data' }));
+    await screen.findByRole('heading', { name: 'Implemented calculation' });
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/v1/sources'));
+    await screen.findByText(/Data source: Carbonfact Open Source LCA Database/);
+    expect(screen.getByRole('heading', { name: 'Privacy' })).toBeTruthy();
     await expectNoAxeViolations();
   });
 });

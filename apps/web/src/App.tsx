@@ -1,497 +1,368 @@
-import { useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type SyntheticEvent } from 'react';
 import {
   Alert,
+  Autocomplete,
   Button,
-  Checkbox,
   Chip,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   Divider,
   FormControl,
-  FormControlLabel,
   IconButton,
   InputLabel,
   MenuItem,
   Paper,
   Select,
   Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   TextField,
   Tooltip,
   Typography,
 } from '@mui/material';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
-import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
+import CalculateOutlinedIcon from '@mui/icons-material/CalculateOutlined';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
+import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import ForestOutlinedIcon from '@mui/icons-material/ForestOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import OpenInNewOutlinedIcon from '@mui/icons-material/OpenInNewOutlined';
 import ScienceOutlinedIcon from '@mui/icons-material/ScienceOutlined';
-import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import {
-  assessProduct,
-  getCandidateSources,
-  previewDescription,
-  type AssessmentResult,
-  type CandidateDataSource,
-  type Category,
-  type ExtractionCandidate,
-  type Provenance,
-  type ProductPayload,
-  type ProcessMappingRequirement,
-  type ProcessStage,
+  calculateProcessEstimates,
+  getActiveSources,
+  getFactorCatalog,
+  type ActiveDataSource,
+  type FactorCatalog,
+  type ProcessEstimateLine,
+  type ProcessEstimateResponse,
+  type ProcessFactor,
 } from './api';
-import { availableIndicatorCount } from './assessment';
-import { buildOpenLicenseInquiryHref } from './licensing';
-import { LandscapeGlyph, LandscapeScene } from './LandscapeArt';
+import { formatProcessEstimatesCsv, downloadProcessEstimatesCsv } from './export';
+import { LandscapeScene } from './LandscapeArt';
 
-type Stage = 'input' | 'review';
-type MaterialRow = { material: string; sharePercent: string; provenance: Provenance };
-type ComponentRow = {
-  component: string;
-  material: string;
-  sharePercent: string;
-  sourceReference: string;
-};
-type ProcessEvidenceRow = {
-  stage: ProcessStage;
-  processDescription: string;
-  referenceUnit: string;
-  country: string;
-  year: string;
-  sourceReference: string;
-  lossWasteNotes: string;
-  wasteTreatment: string;
-};
-type FormState = {
-  name: string;
-  category: Category;
-  subtype: string;
-  description: string;
-  materials: MaterialRow[];
-  componentBOM: ComponentRow[];
-  processEvidence: ProcessEvidenceRow[];
-  massG: string;
-  massProvenance: Provenance;
-  manufacturingCountry: string;
-  manufacturingCountryProvenance: Provenance;
-  certificationClaims: string;
-  certificationClaimsProvenance: Provenance;
+type SelectedProcess = {
+  key: string;
+  factor: ProcessFactor;
+  quantity: string;
 };
 
-const INITIAL_FORM: FormState = {
-  name: '',
-  category: 'apparel',
-  subtype: 't_shirt',
-  description: '',
-  materials: [{ material: '', sharePercent: '', provenance: 'user_provided' }],
-  componentBOM: [],
-  processEvidence: [],
-  massG: '',
-  massProvenance: 'user_provided',
-  manufacturingCountry: '',
-  manufacturingCountryProvenance: 'user_provided',
-  certificationClaims: '',
-  certificationClaimsProvenance: 'user_provided',
-};
+const MAX_PROCESS_LINES = 25;
 
-const PROCESS_STAGES: Array<{ value: ProcessStage; label: string }> = [
-  { value: 'material_production', label: 'Material / component production' },
-  { value: 'spinning', label: 'Yarn spinning' },
-  { value: 'knitting', label: 'Knitting' },
-  { value: 'weaving', label: 'Weaving' },
-  { value: 'dyeing', label: 'Dyeing' },
-  { value: 'printing', label: 'Printing' },
-  { value: 'finishing', label: 'Finishing' },
-  { value: 'textile_assembly', label: 'Textile / garment assembly' },
-  { value: 'shoe_assembly', label: 'Shoe assembly' },
-  { value: 'other', label: 'Other process' },
-];
-
-const SUBTYPES: Record<Category, Array<{ value: string; label: string }>> = {
-  apparel: [
-    { value: 't_shirt', label: 'T-shirt' },
-    { value: 'shirt', label: 'Shirt' },
-    { value: 'jeans', label: 'Jeans' },
-    { value: 'sweater', label: 'Sweater' },
-    { value: 'jacket', label: 'Jacket' },
-    { value: 'dress', label: 'Dress' },
-    { value: 'other', label: 'Other apparel' },
-  ],
-  footwear: [
-    { value: 'shoes', label: 'Shoes' },
-    { value: 'other', label: 'Other footwear' },
-  ],
-};
-
-function candidateTitle(candidate: ExtractionCandidate): string {
-  switch (candidate.field) {
-    case 'material_composition':
-      return `${candidate.value.material ?? 'Material'} · ${candidate.value.share_percent ?? '?'}%`;
-    case 'mass_g':
-      return `Item mass · ${candidate.value.mass_g ?? '?'} g`;
-    case 'manufacturing_country':
-      return `Made in · ${candidate.value.manufacturing_country ?? 'unknown'}`;
-    case 'certification_claim':
-      return `Certification wording · ${candidate.value.claim ?? 'claim'}`;
+function numberForDisplay(value: number): string {
+  if (!Number.isFinite(value)) return 'Not available';
+  if (value !== 0 && (Math.abs(value) < 0.0001 || Math.abs(value) >= 1_000_000_000)) {
+    return value.toExponential(4).replace(/\.0+e/, 'e').replace(/(\.\d*?[1-9])0+e/, '$1e');
   }
+  return new Intl.NumberFormat('en', { maximumSignificantDigits: 6 }).format(value);
 }
 
-function provenanceLabel(provenance: Provenance): string {
-  return provenance === 'user_confirmed_extraction' ? 'Confirmed from description' : 'Entered by you';
+function geographyFor(factor: Pick<ProcessFactor | ProcessEstimateLine, 'geography_label' | 'geography_code'>): string {
+  return factor.geography_label ?? factor.geography_code ?? 'Geography not stated';
 }
 
-function mappingStatusLabel(status: ProcessMappingRequirement['status']): string {
-  const labels: Record<ProcessMappingRequirement['status'], string> = {
-    provided: 'Provided · unverified',
-    partial: 'Partial',
-    missing: 'Missing input',
-    not_collected: 'Not collected',
-    not_selected: 'Boundary not selected',
-    not_in_candidate: 'Not in candidate',
-  };
-  return labels[status];
+function factorLabel(factor: ProcessFactor): string {
+  return `${factor.activity} · ${geographyFor(factor)} · ${factor.reference_unit}`;
+}
+
+function dqrEntries(line: ProcessEstimateLine): Array<[string, number]> {
+  if (!line.data_quality) return [];
+  const entries: Array<[string, number | null]> = [
+    ['Precision', line.data_quality.precision],
+    ['Time representativeness', line.data_quality.temporal_representativeness],
+    ['Technology representativeness', line.data_quality.technological_representativeness],
+    ['Geographical representativeness', line.data_quality.geographical_representativeness],
+  ];
+  return entries.filter((entry): entry is [string, number] => typeof entry[1] === 'number');
+}
+
+function ProcessResult({ line, index }: { line: ProcessEstimateLine; index: number }) {
+  const scores = dqrEntries(line);
+  const water = line.indicators.find((item) => item.code === 'WTU');
+  const headingId = `result-${index}-${line.factor_id}`;
+
+  return (
+    <article className="process-result" aria-labelledby={headingId}>
+      <div className="process-result-heading">
+        <div>
+          <div className="result-overline">{line.family_label}</div>
+          <Typography id={headingId} component="h3" className="process-result-title">
+            {line.activity}
+          </Typography>
+          <div className="process-result-meta">
+            <Chip size="small" label={geographyFor(line)} className="geo-chip" />
+            <span>{numberForDisplay(line.quantity)} × {line.reference_unit}</span>
+          </div>
+        </div>
+        <Chip size="small" label="Separate process result" className="separate-chip" />
+      </div>
+
+      <TableContainer className="indicator-table-wrap">
+        <Table size="small" aria-label={`Separate environmental indicators for ${line.activity}`}>
+          <TableHead>
+            <TableRow>
+              <TableCell>Indicator</TableCell>
+              <TableCell align="right">Published factor</TableCell>
+              <TableCell align="right">Scaled result</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {line.indicators.map((indicator) => (
+              <TableRow key={indicator.code}>
+                <TableCell>
+                  <strong className="indicator-code">{indicator.code}</strong>
+                  <span className="indicator-name">{indicator.name}</span>
+                </TableCell>
+                <TableCell align="right">
+                  <span className="numeric-value">{numberForDisplay(indicator.factor_value)}</span>
+                  <span className="unit-note">{indicator.factor_unit}</span>
+                </TableCell>
+                <TableCell align="right">
+                  <span className="numeric-value result-value">{numberForDisplay(indicator.result_value)}</span>
+                  <span className="unit-note">{indicator.result_unit}</span>
+                  {indicator.code === 'WTU' && water && (
+                    <Tooltip title="EF 3.1 water-use impact, not a physical water volume in litres.">
+                      <InfoOutlinedIcon className="unit-info-icon" aria-label="Water impact unit note" fontSize="small" />
+                    </Tooltip>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <div className="process-result-details">
+        {line.input_required_kg_per_reference_unit !== null && (
+          <p>
+            <strong>Source-reported input required:</strong>{' '}
+            {numberForDisplay(line.input_required_kg_per_reference_unit)} kg per reference unit. This source parameter is shown as published; no separate upstream-material or waste-treatment calculation is applied.
+          </p>
+        )}
+        <details>
+          <summary>Data quality and source row</summary>
+          {scores.length > 0 ? (
+            <dl className="dqr-list">
+              {scores.map(([label, value]) => (
+                <div key={label}><dt>{label}</dt><dd>{numberForDisplay(value)}</dd></div>
+              ))}
+            </dl>
+          ) : (
+            <p>No data-quality ratings were published for this factor.</p>
+          )}
+          <p className="source-row-id">Source row: <code>{line.factor_id}</code></p>
+          <p className="source-row-id">Bundled file: <code>{line.source_file}</code></p>
+        </details>
+      </div>
+    </article>
+  );
+}
+
+function SourceDialog({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
+  const [sources, setSources] = useState<ActiveDataSource[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [sourceLoaded, setSourceLoaded] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!open || sourceLoaded) return;
+    let current = true;
+    setLoading(true);
+    getActiveSources()
+      .then((items) => {
+        if (current) setSources(items);
+      })
+      .catch((requestError: unknown) => {
+        if (current) {
+          setError(requestError instanceof Error ? requestError.message : 'Source details could not be loaded.');
+        }
+      })
+      .finally(() => {
+        if (current) {
+          setLoading(false);
+          setSourceLoaded(true);
+        }
+      });
+    return () => {
+      current = false;
+    };
+  }, [open, sourceLoaded]);
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth aria-labelledby="source-dialog-title">
+      <DialogTitle id="source-dialog-title" className="dialog-title">Method, source and reuse</DialogTitle>
+      <DialogContent dividers className="source-dialog-content">
+        <Stack spacing={2.5}>
+          <section>
+            <Typography component="h3" className="dialog-section-title">Implemented calculation</Typography>
+            <Typography variant="body2">
+              For each selected activity and each of its 16 indicators, the app multiplies the published factor by the quantity you enter in that factor’s own reference unit. Every process row stays separate. No cross-stage sum, composite score, ranking, or complete product footprint is calculated.
+            </Typography>
+          </section>
+          <section>
+            <Typography component="h3" className="dialog-section-title">Data boundary</Typography>
+            <Typography variant="body2">
+              Factor reference units, modeled boundaries, and geographies vary by source row. The source’s Input required (kg) value is displayed when present, but this app does not apply upstream material factors or add waste treatment. The source publishes WTU in m³ world-equivalent; it is an impact indicator, not litres of physical water. Use-phase records describe representative European consumer behavior.
+            </Typography>
+          </section>
+          {loading && <CircularProgress size={22} aria-label="Loading source details" />}
+          {error && <Alert severity="error" onClose={() => setError('')}>{error}</Alert>}
+          {sources.map((source) => (
+            <section key={source.id} className="source-dialog-card">
+              <Typography component="h3" className="dialog-section-title">{source.name} · v{source.version}</Typography>
+              <Typography variant="body2">{source.scope_summary}</Typography>
+              <p className="same-screen-attribution">{source.attribution_text}</p>
+              <div className="source-dialog-links">
+                {source.attribution_links.map((link) => (
+                  <a key={link.url} href={link.url} target="_blank" rel="noreferrer">
+                    {link.label} <OpenInNewOutlinedIcon fontSize="inherit" />
+                  </a>
+                ))}
+              </div>
+              <Typography variant="body2"><strong>License for source-derived results:</strong> {source.result_license}. Attribution and ShareAlike apply.</Typography>
+              <Typography variant="body2"><strong>Underlying inventories:</strong> {source.background_database_note}</Typography>
+              <ul className="source-limitations">
+                {source.limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}
+              </ul>
+            </section>
+          ))}
+          <section>
+            <Typography component="h3" className="dialog-section-title">Privacy</Typography>
+            <Typography variant="body2">
+              The app has no user accounts, analytics, database, or calculation history. Calculation requests are processed in memory and are not stored; the API access log is disabled and request bodies are not logged by the app. Hosting infrastructure may retain network metadata under its own operating policy.
+            </Typography>
+          </section>
+        </Stack>
+      </DialogContent>
+      <DialogActions><Button onClick={onClose} variant="contained">Close</Button></DialogActions>
+    </Dialog>
+  );
 }
 
 function App() {
-  const [form, setForm] = useState<FormState>(INITIAL_FORM);
-  const [stage, setStage] = useState<Stage>('input');
-  const [candidates, setCandidates] = useState<ExtractionCandidate[]>([]);
-  const [selectedCandidates, setSelectedCandidates] = useState<boolean[]>([]);
-  const [assessment, setAssessment] = useState<AssessmentResult | null>(null);
-  const [busy, setBusy] = useState<'preview' | 'assessment' | null>(null);
+  const [catalog, setCatalog] = useState<FactorCatalog | null>(null);
+  const [catalogLoading, setCatalogLoading] = useState(true);
+  const [catalogError, setCatalogError] = useState('');
+  const [familyFilter, setFamilyFilter] = useState('');
+  const [selectedFactor, setSelectedFactor] = useState<ProcessFactor | null>(null);
+  const [quantityDraft, setQuantityDraft] = useState('');
+  const [selectedProcesses, setSelectedProcesses] = useState<SelectedProcess[]>([]);
+  const [result, setResult] = useState<ProcessEstimateResponse | null>(null);
+  const [calculating, setCalculating] = useState(false);
   const [error, setError] = useState('');
-  const [notice, setNotice] = useState('');
-  const [methodologyOpen, setMethodologyOpen] = useState(false);
-  const [candidateSources, setCandidateSources] = useState<CandidateDataSource[]>([]);
-  const [sourcesLoaded, setSourcesLoaded] = useState(false);
-  const [sourcesLoading, setSourcesLoading] = useState(false);
-  const [sourcesError, setSourcesError] = useState('');
-  const [sampleLoaded, setSampleLoaded] = useState(false);
+  const [sourceDialogOpen, setSourceDialogOpen] = useState(false);
 
-  const knownShareTotal = useMemo(
-    () => form.materials.reduce((total, row) => total + (Number(row.sharePercent) || 0), 0),
-    [form.materials],
-  );
-  const knownBOMShareTotal = useMemo(
-    () => form.componentBOM.reduce((total, row) => total + (Number(row.sharePercent) || 0), 0),
-    [form.componentBOM],
-  );
-
-  const updateForm = (patch: Partial<FormState>) => {
-    setForm((current) => ({ ...current, ...patch }));
-    setAssessment(null);
-    setError('');
-    setStage('input');
-  };
-
-  const handleCategoryChange = (category: Category) => {
-    updateForm({ category, subtype: SUBTYPES[category][0].value });
-    setCandidates([]);
-    setNotice('');
-  };
-
-  const handleDescriptionChange = (description: string) => {
-    updateForm({ description });
-    setCandidates([]);
-    setNotice('');
-  };
-
-  const openMethodology = () => {
-    setMethodologyOpen(true);
-    if (sourcesLoaded || sourcesLoading) return;
-    setSourcesLoading(true);
-    setSourcesError('');
-    getCandidateSources()
-      .then((sources) => {
-        setCandidateSources(sources);
-        setSourcesLoaded(true);
+  useEffect(() => {
+    let current = true;
+    getFactorCatalog()
+      .then((response) => {
+        if (current) setCatalog(response);
       })
-      .catch((sourceError) => {
-        setSourcesError(sourceError instanceof Error ? sourceError.message : 'The source registry is unavailable.');
+      .catch((requestError: unknown) => {
+        if (current) {
+          setCatalogError(requestError instanceof Error ? requestError.message : 'Process factors could not be loaded.');
+        }
       })
-      .finally(() => setSourcesLoading(false));
-  };
-
-  const handlePreview = async () => {
-    if (!form.description.trim()) {
-      setError('Add a product description before asking for suggestions.');
-      return;
-    }
-    setBusy('preview');
-    setError('');
-    setNotice('');
-    setAssessment(null);
-    try {
-      const response = await previewDescription(form.category, form.description.trim());
-      setCandidates(response.candidates);
-      setSelectedCandidates(response.candidates.map(() => true));
-      setNotice(response.message);
-      if (response.candidates.length > 0) setStage('review');
-    } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : 'Could not read this description. Try entering the details manually.');
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  const applySelectedCandidates = () => {
-    const chosen = candidates.filter((_, index) => selectedCandidates[index]);
-    if (chosen.length === 0) {
-      setStage('input');
-      setCandidates([]);
-      setNotice('No suggestions were applied. You can continue with manual details.');
-      return;
-    }
-
-    const next: FormState = {
-      ...form,
-      materials: form.materials.filter((row) => row.material.trim() && row.sharePercent.trim()),
+      .finally(() => {
+        if (current) setCatalogLoading(false);
+      });
+    return () => {
+      current = false;
     };
-    const confirmed: Provenance = 'user_confirmed_extraction';
+  }, []);
 
-    for (const candidate of chosen) {
-      if (candidate.field === 'material_composition') {
-        const material = String(candidate.value.material ?? '');
-        const sharePercent = String(candidate.value.share_percent ?? '');
-        const existing = next.materials.find(
-          (row) => row.material.toLowerCase() === material.toLowerCase(),
-        );
-        if (existing) {
-          existing.sharePercent = sharePercent;
-          existing.provenance = confirmed;
-        } else {
-          next.materials.push({ material, sharePercent, provenance: confirmed });
-        }
-      } else if (candidate.field === 'mass_g') {
-        next.massG = String(candidate.value.mass_g ?? '');
-        next.massProvenance = confirmed;
-      } else if (candidate.field === 'manufacturing_country') {
-        next.manufacturingCountry = String(candidate.value.manufacturing_country ?? '');
-        next.manufacturingCountryProvenance = confirmed;
-      } else if (candidate.field === 'certification_claim') {
-        const claim = String(candidate.value.claim ?? '');
-        const currentClaims = next.certificationClaims
-          .split(',')
-          .map((item) => item.trim())
-          .filter(Boolean);
-        if (!currentClaims.some((item) => item.toLowerCase() === claim.toLowerCase())) {
-          currentClaims.push(claim);
-        }
-        next.certificationClaims = currentClaims.join(', ');
-        next.certificationClaimsProvenance = confirmed;
-      }
-    }
+  const visibleFactors = useMemo(() => {
+    if (!catalog) return [];
+    return catalog.factors.filter((factor) => !familyFilter || factor.family_id === familyFilter);
+  }, [catalog, familyFilter]);
 
-    if (next.materials.length === 0) {
-      next.materials = [{ material: '', sharePercent: '', provenance: 'user_provided' }];
-    }
-    setForm(next);
-    setAssessment(null);
-    setStage('input');
-    setCandidates([]);
-    setNotice(`Applied ${chosen.length} suggestion${chosen.length === 1 ? '' : 's'}. Review each field before calculating.`);
+  const selectedFactorAlreadyAdded = selectedFactor
+    ? selectedProcesses.some((line) => line.factor.id === selectedFactor.id)
+    : false;
+
+  const updateSelectedQuantity = (key: string, quantity: string) => {
+    setSelectedProcesses((current) => current.map((line) => line.key === key ? { ...line, quantity } : line));
+    setResult(null);
+    setError('');
   };
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const addProcess = () => {
+    if (!selectedFactor) {
+      setError('Choose a process activity from the open factor catalog.');
+      return;
+    }
+    const quantity = Number(quantityDraft);
+    if (!Number.isFinite(quantity) || quantity <= 0) {
+      setError('Enter a quantity greater than zero in the selected factor’s reference unit.');
+      return;
+    }
+    if (selectedFactorAlreadyAdded) {
+      setError('That factor is already in the list. Edit its quantity in the selected process list.');
+      return;
+    }
+    if (selectedProcesses.length >= MAX_PROCESS_LINES) {
+      setError(`A calculation can include up to ${MAX_PROCESS_LINES} separate process rows.`);
+      return;
+    }
+    setSelectedProcesses((current) => [
+      ...current,
+      { key: `${selectedFactor.id}-${Date.now()}`, factor: selectedFactor, quantity: quantityDraft },
+    ]);
+    setSelectedFactor(null);
+    setQuantityDraft('');
+    setResult(null);
+    setError('');
+  };
+
+  const removeProcess = (key: string) => {
+    setSelectedProcesses((current) => current.filter((line) => line.key !== key));
+    setResult(null);
+    setError('');
+  };
+
+  const calculate = async (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError('');
-    setNotice('');
-
-    const incompleteRows = form.materials.some(
-      (row) => Boolean(row.material.trim()) !== Boolean(row.sharePercent.trim()),
-    );
-    if (incompleteRows) {
-      setError('For each material, enter both its name and percentage—or clear both fields.');
+    if (selectedProcesses.length === 0) {
+      setError('Add at least one process factor before calculating.');
       return;
     }
-    if (knownShareTotal > 100.000001) {
-      setError('Known material percentages cannot total more than 100%.');
+    const quantities = selectedProcesses.map((line) => Number(line.quantity));
+    if (quantities.some((quantity) => !Number.isFinite(quantity) || quantity <= 0)) {
+      setError('Each selected process needs a quantity greater than zero.');
       return;
     }
-    const materials = form.materials
-      .filter((row) => row.material.trim() && row.sharePercent.trim())
-      .map((row) => ({
-        material: row.material.trim(),
-        share_percent: Number(row.sharePercent),
-        provenance: row.provenance,
-      }));
-    if (materials.some((row) => !Number.isFinite(row.share_percent) || row.share_percent <= 0 || row.share_percent > 100)) {
-      setError('Material percentages must be greater than 0 and no more than 100.');
-      return;
-    }
-
-    const incompleteBOMRow = form.componentBOM.some((row) => {
-      const hasAny = Boolean(
-        row.component.trim() || row.material.trim() || row.sharePercent.trim() || row.sourceReference.trim(),
-      );
-      const hasCore = Boolean(row.component.trim() && row.material.trim() && row.sharePercent.trim());
-      return hasAny && !hasCore;
-    });
-    if (incompleteBOMRow) {
-      setError('For each component entry, provide its component, material, and share—or clear the row.');
-      return;
-    }
-    if (knownBOMShareTotal > 100.000001) {
-      setError('Component material shares cannot total more than 100% of the item.');
-      return;
-    }
-    const componentBOM = form.componentBOM
-      .filter((row) => row.component.trim() && row.material.trim() && row.sharePercent.trim())
-      .map((row) => ({
-        component: row.component.trim(),
-        material: row.material.trim(),
-        share_percent_of_item: Number(row.sharePercent),
-        source_reference: row.sourceReference.trim() || null,
-        provenance: 'user_provided' as const,
-      }));
-    if (componentBOM.some((row) => !Number.isFinite(row.share_percent_of_item) || row.share_percent_of_item <= 0 || row.share_percent_of_item > 100)) {
-      setError('Component shares must be greater than 0 and no more than 100%.');
-      return;
-    }
-
-    const invalidProcessYear = form.processEvidence.some((row) => {
-      if (!row.year.trim()) return false;
-      const year = Number(row.year);
-      return !Number.isInteger(year) || year < 1900 || year > 2100;
-    });
-    if (invalidProcessYear) {
-      setError('Process data years must be whole years between 1900 and 2100.');
-      return;
-    }
-    const processEvidence = form.processEvidence
-      .filter((row) =>
-        row.processDescription.trim() ||
-        row.referenceUnit.trim() ||
-        row.country.trim() ||
-        row.year.trim() ||
-        row.sourceReference.trim() ||
-        row.lossWasteNotes.trim() ||
-        row.wasteTreatment.trim(),
-      )
-      .map((row) => ({
-        stage: row.stage,
-        process_description: row.processDescription.trim() || null,
-        reference_unit: row.referenceUnit.trim() || null,
-        country: row.country.trim() || null,
-        year: row.year.trim() ? Number(row.year) : null,
-        source_reference: row.sourceReference.trim() || null,
-        loss_waste_notes: row.lossWasteNotes.trim() || null,
-        waste_treatment: row.wasteTreatment.trim() || null,
-        provenance: 'user_provided' as const,
-      }));
-
-    const mass = form.massG.trim() ? Number(form.massG) : null;
-    if (mass !== null && (!Number.isFinite(mass) || mass <= 0 || mass > 100_000)) {
-      setError('Enter a valid item mass in grams.');
-      return;
-    }
-
-    const payload: ProductPayload = {
-      category: form.category,
-      subtype: form.subtype,
-      name: form.name.trim(),
-      attributes: {
-        material_composition: materials,
-        mass_g: mass,
-        mass_provenance: form.massProvenance,
-        manufacturing_country: form.manufacturingCountry.trim() || null,
-        manufacturing_country_provenance: form.manufacturingCountryProvenance,
-        certification_claims: form.certificationClaims
-          .split(',')
-          .map((claim) => claim.trim())
-          .filter(Boolean),
-        certification_claims_provenance: form.certificationClaimsProvenance,
-        component_bom: componentBOM,
-        process_evidence: processEvidence,
-      },
-    };
-
-    setBusy('assessment');
-    setAssessment(null);
+    setCalculating(true);
+    setResult(null);
     try {
-      const response = await assessProduct(payload);
-      setAssessment(response);
+      const response = await calculateProcessEstimates(
+        selectedProcesses.map((line) => ({ factor_id: line.factor.id, quantity: Number(line.quantity) })),
+      );
+      setResult(response);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : 'Assessment could not be completed. Please retry.');
+      setError(requestError instanceof Error ? requestError.message : 'The process estimate could not be calculated.');
     } finally {
-      setBusy(null);
+      setCalculating(false);
     }
   };
 
-  const addMaterialRow = () => {
-    updateForm({
-      materials: [...form.materials, { material: '', sharePercent: '', provenance: 'user_provided' }],
-    });
-  };
-
-  const updateMaterial = (index: number, patch: Partial<MaterialRow>) => {
-    const materials = form.materials.map((row, rowIndex) =>
-      rowIndex === index ? { ...row, ...patch, provenance: patch.provenance ?? 'user_provided' } : row,
-    );
-    updateForm({ materials });
-  };
-
-  const addComponentRow = () => {
-    updateForm({
-      componentBOM: [...form.componentBOM, { component: '', material: '', sharePercent: '', sourceReference: '' }],
-    });
-  };
-
-  const updateComponentRow = (index: number, patch: Partial<ComponentRow>) => {
-    updateForm({
-      componentBOM: form.componentBOM.map((row, rowIndex) =>
-        rowIndex === index ? { ...row, ...patch } : row,
-      ),
-    });
-  };
-
-  const addProcessEvidenceRow = () => {
-    updateForm({
-      processEvidence: [
-        ...form.processEvidence,
-        {
-          stage: 'material_production',
-          processDescription: '',
-          referenceUnit: '',
-          country: '',
-          year: '',
-          sourceReference: '',
-          lossWasteNotes: '',
-          wasteTreatment: '',
-        },
-      ],
-    });
-  };
-
-  const updateProcessEvidenceRow = (index: number, patch: Partial<ProcessEvidenceRow>) => {
-    updateForm({
-      processEvidence: form.processEvidence.map((row, rowIndex) =>
-        rowIndex === index ? { ...row, ...patch } : row,
-      ),
-    });
-  };
-
-  const loadExample = () => {
-    updateForm({
-      ...form,
-      name: form.name || 'Everyday T-shirt',
-      description: '100% organic cotton T-shirt, 180 g. Made in India. GOTS certified.',
-    });
-    setSampleLoaded(true);
-    setNotice('Example text added. Use “Suggest details” to review the detected phrases.');
-  };
-
-  const startOver = () => {
-    setForm(INITIAL_FORM);
-    setAssessment(null);
-    setCandidates([]);
-    setSelectedCandidates([]);
-    setStage('input');
-    setError('');
-    setNotice('');
-    setSampleLoaded(false);
+  const exportResults = () => {
+    if (!result) return;
+    const csv = formatProcessEstimatesCsv(result);
+    downloadProcessEstimatesCsv(csv, 'environmental-process-estimates.csv');
   };
 
   return (
@@ -502,757 +373,280 @@ function App() {
           <span className="brand-name">impact<span aria-hidden="true"> / </span>analyzer</span>
         </a>
         <div className="header-right">
-          <span className="prototype-label"><span className="status-dot" /> Prototype</span>
-          <Button
-            variant="text"
-            startIcon={<InfoOutlinedIcon />}
-onClick={openMethodology}
-            className="method-button"
-          >
-            How it works
+          <Chip label="Open process data" size="small" className="header-chip" />
+          <Button variant="text" startIcon={<InfoOutlinedIcon />} onClick={() => setSourceDialogOpen(true)} className="method-button">
+            Method & data
           </Button>
         </div>
       </header>
 
-      <main id="top" className="main-content">
-        <section className="hero-section" aria-labelledby="hero-title">
+      <main id="top" className="main-content estimator-main">
+        <section className="hero-section estimator-hero" aria-labelledby="hero-title">
           <div className="hero-copy">
-            <div className="eyebrow"><span className="eyebrow-line" /> PRODUCT IMPACT, WITH CONTEXT</div>
+            <div className="eyebrow"><span className="eyebrow-line" /> APPAREL & FOOTWEAR · OPEN FACTORS</div>
             <Typography id="hero-title" component="h1" className="hero-title">
-              Look beyond the <span className="hero-title-accent">label.</span>
+              Process impacts, <span className="hero-title-accent">with context.</span>
             </Typography>
             <Typography className="hero-subtitle">
-              Understand what’s known, what’s missing, and what it would take to make a fair comparison.
+              Explore 16 environmental indicators from published process data. Choose the activity, match its reference unit, and scale the factor to your quantity.
             </Typography>
             <div className="hero-note">
               <span className="hero-note-icon"><ScienceOutlinedIcon /></span>
-              <span><strong>Separate indicators, no combined score.</strong> Individual indicators stay unavailable until data and methods are reviewed.</span>
+              <span><strong>Separate indicators. No combined score.</strong> Each selected process is reported on its own; this is not a whole-product footprint.</span>
             </div>
           </div>
           <div className="hero-visual">
-            <div className="art-caption-top" aria-hidden="true"><span /> A landscape in layers</div>
+            <div className="art-caption-top" aria-hidden="true"><span /> Source factors, not a product score</div>
             <LandscapeScene />
-            <div className="art-caption-bottom">Illustration only · not a footprint result</div>
+            <div className="art-caption-bottom">Illustration only · values come from cited process data</div>
           </div>
         </section>
 
-        <div className="workspace-grid">
-          <Paper component="section" elevation={0} className="form-card" aria-labelledby="form-heading">
+        <div className="catalog-strip" aria-label="Loaded source coverage">
+          <div><strong>{catalog?.total_records ?? '—'}</strong><span>published process factors</span></div>
+          <Divider orientation="vertical" flexItem />
+          <div><strong>{catalog?.families.length ?? '—'}</strong><span>selectable factor groups</span></div>
+          <Divider orientation="vertical" flexItem />
+          <div><strong>16</strong><span>EF 3.1 indicators</span></div>
+          <div className="catalog-strip-note">Source version {catalog?.source_version ?? '1.1.0'} · Global and region-specific rows where published</div>
+        </div>
+
+        <div className="estimator-grid">
+          <Paper component="section" elevation={0} className="form-card estimator-card" aria-labelledby="calculator-heading">
             <div className="card-heading-row">
               <div>
-                <div className="step-label">01 <span aria-hidden="true">·</span> PRODUCT DETAILS</div>
-                <Typography id="form-heading" component="h2" variant="h5" className="card-title">
-                  Start with what you know.
-                </Typography>
-                <Typography className="card-subtitle">
-                  Unknown details are okay. They will never be treated as zero impact.
-                </Typography>
+                <div className="step-label">01 <span aria-hidden="true">·</span> SELECT PROCESS DATA</div>
+                <Typography id="calculator-heading" component="h2" variant="h5" className="card-title">Build a process estimate.</Typography>
+                <Typography className="card-subtitle">Each activity keeps the reference unit and source geography shown in its dataset.</Typography>
               </div>
               <div className="card-number" aria-hidden="true">01</div>
             </div>
 
-            <form onSubmit={handleSubmit} noValidate>
-              <div className="form-grid two-col">
-                <FormControl fullWidth size="small">
-                  <InputLabel id="category-label">Category</InputLabel>
-                  <Select
-                    labelId="category-label"
-                    id="category"
-                    value={form.category}
-                    label="Category"
-                    onChange={(event) => handleCategoryChange(event.target.value as Category)}
-                  >
-                    <MenuItem value="apparel">Apparel</MenuItem>
-                    <MenuItem value="footwear">Footwear</MenuItem>
-                  </Select>
-                </FormControl>
-                <FormControl fullWidth size="small">
-                  <InputLabel id="subtype-label">Item type</InputLabel>
-                  <Select
-                    labelId="subtype-label"
-                    id="subtype"
-                    value={form.subtype}
-                    label="Item type"
-                    onChange={(event) => updateForm({ subtype: event.target.value })}
-                  >
-                    {SUBTYPES[form.category].map((item) => (
-                      <MenuItem key={item.value} value={item.value}>{item.label}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </div>
-
-              <TextField
-                label="Product name"
-                value={form.name}
-                onChange={(event) => updateForm({ name: event.target.value })}
-                placeholder="e.g. Everyday T-shirt"
-                required
-                fullWidth
-                size="small"
-                slotProps={{ htmlInput: { maxLength: 120 } }}
-              />
-
-              <div className="field-section">
-                <div className="field-section-heading">
-                  <div>
-                    <Typography component="h3" className="field-title">Material composition</Typography>
-                    <Typography className="field-help">Enter known percentages; partial composition is okay.</Typography>
-                  </div>
-                  <Tooltip title="These are product details, not verified environmental results.">
-                    <InfoOutlinedIcon className="muted-icon" fontSize="small" />
-                  </Tooltip>
-                </div>
-                <Stack spacing={1.1}>
-                  {form.materials.map((row, index) => (
-                    <div className="material-row" key={`material-${index}`}>
-                      <TextField
-                        label={index === 0 ? 'Material' : `Material ${index + 1}`}
-                        value={row.material}
-                        onChange={(event) => updateMaterial(index, { material: event.target.value })}
-                        size="small"
-                        fullWidth
-                        placeholder="Cotton"
-                        slotProps={{ htmlInput: { maxLength: 80 } }}
-                      />
-                      <TextField
-                        label="Share %"
-                        type="number"
-                        value={row.sharePercent}
-                        onChange={(event) => updateMaterial(index, { sharePercent: event.target.value })}
-                        size="small"
-                        slotProps={{ htmlInput: { min: 0, max: 100, step: 0.1 } }}
-                        className="share-field"
-                      />
-                      <Tooltip title="Remove material">
-                        <span>
-                          <IconButton
-                            aria-label={`Remove material ${index + 1}`}
-                            onClick={() => updateForm({ materials: form.materials.filter((_, i) => i !== index) })}
-                            disabled={form.materials.length === 1}
-                            size="small"
-                            className="remove-material"
-                          >
-                            <DeleteOutlineRoundedIcon fontSize="small" />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                    </div>
-                  ))}
-                </Stack>
-                <div className="materials-footer">
-                  <Button size="small" startIcon={<AddRoundedIcon />} onClick={addMaterialRow} type="button" disabled={form.materials.length >= 20}>
-                    Add material{form.materials.length >= 20 ? ' (max 20)' : ''}
-                  </Button>
-                  <span className={knownShareTotal > 100.000001 ? 'share-total invalid' : 'share-total'}>
-                    Known total: {knownShareTotal.toLocaleString(undefined, { maximumFractionDigits: 1 })}%
-                  </span>
-                </div>
-              </div>
-
-              <div className="form-grid two-col">
-                <TextField
-                  label="Item mass (g)"
-                  type="number"
-                  value={form.massG}
-                  onChange={(event) => updateForm({ massG: event.target.value, massProvenance: 'user_provided' })}
-                  size="small"
-                  fullWidth
-                  placeholder="e.g. 180"
-                  slotProps={{ htmlInput: { min: 0, max: 100000, step: 1 } }}
-                  helperText="Optional · ‘I don’t know’ is fine"
-                />
-                <TextField
-                  label="Made in (country)"
-                  value={form.manufacturingCountry}
-                  onChange={(event) => updateForm({ manufacturingCountry: event.target.value, manufacturingCountryProvenance: 'user_provided' })}
-                  size="small"
-                  fullWidth
-                  placeholder="e.g. India"
-                  slotProps={{ htmlInput: { maxLength: 100 } }}
-                  helperText="Optional · not independently verified"
-                />
-              </div>
-
-              <details className="process-input-details">
-                <summary>Optional: component BOM and supplier process details</summary>
-                <div className="process-input-content">
-                  <Typography className="field-help">
-                    These unverified entries are sent to this prototype’s API for a no-score readiness response; the app does not store assessment records or contact a factor provider. Evidence references are text only and are never fetched. Hosting log/retention behavior has not been reviewed, so do not enter confidential supplier details.
-                  </Typography>
-
-                  <div className="field-section">
-                    <div className="field-section-heading">
-                      <div>
-                        <Typography component="h3" className="field-title">Component BOM</Typography>
-                        <Typography className="field-help">One row per component/material; share is a percent of total item mass. Partial entries are okay.</Typography>
-                      </div>
-                    </div>
-                    <Stack spacing={1}>
-                      {form.componentBOM.map((row, index) => (
-                        <div className="component-input-card" key={`component-${index}`}>
-                          <div className="bom-main-row">
-                            <TextField
-                              label="Component"
-                              value={row.component}
-                              onChange={(event) => updateComponentRow(index, { component: event.target.value })}
-                              size="small"
-                              placeholder="Main fabric"
-                              slotProps={{ htmlInput: { maxLength: 80 } }}
-                            />
-                            <TextField
-                              label="Material"
-                              value={row.material}
-                              onChange={(event) => updateComponentRow(index, { material: event.target.value })}
-                              size="small"
-                              placeholder="Cotton"
-                              slotProps={{ htmlInput: { maxLength: 80 } }}
-                            />
-                            <TextField
-                              label="Share of item %"
-                              type="number"
-                              value={row.sharePercent}
-                              onChange={(event) => updateComponentRow(index, { sharePercent: event.target.value })}
-                              size="small"
-                              slotProps={{ htmlInput: { min: 0, max: 100, step: 0.1 } }}
-                            />
-                            <Tooltip title="Remove component row">
-                              <IconButton
-                                type="button"
-                                aria-label={`Remove component row ${index + 1}`}
-                                onClick={() => updateForm({ componentBOM: form.componentBOM.filter((_, i) => i !== index) })}
-                                size="small"
-                                className="remove-material"
-                              >
-                                <DeleteOutlineRoundedIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          </div>
-                          <TextField
-                            label="Specification/evidence reference (optional)"
-                            value={row.sourceReference}
-                            onChange={(event) => updateComponentRow(index, { sourceReference: event.target.value })}
-                            size="small"
-                            fullWidth
-                            placeholder="Supplier BOM or product specification"
-                            slotProps={{ htmlInput: { maxLength: 500 } }}
-                          />
-                        </div>
-                      ))}
-                    </Stack>
-                    <div className="materials-footer">
-                      <Button size="small" type="button" startIcon={<AddRoundedIcon />} onClick={addComponentRow} disabled={form.componentBOM.length >= 100}>
-                        Add BOM row{form.componentBOM.length >= 100 ? ' (max 100)' : ''}
-                      </Button>
-                      <span className={knownBOMShareTotal > 100.000001 ? 'share-total invalid' : 'share-total'}>
-                        Reported BOM total: {knownBOMShareTotal.toLocaleString(undefined, { maximumFractionDigits: 1 })}%
-                      </span>
-                    </div>
-                  </div>
-
-                  <Divider className="form-divider" />
-
-                  <div className="field-section">
-                    <div className="field-section-heading">
-                      <div>
-                        <Typography component="h3" className="field-title">Supplier process evidence</Typography>
-                        <Typography className="field-help">Add a stage only when you know a process, output/reference unit, place/year, source reference, or supplier-reported loss/waste detail. Blank stages stay unknown.</Typography>
-                      </div>
-                    </div>
-                    <Stack spacing={1}>
-                      {form.processEvidence.map((row, index) => (
-                        <div className="process-evidence-card" key={`process-evidence-${index}`}>
-                          <div className="process-main-row">
-                            <FormControl fullWidth size="small">
-                              <InputLabel id={`process-stage-${index}`}>Stage</InputLabel>
-                              <Select
-                                labelId={`process-stage-${index}`}
-                                id={`process-stage-value-${index}`}
-                                value={row.stage}
-                                label="Stage"
-                                onChange={(event) => updateProcessEvidenceRow(index, { stage: event.target.value as ProcessStage })}
-                              >
-                                {PROCESS_STAGES.map((stage) => (
-                                  <MenuItem key={stage.value} value={stage.value}>{stage.label}</MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
-                            <TextField
-                              label="Process / technology (optional)"
-                              value={row.processDescription}
-                              onChange={(event) => updateProcessEvidenceRow(index, { processDescription: event.target.value })}
-                              size="small"
-                              placeholder="e.g. ring-spun yarn"
-                              slotProps={{ htmlInput: { maxLength: 160 } }}
-                            />
-                          </div>
-                          <div className="process-unit-row">
-                            <TextField
-                              label="Supplier-declared output / reference unit (optional)"
-                              value={row.referenceUnit}
-                              onChange={(event) => updateProcessEvidenceRow(index, { referenceUnit: event.target.value })}
-                              size="small"
-                              fullWidth
-                              placeholder="e.g. 1 kg yarn or 1 pair"
-                              helperText="Text only; compare against the exact factor basis. No conversion is performed."
-                              slotProps={{ htmlInput: { maxLength: 120 } }}
-                            />
-                          </div>
-                          <div className="process-meta-row">
-                            <TextField
-                              label="Country / region"
-                              value={row.country}
-                              onChange={(event) => updateProcessEvidenceRow(index, { country: event.target.value })}
-                              size="small"
-                              slotProps={{ htmlInput: { maxLength: 100 } }}
-                            />
-                            <TextField
-                              label="Data year"
-                              type="number"
-                              value={row.year}
-                              onChange={(event) => updateProcessEvidenceRow(index, { year: event.target.value })}
-                              size="small"
-                              slotProps={{ htmlInput: { min: 1900, max: 2100, step: 1 } }}
-                            />
-                            <TextField
-                              label="Evidence reference"
-                              value={row.sourceReference}
-                              onChange={(event) => updateProcessEvidenceRow(index, { sourceReference: event.target.value })}
-                              size="small"
-                              placeholder="Supplier record / spec"
-                              slotProps={{ htmlInput: { maxLength: 500 } }}
-                            />
-                            <Tooltip title="Remove process evidence">
-                              <IconButton
-                                type="button"
-                                aria-label={`Remove process evidence ${index + 1}`}
-                                onClick={() => updateForm({ processEvidence: form.processEvidence.filter((_, i) => i !== index) })}
-                                size="small"
-                                className="remove-material"
-                              >
-                                <DeleteOutlineRoundedIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          </div>
-                          <div className="process-loss-row">
-                            <TextField
-                              label="Process input / loss note (optional)"
-                              value={row.lossWasteNotes}
-                              onChange={(event) => updateProcessEvidenceRow(index, { lossWasteNotes: event.target.value })}
-                              size="small"
-                              fullWidth
-                              multiline
-                              minRows={2}
-                              helperText="Supplier-reported text only; not scaled against a factor."
-                              slotProps={{ htmlInput: { maxLength: 300 } }}
-                            />
-                            <TextField
-                              label="Waste-treatment note (optional)"
-                              value={row.wasteTreatment}
-                              onChange={(event) => updateProcessEvidenceRow(index, { wasteTreatment: event.target.value })}
-                              size="small"
-                              fullWidth
-                              multiline
-                              minRows={2}
-                              helperText="Recorded as evidence; the treatment route is not verified."
-                              slotProps={{ htmlInput: { maxLength: 160 } }}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </Stack>
-                    <Button size="small" type="button" startIcon={<AddRoundedIcon />} onClick={addProcessEvidenceRow} disabled={form.processEvidence.length >= 50}>
-                      Add process evidence{form.processEvidence.length >= 50 ? ' (max 50)' : ''}
-                    </Button>
-                  </div>
-                </div>
-              </details>
-
-              <TextField
-                label="Certification wording (optional)"
-                value={form.certificationClaims}
-                onChange={(event) => updateForm({ certificationClaims: event.target.value, certificationClaimsProvenance: 'user_provided' })}
-                placeholder="e.g. GOTS, OEKO-TEX"
-                size="small"
-                fullWidth
-                helperText="Record the wording only; this prototype cannot verify certifications."
-              />
-
-              <Divider className="form-divider" />
-
-              <div className="description-heading">
-                <div>
-                  <Typography component="h3" className="field-title">Product description</Typography>
-                  <Typography className="field-help">We’ll suggest only a few recognizable details.</Typography>
-                </div>
-                {!sampleLoaded && (
-                  <Button size="small" variant="text" onClick={loadExample} type="button" className="example-button">
-                    Try an example
-                  </Button>
-                )}
-              </div>
-              <TextField
-                value={form.description}
-                onChange={(event) => handleDescriptionChange(event.target.value)}
-                placeholder="Paste a product description or enter any details you have…"
-                multiline
-                minRows={3}
-                maxRows={6}
-                fullWidth
-                size="small"
-                slotProps={{ htmlInput: { maxLength: 5000, 'aria-label': 'Product description' } }}
-                helperText={`${form.description.length}/5,000 characters · sent to the suggestion API only when requested; hosting log/retention behavior is not reviewed`}
-              />
-              <Button
-                type="button"
-                variant="outlined"
-                startIcon={<AutoAwesomeOutlinedIcon />}
-                onClick={handlePreview}
-                disabled={busy !== null || !form.description.trim()}
-                className="suggest-button"
-              >
-                {busy === 'preview' ? 'Checking phrases…' : 'Suggest details from description'}
-              </Button>
-
-              {stage === 'review' && candidates.length > 0 && (
-                <div className="review-box" aria-labelledby="review-heading">
-                  <div className="review-heading-row">
-                    <div>
-                      <div className="step-label">02 <span aria-hidden="true">·</span> REVIEW SUGGESTIONS</div>
-                      <Typography id="review-heading" component="h3" className="field-title">Check each phrase.</Typography>
-                    </div>
-                    <Chip label="Not verified" size="small" className="unverified-chip" />
-                  </div>
-                  <Typography className="field-help review-intro">
-                    These are rule-based text matches, not AI verification. Select only details you want to use.
-                  </Typography>
-                  <Stack spacing={0.4} className="candidate-list">
-                    {candidates.map((candidate, index) => (
-                      <div className="candidate-item" key={`${candidate.field}-${candidate.evidence_span}-${index}`}>
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              checked={selectedCandidates[index] ?? false}
-                              onChange={(event) => {
-                                setSelectedCandidates((current) => current.map((value, i) => i === index ? event.target.checked : value));
-                              }}
-                              size="small"
-                            />
-                          }
-                          label={
-                            <span className="candidate-label">
-                              <strong>{candidateTitle(candidate)}</strong>
-                              <span className="evidence-span">“{candidate.evidence_span}”</span>
-                              <span className="candidate-note">{candidate.note}</span>
-                            </span>
-                          }
-                        />
-                      </div>
-                    ))}
-                  </Stack>
-                  <div className="review-actions">
-                    <Button onClick={() => { setCandidates([]); setStage('input'); }} type="button" color="inherit">
-                      Dismiss
-                    </Button>
-                    <Button onClick={applySelectedCandidates} type="button" variant="contained" color="primary" startIcon={<CheckCircleOutlineRoundedIcon />}>
-                      Apply selected
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {notice && <Alert severity="info" className="inline-alert">{notice}</Alert>}
-              {error && <Alert severity="error" className="inline-alert" role="alert">{error}</Alert>}
-
-              <div className="form-footer">
-                <div className="privacy-note">
-                  <InfoOutlinedIcon fontSize="small" />
-                  <span>Descriptions are sent to the suggestion API on request; app-level assessment storage is not enabled. Hosting log/retention behavior is unreviewed—avoid confidential data.</span>
-                </div>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  disabled={busy !== null || !form.name.trim() || knownShareTotal > 100.000001}
-                  endIcon={<span aria-hidden="true">↗</span>}
-                  className="submit-button"
-                >
-                  {busy === 'assessment' ? 'Reviewing details…' : 'Review assessment'}
-                </Button>
-              </div>
-              <Typography className="fine-print">
-                This prototype does not calculate individual environmental indicators yet. A combined score is not part of the product scope, and missing data is never treated as zero.
-              </Typography>
-            </form>
-          </Paper>
-
-          <Paper component="section" elevation={0} className="result-card" aria-labelledby="result-heading" aria-live="polite">
-            <div className="result-card-top">
-              <div>
-                <div className="step-label">02 <span aria-hidden="true">·</span> ENVIRONMENTAL ASSESSMENT</div>
-                <Typography id="result-heading" component="h2" variant="h5" className="card-title">What the evidence says.</Typography>
-              </div>
-              {assessment && <Chip label="No combined score" size="small" className="result-status-chip" />}
-            </div>
-
-            {assessment ? (
-              <AssessmentPanel result={assessment} onStartOver={startOver} />
-            ) : (
-              <EmptyAssessment hasInput={Boolean(form.name || form.description || knownShareTotal)} />
+            {catalogLoading && (
+              <div className="catalog-loading" aria-busy="true"><CircularProgress size={22} aria-label="Loading process factors" /></div>
+            )}
+            {catalogError && (
+              <Alert severity="error" onClose={() => setCatalogError('')}>
+                {catalogError} Reload the page to retry the bundled factor catalog.
+              </Alert>
             )}
 
-            <div className="method-note">
-              <span className="method-note-icon"><InfoOutlinedIcon fontSize="small" /></span>
-              <span><strong>Why no indicators yet?</strong> No reviewed open dataset or approved indicator method is connected to this prototype.</span>
-              <Button onClick={openMethodology} size="small" aria-label="Read the methodology explanation">Learn more</Button>
+            {catalog && (
+              <form onSubmit={calculate} className="estimator-form">
+                <FormControl fullWidth size="small">
+                  <InputLabel id="family-label">Process family</InputLabel>
+                  <Select
+                    labelId="family-label"
+                    id="family-filter"
+                    value={familyFilter}
+                    label="Process family"
+                    onChange={(event) => {
+                      setFamilyFilter(event.target.value);
+                      setSelectedFactor(null);
+                      setQuantityDraft('');
+                      setResult(null);
+                    }}
+                  >
+                    <MenuItem value="">All families ({catalog.total_records})</MenuItem>
+                    {catalog.families.map((family) => (
+                      <MenuItem value={family.id} key={family.id}>{family.label} ({family.record_count})</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                <Autocomplete
+                  options={visibleFactors}
+                  value={selectedFactor}
+                  getOptionLabel={factorLabel}
+                  isOptionEqualToValue={(option, value) => option.id === value.id}
+                  filterOptions={(options, state) => {
+                    const query = state.inputValue.trim().toLocaleLowerCase();
+                    if (!query) return options.slice(0, 50);
+                    return options.filter((factor) => {
+                      const searchable = `${factor.activity} ${factor.family_label} ${factor.geography_label ?? ''} ${factor.geography_code ?? ''} ${factor.reference_unit} ${factor.id}`.toLocaleLowerCase();
+                      return searchable.includes(query);
+                    }).slice(0, 100);
+                  }}
+                  noOptionsText="No process factors match this search."
+                  onInputChange={(_, _value, reason) => {
+                    if (reason === 'input' || reason === 'clear') setSelectedFactor(null);
+                  }}
+                  onChange={(_, factor) => {
+                    setSelectedFactor(factor);
+                    setQuantityDraft('');
+                    setResult(null);
+                    setError('');
+                  }}
+                  renderOption={(props, factor) => {
+                    const { key, ...optionProps } = props;
+                    return (
+                      <li {...optionProps} key={key ?? factor.id}>
+                        <div className="factor-option">
+                          <strong>{factor.activity}</strong>
+                          <span>{factor.family_label} · {geographyFor(factor)} · {factor.reference_unit}</span>
+                        </div>
+                      </li>
+                    );
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Process activity"
+                      placeholder="Search and select a published activity"
+                      size="small"
+                    />
+                  )}
+                />
+
+                {selectedFactor && (
+                  <Paper variant="outlined" className="factor-detail-card">
+                    <div className="factor-detail-heading">
+                      <div>
+                        <Typography component="h3" className="factor-detail-title">{selectedFactor.activity}</Typography>
+                        <Typography variant="body2">{selectedFactor.family_label} · {geographyFor(selectedFactor)}</Typography>
+                      </div>
+                      <Chip size="small" label="16 indicators" className="soft-chip" />
+                    </div>
+                    <div className="reference-unit-note"><strong>Reference unit:</strong> {selectedFactor.reference_unit}</div>
+                    <div className="factor-id-note">Source geography is shown as published; it is not inferred from the product’s market.</div>
+                    {selectedFactor.input_required_kg_per_reference_unit !== null && (
+                      <div className="factor-id-note">
+                        Source-reported input required: {numberForDisplay(selectedFactor.input_required_kg_per_reference_unit)} kg per reference unit. Display only; not separately modeled.
+                      </div>
+                    )}
+                  </Paper>
+                )}
+
+                <div className="form-grid quantity-grid">
+                  <TextField
+                    type="number"
+                    size="small"
+                    label="Quantity in source reference units"
+                    value={quantityDraft}
+                    onChange={(event) => setQuantityDraft(event.target.value)}
+                    disabled={!selectedFactor}
+                    slotProps={{ htmlInput: { min: 0, step: 'any' } }}
+                    helperText={selectedFactor
+                      ? `Enter the number of units of “${selectedFactor.reference_unit}” represented by this activity.`
+                      : 'Select an activity to see its exact unit.'}
+                  />
+                  <Button
+                    type="button"
+                    variant="outlined"
+                    startIcon={<AddRoundedIcon />}
+                    onClick={addProcess}
+                    disabled={!selectedFactor || !quantityDraft || selectedProcesses.length >= MAX_PROCESS_LINES || selectedFactorAlreadyAdded}
+                    className="add-process-button"
+                  >
+                    Add process
+                  </Button>
+                </div>
+
+                {selectedProcesses.length > 0 && (
+                  <section className="selected-processes" aria-labelledby="selected-processes-heading">
+                    <div className="selected-processes-heading">
+                      <Typography id="selected-processes-heading" component="h3" className="output-heading">Selected process rows</Typography>
+                      <Chip label={`${selectedProcesses.length} / ${MAX_PROCESS_LINES}`} size="small" className="soft-chip" />
+                    </div>
+                    <Stack spacing={1.2}>
+                      {selectedProcesses.map((line, index) => (
+                        <div className="selected-process" key={line.key}>
+                          <div className="selected-process-copy">
+                            <span className="selected-process-index">{String(index + 1).padStart(2, '0')}</span>
+                            <div><strong>{line.factor.activity}</strong><span>{line.factor.family_label} · {geographyFor(line.factor)} · {line.factor.reference_unit}</span></div>
+                          </div>
+                          <TextField
+                            type="number"
+                            size="small"
+                            label="Quantity"
+                            value={line.quantity}
+                            onChange={(event) => updateSelectedQuantity(line.key, event.target.value)}
+                            slotProps={{ htmlInput: { min: 0, step: 'any' } }}
+                            className="selected-quantity"
+                          />
+                          <IconButton aria-label={`Remove ${line.factor.activity}`} onClick={() => removeProcess(line.key)} size="small">
+                            <DeleteOutlineRoundedIcon fontSize="small" />
+                          </IconButton>
+                        </div>
+                      ))}
+                    </Stack>
+                  </section>
+                )}
+
+                {error && <Alert severity="error" onClose={() => setError('')}>{error}</Alert>}
+
+                <div className="calculator-actions">
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    size="large"
+                    startIcon={calculating ? <CircularProgress size={16} color="inherit" /> : <CalculateOutlinedIcon />}
+                    disabled={calculating || selectedProcesses.length === 0}
+                  >
+                    Calculate separate indicators
+                  </Button>
+                  <span>Up to {MAX_PROCESS_LINES} process rows · no cross-stage total</span>
+                </div>
+              </form>
+            )}
+          </Paper>
+
+          <Paper component="section" elevation={0} className="result-card result-panel" aria-labelledby="results-heading">
+            <div className="result-card-top">
+              <div>
+                <div className="step-label">02 <span aria-hidden="true">·</span> SEPARATE INDICATORS</div>
+                <Typography id="results-heading" component="h2" variant="h5" className="card-title">Process results.</Typography>
+              </div>
+              {result && <Chip label="Calculated" size="small" className="calculated-chip" />}
             </div>
+
+            {!result && !calculating && (
+              <div className="empty-result process-empty">
+                <div className="empty-illustration" aria-hidden="true"><ScienceOutlinedIcon /></div>
+                <Typography component="h3" className="empty-title">Choose the source activity and its quantity.</Typography>
+                <Typography className="empty-copy">
+                  The result will show all 16 impact indicators for each selected process row, with the source factor, reference unit, geography, and attribution alongside it.
+                </Typography>
+                <div className="result-scope-note"><InfoOutlinedIcon fontSize="small" /> Selected process rows stay separate; no whole-product total is calculated.</div>
+              </div>
+            )}
+
+            {calculating && (
+              <div className="catalog-loading calculation-loading" aria-busy="true"><CircularProgress size={24} aria-label="Calculating separate process indicators" /></div>
+            )}
+
+            {result && (
+              <div className="results-output">
+                <div className="result-intro">
+                  <Typography className="result-explanation">{result.scope}</Typography>
+                  <Button size="small" startIcon={<FileDownloadOutlinedIcon />} onClick={exportResults}>
+                    Download CSV
+                  </Button>
+                </div>
+                <Stack spacing={2}>
+                  {result.results.map((line, index) => (
+                    <ProcessResult line={line} index={index} key={`${index}-${line.factor_id}`} />
+                  ))}
+                </Stack>
+                <div className="result-attribution">
+                  <strong>Source attribution · CC BY-SA 4.0</strong>
+                  <p>{result.attribution_text}</p>
+                  <p>Calculation transformation: each published factor was scaled by the entered reference-unit quantity. The adapted result is available under <a href={result.license_url} target="_blank" rel="noreferrer">{result.result_license} <OpenInNewOutlinedIcon fontSize="inherit" /></a>.</p>
+                  <p><strong>Background-data note:</strong> {result.background_database_note}</p>
+                  <a href={result.source_url} target="_blank" rel="noreferrer">Open pinned source release <OpenInNewOutlinedIcon fontSize="inherit" /></a>
+                </div>
+              </div>
+            )}
           </Paper>
         </div>
 
-        <footer className="site-footer">
-          <span>Environmental Impact Analyzer <span className="footer-dot" aria-hidden="true">·</span> Evidence before estimates</span>
-          <span>Prototype v0.1 <span className="footer-dot" aria-hidden="true">·</span> No app-level assessment storage</span>
+        <footer className="app-footer">
+          <span>Environmental Impact Analyzer · Open-data process estimates</span>
+          <button type="button" onClick={() => setSourceDialogOpen(true)}>Source, method & privacy</button>
         </footer>
       </main>
 
-      <Dialog open={methodologyOpen} onClose={() => setMethodologyOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle className="dialog-title">How this prototype works</DialogTitle>
-        <DialogContent dividers>
-          <Stack spacing={2} className="method-dialog-copy">
-            <Alert severity="warning" icon={<WarningAmberRoundedIcon />}>
-              <strong>No indicators are calculated in this prototype.</strong> The product direction is multiple separate indicators and no combined score. Open data rights, indicator methods, coverage, and independent validation remain unresolved.
-            </Alert>
-            <Alert severity="info">
-              <strong>Open data only.</strong> We consider versioned data with explicit, item-specific open reuse terms. Public access or an “open-source” label alone is not enough; non-open or unclear-license inputs are excluded.
-            </Alert>
-            <div>
-              <Typography component="h3" className="dialog-section-title">Text suggestions</Typography>
-              <Typography variant="body2">The current parser uses simple, deterministic patterns to find phrases such as material percentages, item mass, a “made in” country, or certification wording. Suggestions are editable and require your confirmation. They are not verified facts.</Typography>
-            </div>
-            <div>
-              <Typography component="h3" className="dialog-section-title">What separate indicators would need</Typography>
-              <Typography variant="body2">Each indicator needs an explicit definition and unit, reviewed open factors, a life-cycle boundary, product/geography coverage, and expert validation. Indicators remain separate; no combined score is produced. Missing data must never be treated as zero.</Typography>
-              <Typography variant="body2" className="pefcr-limit">The <a href="https://www.carbonfact.com/hubfs/A&FW_PEFCR_v3.1.pdf" target="_blank" rel="noreferrer">Apparel &amp; Footwear PEFCR v3.1 report</a> defines a full-life-cycle EU method and states validity through 31 December 2027. The European Commission’s <a href="https://green-forum.ec.europa.eu/news/transitional-guidance-limited-availability-ef-compliant-datasets-2026-07-14_en" target="_blank" rel="noreferrer">July 2026 transition guidance</a> says existing PEFCRs remain valid until EF 4.0 is implemented; confirm current rules and EF database rights before compliance-related use.</Typography>
-              <Typography variant="body2" className="pefcr-limit">The PEFCR report does not allow a single score for business-to-consumer communication or comparisons against its representative products. This prototype is not PEFCR-compliant; do not repurpose its single-score results or representative-product benchmarks.</Typography>
-            </div>
-            <div className="source-registry-block">
-              <div className="source-heading-row">
-                <div>
-                  <Typography component="h3" className="dialog-section-title">Candidate data source</Typography>
-                  <Typography variant="body2">Listed for transparency only. No dataset is loaded into the assessment.</Typography>
-                </div>
-                <Chip label="Not active" size="small" className="source-pending-chip" />
-              </div>
-              {sourcesLoading && <Typography variant="body2" className="source-loading">Loading source register…</Typography>}
-              {sourcesError && <Alert severity="info" className="source-error">{sourcesError}</Alert>}
-              {candidateSources.map((source) => (
-                <div className="source-candidate" key={source.id}>
-                  <strong className="source-name">{source.name}</strong>
-                  <span className="source-metadata">{source.publisher} · v{source.version} · released {source.release_date}</span>
-                  <Typography variant="body2">{source.scope_summary}</Typography>
-                  <span className="source-indicators"><strong>Indicators listed:</strong> {source.impact_indicators.join(' · ')}</span>
-                  <div className="source-links">
-                    <a href={source.source_url} target="_blank" rel="noreferrer">Dataset record ↗</a>
-                    <a href={source.repository_url} target="_blank" rel="noreferrer">Pinned release ↗</a>
-                    <a href={source.changelog_url} target="_blank" rel="noreferrer">Current changelog ↗</a>
-                    <a href={source.license_url} target="_blank" rel="noreferrer">{source.license_name} ↗</a>
-                    <a href={source.license_terms_url} target="_blank" rel="noreferrer">Product integration guidance ↗</a>
-                  </div>
-                  <div className="source-terms">
-                    <Typography component="h4" className="dialog-section-title">Published CC BY-SA content — candidate only</Typography>
-                    <Typography variant="body2">{source.use_terms_summary}</Typography>
-                    <div className="source-attribution">
-                      <strong>Attribution to display if adopted:</strong> {source.attribution_text}
-                    </div>
-                    <div className="source-links" aria-label="Attribution links">
-                      {source.attribution_links.map((link) => (
-                        <a href={link.url} key={link.url} target="_blank" rel="noreferrer">{link.label} ↗</a>
-                      ))}
-                    </div>
-                    <Typography variant="body2">
-                      <strong>Open-data boundary:</strong> {source.background_database_note} If open-license scope or obligations cannot be verified or met, this source will be excluded; no non-open license is considered.
-                    </Typography>
-                    <a className="licensing-inquiry-link" href={buildOpenLicenseInquiryHref(source)}>
-                      Prepare open-license clarification questions ↗
-                    </a>
-                  </div>
-                  <div className="source-review-gates">
-                    <Typography component="h4" className="dialog-section-title">Remaining activation gates</Typography>
-                    <ul className="review-gate-list">
-                      {source.review_gates.map((gate) => (
-                        <li key={gate.id}>
-                          <span className="review-gate-status">{gate.status}</span>
-                          <div><strong>{gate.title}</strong><span>{gate.details}</span></div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <ul className="source-limitations">
-                    {source.limitations.slice(0, 3).map((limitation) => <li key={limitation}>{limitation}</li>)}
-                  </ul>
-                  <span className="source-review-state">
-                    License review: {source.license_review_status} · method review: {source.method_review_status} · scoring use: disabled
-                  </span>
-                </div>
-              ))}
-            </div>
-            <div>
-              <Typography component="h3" className="dialog-section-title">Privacy</Typography>
-              <Typography variant="body2">This prototype has no app-level assessment storage. Product details, process notes, evidence references, and descriptions are sent to the app’s API when needed for review; evidence references are not fetched. Hosting log/retention behavior has not been reviewed, so do not enter personal, confidential, or sensitive supplier information.</Typography>
-            </div>
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setMethodologyOpen(false)} variant="contained">Got it</Button>
-        </DialogActions>
-      </Dialog>
-    </div>
-  );
-}
-
-function EmptyAssessment({ hasInput }: { hasInput: boolean }) {
-  return (
-    <div className="empty-result">
-      <div className="empty-illustration" aria-hidden="true">
-        <LandscapeGlyph />
-      </div>
-      <Chip
-        icon={<InfoOutlinedIcon />}
-        label={hasInput ? 'Details are not environmental results' : 'Waiting for product details'}
-        size="small"
-        className="soft-chip"
-      />
-      <Typography component="h3" className="empty-title">
-        {hasInput ? 'Facts first. Indicators later.' : 'Your assessment starts here.'}
-      </Typography>
-      <Typography className="empty-copy">
-        {hasInput
-          ? 'Your product details can be reviewed, but this prototype has no approved factor library to turn them into an impact estimate.'
-          : 'Enter a few product details to see what can be captured—and what still needs credible evidence.'}
-      </Typography>
-      <div className="indicator-preview-grid">
-        <div className="indicator-preview">
-          <span className="indicator-icon climate-dot" />
-          <div><strong>Climate</strong><span>Awaiting reviewed data</span></div>
-          <span className="preview-dash" aria-hidden="true">—</span>
-        </div>
-        <div className="indicator-preview">
-          <span className="indicator-icon water-dot" />
-          <div><strong>Water</strong><span>Awaiting reviewed data</span></div>
-          <span className="preview-dash" aria-hidden="true">—</span>
-        </div>
-      </div>
-      <div className="empty-footnote"><InfoOutlinedIcon fontSize="small" /> “Not available” is not the same as zero impact.</div>
-    </div>
-  );
-}
-
-function AssessmentPanel({ result, onStartOver }: { result: AssessmentResult; onStartOver: () => void }) {
-  const indicatorCount = availableIndicatorCount(result);
-  return (
-    <div className="assessment-output">
-      <div className="result-summary">
-        <div className="result-summary-icon"><WarningAmberRoundedIcon /></div>
-        <div>
-          <div className="result-overline">NO COMBINED SCORE</div>
-          <Typography component="h3" className="result-headline">
-            {indicatorCount > 0 ? 'Separate indicators available' : 'Indicators not calculated yet'}
-          </Typography>
-          <Typography className="result-explanation">{result.score_explanation}</Typography>
-        </div>
-      </div>
-
-      <div className="assessment-meta">
-        <div><span>Product</span><strong>{result.product_name}</strong></div>
-        <div><span>Method version</span><strong>{result.methodology_version}</strong></div>
-        <div><span>Functional unit</span><strong>{result.functional_unit}</strong></div>
-        <div><span>Boundary</span><strong>{result.boundary}</strong></div>
-      </div>
-
-      <div className="output-section">
-        <div className="output-section-heading">
-          <Typography component="h4" className="output-heading">Impact indicators</Typography>
-          <span className="not-calculated-label">NOT CALCULATED</span>
-        </div>
-        <div className="indicator-result-grid">
-          {result.indicators.map((indicator) => (
-            <div className="indicator-result" key={indicator.name}>
-              <div className={`indicator-icon ${indicator.name === 'climate' ? 'climate-dot' : 'water-dot'}`} />
-              <div className="indicator-result-label"><strong>{indicator.label}</strong><span>{indicator.unit}</span></div>
-              <div className="indicator-result-value" aria-hidden="true">—</div>
-              <p>{indicator.reason}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="output-section">
-        <div className="output-section-heading">
-          <Typography component="h4" className="output-heading">Product-to-process mapping</Typography>
-          <Chip label="Not ready" size="small" className="source-pending-chip" />
-        </div>
-        <span className="mapping-source-version">Candidate source release v{result.process_mapping_readiness.source_version}</span>
-        <a className="mapping-source-link" href={result.process_mapping_readiness.source_url} target="_blank" rel="noreferrer">
-          Open pinned process-family table ↗
-        </a>
-        <Typography className="mapping-readiness-note">{result.process_mapping_readiness.note}</Typography>
-        <details className="mapping-details">
-          <summary>Review {result.process_mapping_readiness.requirements.length} mapping requirements</summary>
-          <div className="mapping-requirements">
-            {result.process_mapping_readiness.requirements.map((requirement) => (
-              <div className="mapping-requirement" key={requirement.id}>
-                <span className="mapping-requirement-status">{mappingStatusLabel(requirement.status)}</span>
-                <div>
-                  <strong>{requirement.label}</strong>
-                  <p>{requirement.details}</p>
-                  <span>{requirement.next_step}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </details>
-      </div>
-
-      <div className="output-section">
-        <div className="output-section-heading">
-          <Typography component="h4" className="output-heading">What we captured</Typography>
-          <Chip label={`${result.known_facts.length} facts`} size="small" className="soft-chip" />
-        </div>
-        {result.known_facts.length > 0 ? (
-          <div className="known-facts-list">
-            {result.known_facts.map((fact, index) => (
-              <div className="known-fact" key={`${fact.label}-${index}`}>
-                <span className="fact-info-icon" aria-hidden="true"><InfoOutlinedIcon fontSize="small" /></span>
-                <div><strong>{fact.label}</strong><span>{fact.value}</span></div>
-                <Chip label={provenanceLabel(fact.provenance)} size="small" variant="outlined" className="provenance-chip" />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <Typography className="empty-facts">No product attributes were confirmed. You can add details on the left.</Typography>
-        )}
-      </div>
-
-      {result.data_gaps.length > 0 && (
-        <div className="output-section">
-          <div className="output-section-heading">
-            <Typography component="h4" className="output-heading">Details still unknown</Typography>
-          </div>
-          <div className="gap-list">
-            {result.data_gaps.map((gap) => <Chip key={gap} label={gap} size="small" className="gap-chip" />)}
-          </div>
-        </div>
-      )}
-
-      <div className="output-warning">
-        <WarningAmberRoundedIcon fontSize="small" />
-        <span>{result.limitations[0]}</span>
-      </div>
-
-      <div className="output-actions">
-        <Button onClick={onStartOver} variant="outlined">Start another assessment</Button>
-        <span>Reference: {result.assessment_id.slice(0, 8)}</span>
-      </div>
+      <SourceDialog open={sourceDialogOpen} onClose={() => setSourceDialogOpen(false)} />
     </div>
   );
 }

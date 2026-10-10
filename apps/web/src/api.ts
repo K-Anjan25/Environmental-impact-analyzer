@@ -1,93 +1,106 @@
-export type Category = 'apparel' | 'footwear';
-export type Provenance = 'user_provided' | 'user_confirmed_extraction';
-export type CandidateField =
-  | 'material_composition'
-  | 'mass_g'
-  | 'manufacturing_country'
-  | 'certification_claim';
-
-export interface ExtractionCandidate {
-  field: CandidateField;
-  value: Record<string, string | number>;
-  evidence_span: string;
-  match_quality: 'clear' | 'possible';
-  note: string;
-}
-
-export interface ExtractionPreview {
-  extractor_version: string;
-  candidates: ExtractionCandidate[];
-  message: string;
-}
-
-export interface MaterialShare {
-  material: string;
-  share_percent: number;
-  provenance: Provenance;
-}
-
-export type ProcessStage =
-  | 'material_production'
-  | 'spinning'
-  | 'knitting'
-  | 'weaving'
-  | 'dyeing'
-  | 'printing'
-  | 'finishing'
-  | 'textile_assembly'
-  | 'shoe_assembly'
-  | 'other';
-
-export interface ComponentBOMEntry {
-  component: string;
-  material: string;
-  share_percent_of_item: number;
-  source_reference: string | null;
-  provenance: Provenance;
-}
-
-export interface ProcessStageEvidence {
-  stage: ProcessStage;
-  process_description: string | null;
-  reference_unit: string | null;
-  country: string | null;
-  year: number | null;
-  source_reference: string | null;
-  loss_waste_notes: string | null;
-  waste_treatment: string | null;
-  provenance: Provenance;
-}
-
-export interface ProductPayload {
-  category: Category;
-  subtype: string;
+export interface IndicatorFactor {
+  code: string;
   name: string;
-  attributes: {
-    material_composition: MaterialShare[];
-    mass_g: number | null;
-    mass_provenance: Provenance;
-    manufacturing_country: string | null;
-    manufacturing_country_provenance: Provenance;
-    certification_claims: string[];
-    certification_claims_provenance: Provenance;
-    component_bom: ComponentBOMEntry[];
-    process_evidence: ProcessStageEvidence[];
-  };
+  unit: string;
+  source_factor_value: number;
 }
 
-export interface DataSourceLink {
-  label: string;
-  url: string;
+export interface DataQualityScores {
+  precision: number | null;
+  technological_representativeness: number | null;
+  temporal_representativeness: number | null;
+  geographical_representativeness: number | null;
 }
 
-export interface SourceReviewGate {
+export interface ProcessFamilySummary {
   id: string;
-  title: string;
-  details: string;
-  status: 'pending';
+  label: string;
+  group:
+    | 'material-production'
+    | 'textile-manufacturing'
+    | 'garment-assembly'
+    | 'footwear-assembly'
+    | 'use-phase';
+  record_count: number;
+  reference_unit_note: string;
 }
 
-export interface CandidateDataSource {
+export interface ProcessFactor {
+  id: string;
+  family_id: string;
+  family_label: string;
+  activity: string;
+  source_descriptor: string;
+  geography_code: string | null;
+  geography_label: string | null;
+  reference_unit: string;
+  indicator_factors: IndicatorFactor[];
+  data_quality: DataQualityScores | null;
+  input_required_kg_per_reference_unit: number | null;
+  source_file: string;
+}
+
+export interface FactorCatalog {
+  source_id: string;
+  source_name: string;
+  source_version: string;
+  source_url: string;
+  license_name: string;
+  attribution_text: string;
+  total_records: number;
+  offset: number;
+  limit: number;
+  families: ProcessFamilySummary[];
+  factors: ProcessFactor[];
+}
+
+export interface ProcessSelection {
+  factor_id: string;
+  quantity: number;
+}
+
+export interface IndicatorCalculation {
+  code: string;
+  name: string;
+  factor_value: number;
+  factor_unit: string;
+  result_value: number;
+  result_unit: string;
+}
+
+export interface ProcessEstimateLine {
+  factor_id: string;
+  family_id: string;
+  family_label: string;
+  activity: string;
+  geography_code: string | null;
+  geography_label: string | null;
+  quantity: number;
+  reference_unit: string;
+  input_required_kg_per_reference_unit: number | null;
+  data_quality: DataQualityScores | null;
+  indicators: IndicatorCalculation[];
+  source_file: string;
+}
+
+export interface ProcessEstimateResponse {
+  status: 'calculated';
+  methodology_version: string;
+  scope: string;
+  aggregation: 'none';
+  source_id: string;
+  source_name: string;
+  source_version: string;
+  source_url: string;
+  license_name: string;
+  attribution_text: string;
+  license_url: string;
+  background_database_note: string;
+  result_license: string;
+  results: ProcessEstimateLine[];
+}
+
+export interface ActiveDataSource {
   id: string;
   name: string;
   version: string;
@@ -99,71 +112,20 @@ export interface CandidateDataSource {
   license_name: string;
   license_url: string;
   license_terms_url: string;
-  license_review_status: 'pending';
-  method_review_status: 'pending';
-  review_gates: SourceReviewGate[];
+  license_status: 'applied';
+  method_basis: string;
   use_terms_summary: string;
   attribution_text: string;
-  attribution_links: DataSourceLink[];
+  attribution_links: Array<{ label: string; url: string }>;
   share_alike_required: true;
+  result_license: string;
   background_database_note: string;
-  license_clarification_contact: string;
   scope_summary: string;
+  factor_count: number;
+  family_count: number;
   impact_indicators: string[];
   limitations: string[];
-  active_for_scoring: false;
-}
-
-export interface ProcessMappingRequirement {
-  id: string;
-  label: string;
-  status: 'provided' | 'partial' | 'missing' | 'not_collected' | 'not_selected' | 'not_in_candidate';
-  details: string;
-  next_step: string;
-}
-
-export interface ProcessMappingReadiness {
-  source_id: string;
-  source_version: string;
-  source_url: string;
-  status: 'not_ready';
-  scoring_enabled: false;
-  note: string;
-  requirements: ProcessMappingRequirement[];
-}
-
-export interface AssessmentResult {
-  assessment_id: string;
-  product_name: string;
-  category: Category;
-  subtype: string;
-  status: 'not_scored';
-  methodology_version: string;
-  score: null;
-  score_explanation: string;
-  functional_unit: string;
-  boundary: string;
-  confidence: {
-    level: 'not_assessed';
-    drivers: string[];
-  };
-  indicators: Array<{
-    name: 'climate' | 'water';
-    label: string;
-    unit: string;
-    status: 'unavailable';
-    value: null;
-    reason: string;
-  }>;
-  process_mapping_readiness: ProcessMappingReadiness;
-  known_facts: Array<{
-    label: string;
-    value: string;
-    provenance: Provenance;
-  }>;
-  data_gaps: string[];
-  limitations: string[];
-  next_steps: string[];
+  active_for_process_estimates: true;
 }
 
 async function postJson<T>(path: string, body: unknown): Promise<T> {
@@ -187,19 +149,18 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
   return (await response.json()) as T;
 }
 
-export async function getCandidateSources(): Promise<CandidateDataSource[]> {
+export async function getFactorCatalog(): Promise<FactorCatalog> {
+  const response = await fetch('/api/v1/factors?limit=500');
+  if (!response.ok) throw new Error(`Could not load process factors (${response.status}).`);
+  return (await response.json()) as FactorCatalog;
+}
+
+export async function getActiveSources(): Promise<ActiveDataSource[]> {
   const response = await fetch('/api/v1/sources');
-  if (!response.ok) throw new Error(`Could not load source registry (${response.status}).`);
-  return (await response.json()) as CandidateDataSource[];
+  if (!response.ok) throw new Error(`Could not load the data source details (${response.status}).`);
+  return (await response.json()) as ActiveDataSource[];
 }
 
-export function previewDescription(category: Category, description: string) {
-  return postJson<ExtractionPreview>('/api/v1/extractions/preview', {
-    category,
-    description,
-  });
-}
-
-export function assessProduct(product: ProductPayload) {
-  return postJson<AssessmentResult>('/api/v1/assessments', product);
+export function calculateProcessEstimates(processes: ProcessSelection[]) {
+  return postJson<ProcessEstimateResponse>('/api/v1/process-estimates', { processes });
 }

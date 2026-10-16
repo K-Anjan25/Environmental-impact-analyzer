@@ -787,13 +787,6 @@ function App() {
         </div>
       </aside>
 
-      <header className="site-header">
-        <div className="header-right">
-          <Button variant="text" startIcon={<InfoOutlinedIcon />} onClick={() => setSourceDialogOpen(true)} className="method-button">
-            Method & data
-          </Button>
-        </div>
-      </header>
 
       <main id="top" className="main-content estimator-main">
         <section className="hero-section estimator-hero" aria-labelledby="hero-title">
@@ -824,7 +817,7 @@ function App() {
           </div>
         </section>
 
-        <div className="catalog-strip" aria-label="Loaded source coverage">
+        <div className="catalog-strip reveal" aria-label="Loaded source coverage">
           <img className="catalog-strip-art" src="/images/story-wind-meadow.jpg" alt="Stylised meadow with white wind turbines under a blue sky and cumulus clouds." loading="lazy" />
           <div><strong>{catalog?.total_records ?? '—'}</strong><span>published factors</span></div>
           <Divider orientation="vertical" flexItem />
@@ -834,7 +827,8 @@ function App() {
           <div className="catalog-strip-note">Carbonfact · v{catalog?.source_version ?? '1.1.0'} · open factor data</div>
         </div>
 
-        <section className="story-section" aria-labelledby="story-title">
+        <svg className="section-divider" viewBox="0 0 1200 56" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 28C160 4 320 52 480 28S800 4 960 28 1120 50 1200 26V56H0Z" /></svg>
+        <section className="story-section reveal" aria-labelledby="story-title">
           <h2 id="story-title" className="story-title">Stories behind the numbers</h2>
           <div className="story-grid">
             <figure className="story-card">
@@ -846,13 +840,13 @@ function App() {
               <figcaption><strong>Shared valleys</strong><span>Land, water and people are connected. Impacts travel across the whole valley.</span></figcaption>
             </figure>
             <figure className="story-card">
-              <img src="/images/story-climate-poster.jpg" alt="Orange poster of a figure in a gas mask in front of a damaged landscape, titled 30 beautiful artworks that act against climate change." loading="lazy" />
+              <img src="/images/story-climate-art.jpg" alt="Painted figure in a gas mask with glowing goggles, in front of a damaged landscape of wreckage." loading="lazy" />
               <figcaption><strong>Climate action</strong><span>Art that makes environmental risk visible. The numbers here support the same goal.</span></figcaption>
             </figure>
           </div>
         </section>
 
-        <section className="visual-index" aria-label="Browse apparel and footwear factor areas">
+        <section className="visual-index reveal" aria-label="Browse apparel and footwear factor areas">
           <a className="visual-index-card textile-index-card" href="#process-library">
             <img src="/images/textile-process-detail.jpg" alt="" loading="lazy" />
             <span className="visual-index-shade" />
@@ -995,7 +989,7 @@ function App() {
             </section>
 
             {catalog && (
-              <form id="process-library" onSubmit={calculate} className="estimator-form">
+              <form id="process-library" onSubmit={calculate} className="estimator-form reveal">
                 <div className="form-grid two-col">
                   <FormControl fullWidth size="small">
                     <InputLabel id="family-label">Process family</InputLabel>
@@ -1122,7 +1116,7 @@ function App() {
                 </div>
 
                 {selectedProcesses.length > 0 && (
-                  <section className="selected-processes" aria-labelledby="selected-processes-heading">
+                  <section className="selected-processes reveal" aria-labelledby="selected-processes-heading">
                     <div className="selected-processes-heading">
                       <Typography id="selected-processes-heading" component="h3" className="output-heading">Selected process rows</Typography>
                       <Chip label={`${selectedProcesses.length} / ${MAX_PROCESS_LINES}`} size="small" className="soft-chip" />

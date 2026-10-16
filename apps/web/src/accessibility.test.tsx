@@ -445,7 +445,7 @@ describe('process estimator accessibility', () => {
   it('shows source and privacy details in an accessible methodology dialog', async () => {
     const fetchMock = stubApi();
     render(<App />);
-    fireEvent.click(screen.getByRole('button', { name: 'Method & data' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Method, source & privacy' }));
     await screen.findByRole('heading', { name: 'Implemented calculation' });
     await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/v1/sources'));
     await screen.findByText(/Data source: Carbonfact Open Source LCA Database/);

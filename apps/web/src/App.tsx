@@ -64,6 +64,7 @@ import {
 import { deriveProcessQuantity, type ProcessQuantityBasis } from './product-quantity';
 import { summarizeSelectedProcesses, type SelectedProcessSummary } from './product-summary';
 import { suggestFactorsByInputName } from './factor-suggestions';
+import SiteMenu from './SiteMenu';
 
 type ProductInput = {
   id: string;
@@ -793,11 +794,7 @@ function App() {
             <img src="/brand/mark.svg" alt="" />
             <span>EcoImpact Lab</span>
           </a>
-          <nav className="landing-links" aria-label="Page sections">
-            <a href="#process-library">Process library</a>
-            <a href="#results-heading">Results</a>
-            <a className="landing-nav-pill" href="#process-library">Start an estimate</a>
-          </nav>
+          <SiteMenu />
         </header>
         <section className="landing-hero" aria-labelledby="hero-title">
           <svg className="landing-wave" viewBox="0 0 1000 700" preserveAspectRatio="none" aria-hidden="true" focusable="false">
@@ -830,40 +827,24 @@ function App() {
 
         <svg className="section-divider" viewBox="0 0 1200 56" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 28C160 4 320 52 480 28S800 4 960 28 1120 50 1200 26V56H0Z" /></svg>
         <section className="visual-index reveal" aria-label="Latest posts and guides">
-          <a className="visual-index-card" href="#post-factors">
+          <a className="visual-index-card" href="#/guides/factors">
             <img src="/images/recycling-globe.jpg" alt="" loading="lazy" />
             <span className="visual-index-shade" />
             <span className="visual-index-copy"><small>GUIDE</small><strong>How a process factor becomes a number</strong></span>
             <span className="visual-index-arrow" aria-hidden="true">↗</span>
           </a>
-          <a className="visual-index-card" href="#post-indicators">
+          <a className="visual-index-card" href="#/guides/indicators">
             <img src="/images/recycling-icon.jpg" alt="" loading="lazy" />
             <span className="visual-index-shade" />
             <span className="visual-index-copy"><small>EXPLAINER</small><strong>Reading the 16 EF 3.1 indicators</strong></span>
             <span className="visual-index-arrow" aria-hidden="true">↗</span>
           </a>
-          <a className="visual-index-card" href="#post-scope">
+          <a className="visual-index-card" href="#/guides/scope">
             <img src="/images/recycling-tshirt-cropped.jpg" alt="" loading="lazy" />
             <span className="visual-index-shade" />
             <span className="visual-index-copy"><small>NEWS</small><strong>Why results are not whole-product footprints</strong></span>
             <span className="visual-index-arrow" aria-hidden="true">↗</span>
           </a>
-        </section>
-
-        <section className="journal-section reveal" aria-labelledby="journal-heading">
-          <Typography id="journal-heading" component="h2" className="journal-heading">Guides and notes</Typography>
-          <article id="post-factors" className="journal-post">
-            <h3>How a process factor becomes a number</h3>
-            <p>Each published factor pairs a process with a reference unit, such as one kilogram of material or one piece of product. When you enter a quantity, the calculator converts it to that reference unit and multiplies it by the factor for each indicator. Check the unit shown next to each factor before you enter a quantity.</p>
-          </article>
-          <article id="post-indicators" className="journal-post">
-            <h3>Reading the 16 EF 3.1 indicators</h3>
-            <p>The Environmental Footprint 3.1 method reports 16 impact categories, including climate change, water use, land use, and resource use. Each indicator has its own unit, so values cannot be added together or ranked across indicators without a separate weighting step. The results table shows each indicator on its own line.</p>
-          </article>
-          <article id="post-scope" className="journal-post">
-            <h3>Why results are not whole-product footprints</h3>
-            <p>This tool sums the processes you select. It does not model every upstream supplier, transport leg, use phase, or end-of-life step for a finished item. Treat a result as the impact of the processes you chose, and state that scope whenever you share it.</p>
-          </article>
         </section>
 
         <div className="estimator-grid">

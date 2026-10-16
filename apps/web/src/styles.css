@@ -925,3 +925,24 @@ body { background: #F7F9E1; }
 .journal-post h3 { margin: 0 0 8px; font-size: 17px; color: #204654; }
 .journal-post p { margin: 0; color: #3d4a7a; font-size: 14px; line-height: 1.6; }
 @media (prefers-reduced-motion: reduce) { .visual-index-card { transition: none; } }
+
+/* Hamburger menu */
+.site-menu-button.MuiIconButton-root { color: #204654; border: 1px solid rgba(32, 70, 84, 0.18); border-radius: 12px; background: #ffffff; }
+.site-menu-button.MuiIconButton-root:hover { background: #A9E0F1; }
+.site-menu-drawer { width: min(320px, 86vw); background: #F7F9E1; }
+.site-menu-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 6px 20px; color: #204654; }
+.site-menu-drawer .MuiListItemText-primary { color: #204654; font-weight: 600; font-size: 15px; }
+.site-menu-drawer .MuiListItemButton-root:hover { background: rgba(169, 224, 241, 0.45); }
+
+/* Guide pages */
+.guide-page { min-height: 100vh; padding: 14px clamp(18px, 4vw, 48px) 60px; }
+.guide-main { max-width: 860px; margin: 0 auto; }
+.guide-back { display: inline-block; margin: 18px 0 14px; color: #204654; font-weight: 600; text-decoration: none; }
+.guide-title.guide-title { margin: 0 0 22px; font-size: clamp(28px, 3.6vw, 42px); line-height: 1.1; color: #204654; font-weight: 800; letter-spacing: -0.02em; }
+.guide-figure { margin: 0 0 26px; padding: 18px; border-radius: 22px; background: #ffffff; box-shadow: 0 14px 30px rgba(32, 70, 84, 0.12); display: flex; justify-content: center; }
+.guide-figure img { display: block; max-width: 100%; max-height: 72vh; width: auto; height: auto; object-fit: contain; }
+.guide-body p { margin: 0 0 16px; color: #2e4a54; font-size: 17px; line-height: 1.7; }
+.guide-more { margin-top: 36px; padding-top: 20px; border-top: 1px solid rgba(32, 70, 84, 0.15); }
+.guide-more h2 { margin: 0 0 10px; font-size: 18px; color: #204654; }
+.guide-more ul { margin: 0; padding-left: 18px; }
+.guide-more a { color: #204654; font-weight: 600; }

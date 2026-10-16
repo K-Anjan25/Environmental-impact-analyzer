@@ -828,24 +828,6 @@ function App() {
         </div>
 
         <svg className="section-divider" viewBox="0 0 1200 56" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 28C160 4 320 52 480 28S800 4 960 28 1120 50 1200 26V56H0Z" /></svg>
-        <section className="story-section reveal" aria-labelledby="story-title">
-          <h2 id="story-title" className="story-title">Stories behind the numbers</h2>
-          <div className="story-grid">
-            <figure className="story-card">
-              <img src="/images/story-footprint.jpg" alt="Illustration of large footprints pressed into sand, with a boot sole where green hills, wind turbines and a lake have taken shape." loading="lazy" />
-              <figcaption><strong>Footprints on the land</strong><span>Every process leaves a mark. Measure it before deciding what to change.</span></figcaption>
-            </figure>
-            <figure className="story-card">
-              <img src="/images/story-valley.jpg" alt="Painted valley seen from above: a figure on a cliff looks down at a village of small houses and a large skeleton beside a dirt path." loading="lazy" />
-              <figcaption><strong>Shared valleys</strong><span>Land, water and people are connected. Impacts travel across the whole valley.</span></figcaption>
-            </figure>
-            <figure className="story-card">
-              <img src="/images/story-climate-art.jpg" alt="Painted figure in a gas mask with glowing goggles, in front of a damaged landscape of wreckage." loading="lazy" />
-              <figcaption><strong>Climate action</strong><span>Art that makes environmental risk visible. The numbers here support the same goal.</span></figcaption>
-            </figure>
-          </div>
-        </section>
-
         <section className="visual-index reveal" aria-label="Browse apparel and footwear factor areas">
           <a className="visual-index-card textile-index-card" href="#process-library">
             <img src="/images/textile-process-detail.jpg" alt="" loading="lazy" />
@@ -862,7 +844,7 @@ function App() {
         </section>
 
         <div className="estimator-grid">
-          <Paper component="section" elevation={0} className="form-card estimator-card" aria-labelledby="calculator-heading">
+          <Paper component="section" elevation={0} className="form-card estimator-card ui-art-form" aria-labelledby="calculator-heading">
             <div className="card-heading-row">
               <div>
                 <div className="step-label">01 <span aria-hidden="true">·</span> SELECT PROCESS DATA</div>
@@ -1209,7 +1191,7 @@ function App() {
             )}
           </Paper>
 
-          <Paper component="section" elevation={0} className="result-card result-panel" aria-labelledby="results-heading">
+          <Paper component="section" elevation={0} className="result-card result-panel ui-art-result" aria-labelledby="results-heading">
             <div className="result-card-top">
               <div>
                 <div className="step-label">02 <span aria-hidden="true">·</span> INDICATORS + SUBTOTAL</div>

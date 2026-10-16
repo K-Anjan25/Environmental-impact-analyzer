@@ -26,7 +26,7 @@
 html { scroll-behavior: smooth; }
 body { margin: 0; min-width: 320px; min-height: 100vh; background: var(--sand); }
 button, input, textarea { font: inherit; }
-:focus-visible { outline: 3px solid #1f7a55 !important; outline-offset: 3px; }
+:focus-visible { outline: 2px solid #5a6fd6; outline-offset: 2px; }
 ::selection { color: #ffffff; background: #327457; }
 
 .app-shell {
@@ -530,8 +530,8 @@ button, input, textarea { font: inherit; }
   width: 258px;
   padding: 25px 17px 18px;
   color: #e9efe5;
-  background: linear-gradient(165deg, #1b493a 0%, #14382f 68%, #122f2c 100%);
-  box-shadow: 12px 0 36px rgba(26, 49, 39, 0.08);
+  background: linear-gradient(165deg, #1c2a7a 0%, #14206b 68%, #0e1655 100%);
+  box-shadow: 12px 0 36px rgba(20, 32, 107, 0.12);
 }
 .sidebar .brand {
   align-items: center;
@@ -860,4 +860,24 @@ button, input, textarea { font: inherit; }
 }
 @media (prefers-reduced-motion: reduce) {
   .reveal, .section-divider path, .catalog-strip-art, .story-card { animation: none !important; transition: none !important; }
+}
+
+/* Cohesive focus: no heavy boxes on inputs, the field border carries the state */
+.MuiInputBase-input:focus, .MuiInputBase-input:focus-visible { outline: none !important; }
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline { border-color: #5a6fd6 !important; border-width: 1.5px; box-shadow: 0 0 0 3px rgba(90, 111, 214, 0.14); }
+.MuiOutlinedInput-root { transition: box-shadow 200ms ease; }
+
+/* Illustration used as quiet UI texture behind forms and results */
+.estimator-grid .ui-art-form.MuiPaper-root,
+.estimator-grid .ui-art-result.MuiPaper-root {
+  background-color: #fffefa;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.estimator-grid .ui-art-form.MuiPaper-root {
+  background-image: linear-gradient(180deg, rgba(255, 254, 250, 0.95) 0%, rgba(255, 254, 250, 0.985) 70%), url('/images/story-footprint.jpg');
+}
+.estimator-grid .ui-art-result.MuiPaper-root {
+  background-image: linear-gradient(180deg, rgba(255, 254, 250, 0.95) 0%, rgba(255, 254, 250, 0.985) 70%), url('/images/story-valley.jpg');
 }

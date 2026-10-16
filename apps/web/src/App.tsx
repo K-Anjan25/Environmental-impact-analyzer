@@ -825,6 +825,7 @@ function App() {
         </section>
 
         <div className="catalog-strip" aria-label="Loaded source coverage">
+          <img className="catalog-strip-art" src="/images/story-wind-meadow.jpg" alt="Stylised meadow with white wind turbines under a blue sky and cumulus clouds." loading="lazy" />
           <div><strong>{catalog?.total_records ?? '—'}</strong><span>published factors</span></div>
           <Divider orientation="vertical" flexItem />
           <div><strong>{catalog?.families.length ?? '—'}</strong><span>selectable groups</span></div>
@@ -832,6 +833,24 @@ function App() {
           <div><strong>16</strong><span>EF 3.1 indicators</span></div>
           <div className="catalog-strip-note">Carbonfact · v{catalog?.source_version ?? '1.1.0'} · open factor data</div>
         </div>
+
+        <section className="story-section" aria-labelledby="story-title">
+          <h2 id="story-title" className="story-title">Stories behind the numbers</h2>
+          <div className="story-grid">
+            <figure className="story-card">
+              <img src="/images/story-footprint.jpg" alt="Illustration of large footprints pressed into sand, with a boot sole where green hills, wind turbines and a lake have taken shape." loading="lazy" />
+              <figcaption><strong>Footprints on the land</strong><span>Every process leaves a mark. Measure it before deciding what to change.</span></figcaption>
+            </figure>
+            <figure className="story-card">
+              <img src="/images/story-valley.jpg" alt="Painted valley seen from above: a figure on a cliff looks down at a village of small houses and a large skeleton beside a dirt path." loading="lazy" />
+              <figcaption><strong>Shared valleys</strong><span>Land, water and people are connected. Impacts travel across the whole valley.</span></figcaption>
+            </figure>
+            <figure className="story-card">
+              <img src="/images/story-climate-poster.jpg" alt="Orange poster of a figure in a gas mask in front of a damaged landscape, titled 30 beautiful artworks that act against climate change." loading="lazy" />
+              <figcaption><strong>Climate action</strong><span>Art that makes environmental risk visible. The numbers here support the same goal.</span></figcaption>
+            </figure>
+          </div>
+        </section>
 
         <section className="visual-index" aria-label="Browse apparel and footwear factor areas">
           <a className="visual-index-card textile-index-card" href="#process-library">

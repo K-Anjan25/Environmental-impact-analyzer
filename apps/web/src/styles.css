@@ -819,3 +819,15 @@ button, input, textarea { font: inherit; }
 @media (prefers-reduced-motion: reduce) {
   .estimator-hero .hero-visual .hero-photo { animation: none; }
 }
+
+/* Approved artwork placements: stats-strip thumbnail and Stories section */
+.catalog-strip-art { width: 84px; height: 56px; object-fit: cover; object-position: 50% 30%; border-radius: 10px; flex: none; }
+.story-section { margin: 26px 0 34px; }
+.story-title.MuiTypography-root, .story-title { margin: 0 0 14px; font-size: 22px; font-weight: 700; color: #14206b; letter-spacing: -0.02em; }
+.story-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.story-card { margin: 0; display: flex; flex-direction: column; overflow: hidden; border-radius: 16px; background: #ffffff; box-shadow: 0 10px 24px rgba(20, 32, 107, 0.1); }
+.story-card img { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; }
+.story-card figcaption { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px 14px; }
+.story-card figcaption strong { color: #14206b; font-size: 14px; }
+.story-card figcaption span { color: #3d4a7a; font-size: 13px; line-height: 1.5; }
+@media (max-width: 760px) { .story-grid { grid-template-columns: 1fr; } }

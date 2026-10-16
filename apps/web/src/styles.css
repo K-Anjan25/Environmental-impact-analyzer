@@ -726,3 +726,15 @@ button, input, textarea { font: inherit; }
   .hero-action-note { font-size: 8px; }
   .result-scope-label { font-size: 8px; }
 }
+
+/* Landing hero: blue / teal / coral palette, original environmental illustration */
+.estimator-hero .hero-title.MuiTypography-root { color: #14206b; }
+.estimator-hero .hero-title-accent { color: #c8283f; }
+.estimator-hero .eyebrow { color: #2c46d8; }
+.estimator-hero .eyebrow-line { background: #2c46d8; }
+.estimator-hero .hero-subtitle.MuiTypography-root { color: #3d4a7a; }
+.estimator-hero .hero-primary-action.MuiButton-root { background: #c8283f; color: #ffffff; box-shadow: 0 8px 18px rgba(200, 40, 63, 0.22); }
+.estimator-hero .hero-primary-action.MuiButton-root:hover { background: #a91f33; box-shadow: 0 9px 22px rgba(200, 40, 63, 0.3); }
+.estimator-hero .hero-action-note { color: #3d4a7a; }
+.estimator-hero .hero-visual { min-height: 0; max-width: 640px; padding: 0; }
+.estimator-hero .hero-visual .hero-scene { display: block; width: 100%; height: auto; border-radius: 28px; box-shadow: 0 22px 44px rgba(20, 32, 107, 0.22); }

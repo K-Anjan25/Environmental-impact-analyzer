@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type SyntheticEvent } from 'react';
+import { HeroScene } from './HeroScene';
 import {
   Alert,
   Autocomplete,
@@ -798,12 +799,12 @@ function App() {
       <main id="top" className="main-content estimator-main">
         <section className="hero-section estimator-hero" aria-labelledby="hero-title">
           <div className="hero-copy">
-            <div className="eyebrow"><span className="eyebrow-line" /> OPEN PROCESS DATA</div>
+            <div className="eyebrow"><span className="eyebrow-line" /> ENVIRONMENTAL IMPACT ANALYZER</div>
             <Typography id="hero-title" component="h1" className="hero-title">
-              Every process has <span className="hero-title-accent">a story.</span>
+              See the impact behind <span className="hero-title-accent">every process.</span>
             </Typography>
             <Typography className="hero-subtitle">
-              Explore published apparel and footwear factors across 16 EF 3.1 indicators—with source units and boundaries in view.
+              Compare published apparel and footwear factors across 16 EF 3.1 indicators, with source units and boundaries in view.
             </Typography>
             <div className="hero-actions">
               <Button component="a" href="#process-library" variant="contained" endIcon={<ArrowDownwardRoundedIcon />} className="hero-primary-action">
@@ -813,17 +814,7 @@ function App() {
             </div>
           </div>
           <div className="hero-visual">
-            <img
-              className="hero-photo"
-              src="/images/textile-materials-hero.jpg"
-              alt="Cotton yarn, woven fabric swatches and natural fibres arranged in a textile studio."
-              fetchPriority="high"
-            />
-            <div className="hero-photo-note">
-              <span className="hero-photo-note-mark"><img src="/brand/mark.svg" alt="" /></span>
-              <div><span>TEXTILE STUDY · 01</span><strong>From fibre to fabric</strong></div>
-            </div>
-            <span className="hero-photo-index" aria-hidden="true">01 / 03</span>
+            <HeroScene />
           </div>
         </section>
 

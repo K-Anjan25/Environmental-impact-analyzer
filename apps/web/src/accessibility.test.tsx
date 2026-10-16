@@ -204,9 +204,9 @@ describe('process estimator accessibility', () => {
 
     stubApi();
     const { container } = render(<App />);
-    const heroPhoto = container.querySelector('.hero-photo');
-    expect(heroPhoto?.getAttribute('alt')).toContain('Cotton yarn, woven fabric swatches');
-    expect(heroPhoto?.getAttribute('src')).toBe('/images/textile-materials-hero.jpg');
+
+    expect(container.querySelector('.hero-scene')).not.toBeNull();
+    expect(container.querySelector('.hero-scene')?.getAttribute('aria-hidden')).toBe('true');
     const brandMark = container.querySelector('.brand-mark-image');
     expect(brandMark?.getAttribute('alt')).toBe('');
     const dashboardText = container.textContent ?? '';

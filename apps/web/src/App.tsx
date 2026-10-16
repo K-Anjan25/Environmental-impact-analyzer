@@ -816,8 +816,8 @@ function App() {
             <figure className="hero-figure">
               <img
                 className="hero-photo"
-                src="/images/hero-art-landscape.jpg"
-                alt="Painted valley at dawn: a figure on a rocky cliff looks over a winding river, a restored village and wind turbines on the far hills."
+                src="/images/hero-pixabay-meadow.jpg"
+                alt="Painted meadow landscape: a winding stream, wildflowers in the foreground, and a farmhouse on the horizon under a cloudy sky."
                 fetchPriority="high"
               />
             </figure>

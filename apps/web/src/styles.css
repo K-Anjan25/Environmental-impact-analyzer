@@ -926,13 +926,22 @@ body { background: #F7F9E1; }
 .journal-post p { margin: 0; color: #3d4a7a; font-size: 14px; line-height: 1.6; }
 @media (prefers-reduced-motion: reduce) { .visual-index-card { transition: none; } }
 
-/* Hamburger menu */
-.site-menu-button.MuiIconButton-root { color: #204654; border: 1px solid rgba(32, 70, 84, 0.18); border-radius: 12px; background: #ffffff; }
-.site-menu-button.MuiIconButton-root:hover { background: #A9E0F1; }
-.site-menu-drawer { width: min(320px, 86vw); background: #F7F9E1; }
-.site-menu-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 6px 20px; color: #204654; }
-.site-menu-drawer .MuiListItemText-primary { color: #204654; font-weight: 600; font-size: 15px; }
-.site-menu-drawer .MuiListItemButton-root:hover { background: rgba(169, 224, 241, 0.45); }
+/* Hamburger menu: three plain lines, no border or background */
+.site-menu-button.MuiIconButton-root { color: #204654; border: 0; background: transparent; padding: 6px; }
+.site-menu-button.MuiIconButton-root:hover { background: rgba(32, 70, 84, 0.08); }
+.site-menu-button .MuiSvgIcon-root { font-size: 30px; }
+.site-menu-drawer.MuiPaper-root { width: min(290px, 86vw); background: transparent; box-shadow: none; }
+.menu-panel { min-height: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 4px; padding: 22px 17px 18px; color: #e9efe5; background: linear-gradient(165deg, #2a5a6b 0%, #204654 68%, #173440 100%); }
+.menu-panel-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 14px; }
+.menu-panel .brand { display: flex; align-items: center; gap: 11px; min-height: 51px; margin: 0 2px 0 2px; padding: 0 0 2px; color: #f6f4ec; text-decoration: none; }
+.menu-panel .brand-name { max-width: 170px; color: #f5f3eb; font-size: 13px; font-weight: 750; letter-spacing: -0.035em; line-height: 1.25; }
+.menu-close.MuiIconButton-root { color: #e9efe5; }
+.menu-panel .sidebar-kicker { display: block; margin: 6px 10px 12px; color: #9bb4a3; font-size: 9px; font-weight: 800; letter-spacing: 0.16em; }
+.menu-panel .sidebar-navigation { flex-direction: column; gap: 5px; margin: 0; overflow: visible; }
+.menu-panel .sidebar-navigation a { flex: none; min-height: 45px; gap: 12px; padding: 0 12px; border-radius: 12px; font-size: 13px; white-space: normal; }
+.menu-panel .sidebar-navigation a svg { font-size: 20px; flex: 0 0 20px; }
+.menu-source-card { margin-top: auto; }
+.menu-source-card { display: flex; flex-direction: column; gap: 5px; padding: 13px 12px; border: 1px solid rgba(225, 239, 222, 0.13); border-radius: 13px; background: rgba(255, 255, 255, 0.055); }
 
 /* Guide pages */
 .guide-page { min-height: 100vh; padding: 14px clamp(18px, 4vw, 48px) 60px; }

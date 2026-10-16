@@ -662,7 +662,7 @@ function App() {
             <img src="/brand/mark.svg" alt="" />
             <span>EcoImpact Lab</span>
           </a>
-          <SiteMenu />
+          <SiteMenu sourceVersion={catalog?.source_version ?? '1.1.0'} totalRecords={catalog?.total_records ?? '302'} />
         </header>
         <section className="landing-hero" aria-labelledby="hero-title">
           <svg className="landing-wave" viewBox="0 0 1000 700" preserveAspectRatio="none" aria-hidden="true" focusable="false">

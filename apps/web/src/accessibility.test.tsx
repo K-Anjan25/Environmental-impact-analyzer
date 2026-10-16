@@ -205,8 +205,7 @@ describe('process estimator accessibility', () => {
     stubApi();
     const { container } = render(<App />);
 
-    expect(container.querySelector('.hero-scene')).not.toBeNull();
-    expect(container.querySelector('.hero-scene')?.getAttribute('aria-hidden')).toBe('true');
+    expect(container.querySelector('.hero-photo')?.getAttribute('src')).toBe('/images/hero-environment.jpg');
     const brandMark = container.querySelector('.brand-mark-image');
     expect(brandMark?.getAttribute('alt')).toBe('');
     const dashboardText = container.textContent ?? '';

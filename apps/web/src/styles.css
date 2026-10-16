@@ -737,4 +737,20 @@ button, input, textarea { font: inherit; }
 .estimator-hero .hero-primary-action.MuiButton-root:hover { background: #a91f33; box-shadow: 0 9px 22px rgba(200, 40, 63, 0.3); }
 .estimator-hero .hero-action-note { color: #3d4a7a; }
 .estimator-hero .hero-visual { min-height: 0; max-width: 640px; padding: 0; }
-.estimator-hero .hero-visual .hero-scene { display: block; width: 100%; height: auto; border-radius: 28px; box-shadow: 0 22px 44px rgba(20, 32, 107, 0.22); }
+.estimator-hero .hero-figure { position: relative; margin: 0; }
+.estimator-hero .hero-visual .hero-photo { display: block; width: 100%; aspect-ratio: 4 / 3; height: auto; object-fit: cover; object-position: 50% 62%; border-radius: 28px; box-shadow: 0 22px 44px rgba(20, 32, 107, 0.22); animation: hero-rise 900ms ease-out both; }
+.estimator-hero .hero-card { position: absolute; right: 18px; bottom: 18px; display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; width: 168px; border-radius: 16px; background: rgba(255, 255, 255, 0.92); box-shadow: 0 14px 30px rgba(20, 32, 107, 0.2); backdrop-filter: blur(6px); animation: hero-rise 900ms 250ms ease-out both; }
+.estimator-hero .hero-card-label { color: #14206b; font-size: 10px; font-weight: 800; letter-spacing: 0.1em; }
+.estimator-hero .hero-card-bars { display: flex; align-items: flex-end; gap: 6px; height: 46px; }
+.estimator-hero .hero-card-bars i { flex: 1; border-radius: 4px; background: #1ea7a0; transform-origin: bottom; animation: hero-bar 900ms 500ms ease-out both; }
+.estimator-hero .hero-card-bars i:nth-child(even) { background: #2c46d8; }
+.estimator-hero .hero-card-bars i:nth-child(4) { background: #c8283f; }
+.estimator-hero .hero-card-bars i:nth-child(2) { animation-delay: 580ms; }
+.estimator-hero .hero-card-bars i:nth-child(3) { animation-delay: 640ms; }
+.estimator-hero .hero-card-bars i:nth-child(4) { animation-delay: 700ms; }
+.estimator-hero .hero-card-bars i:nth-child(5) { animation-delay: 760ms; }
+@keyframes hero-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes hero-bar { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@media (prefers-reduced-motion: reduce) {
+  .estimator-hero .hero-photo, .estimator-hero .hero-card, .estimator-hero .hero-card-bars i { animation: none; }
+}

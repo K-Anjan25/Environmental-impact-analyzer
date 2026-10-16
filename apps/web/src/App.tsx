@@ -816,8 +816,8 @@ function App() {
             <figure className="hero-figure">
               <img
                 className="hero-photo"
-                src="/images/hero-environment.jpg"
-                alt="Stylised coastal scene: a lookout watches a bay with a sailboat, wind turbines on distant hills and dark pine forest on the shore."
+                src="/images/textile-materials-hero.jpg"
+                alt="Cotton yarn, woven fabric swatches and natural fibres arranged in a textile studio."
                 fetchPriority="high"
               />
             </figure>

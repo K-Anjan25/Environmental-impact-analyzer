@@ -784,7 +784,7 @@ button, input, textarea { font: inherit; }
   aspect-ratio: auto;
   border-radius: 0;
   object-fit: cover;
-  object-position: 72% 55%;
+  object-position: 50% 45%;
   box-shadow: none;
   transform-origin: 70% 50%;
   animation: hero-zoom 26s ease-in-out infinite alternate;

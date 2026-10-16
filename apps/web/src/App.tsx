@@ -10,7 +10,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Divider,
   FormControl,
   FormControlLabel,
   IconButton,
@@ -763,9 +762,9 @@ function App() {
   return (
     <div className="app-shell app-layout">
       <aside className="sidebar" aria-label="Workspace navigation">
-        <a className="brand" href="#top" aria-label="Environmental Impact Analyzer home">
+        <a className="brand" href="#top" aria-label="Terraledger home">
           <img className="brand-mark-image" src="/brand/mark.svg" alt="" />
-          <span className="brand-name">Environmental Impact Analyzer</span>
+          <span className="brand-name">Terraledger</span>
         </a>
         <div className="sidebar-kicker">APPAREL & FOOTWEAR</div>
         <nav className="sidebar-navigation" aria-label="Main navigation">
@@ -789,43 +788,45 @@ function App() {
 
 
       <main id="top" className="main-content estimator-main">
-        <section className="hero-section estimator-hero" aria-labelledby="hero-title">
-          <div className="hero-copy">
-            <div className="eyebrow"><span className="eyebrow-line" /> ENVIRONMENTAL IMPACT ANALYZER</div>
-            <Typography id="hero-title" component="h1" className="hero-title">
-              See the impact behind <span className="hero-title-accent">every process.</span>
+        <header className="landing-nav">
+          <a className="landing-brand" href="#top" aria-label="Terraledger home">
+            <img src="/brand/mark.svg" alt="" />
+            <span>Terraledger</span>
+          </a>
+          <nav className="landing-links" aria-label="Page sections">
+            <a href="#process-library">Process library</a>
+            <a href="#results-heading">Results</a>
+            <a className="landing-nav-pill" href="#process-library">Start an estimate</a>
+          </nav>
+        </header>
+        <section className="landing-hero" aria-labelledby="hero-title">
+          <svg className="landing-wave" viewBox="0 0 1000 700" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+            <path d="M0 0H560C610 120 470 230 520 350S640 560 540 700H0Z" />
+          </svg>
+          <div className="landing-copy reveal">
+            <p className="landing-eyebrow">ENVIRONMENTAL IMPACT ANALYZER</p>
+            <Typography id="hero-title" component="h1" className="landing-title">
+              Measure the impact behind <span className="hero-title-accent">every process</span>
             </Typography>
-            <Typography className="hero-subtitle">
-              Compare published apparel and footwear factors across 16 EF 3.1 indicators, with source units and boundaries in view.
+            <Typography className="landing-lede">
+              Terraledger compares published apparel and footwear factors across 16 EF 3.1 indicators, with source units and boundaries in view.
             </Typography>
-            <div className="hero-actions">
-              <Button component="a" href="#process-library" variant="contained" endIcon={<ArrowDownwardRoundedIcon />} className="hero-primary-action">
-                Explore factors
-              </Button>
-              <span className="hero-action-note">302 source-linked records</span>
-            </div>
+            <a className="landing-cta" href="#process-library">Explore factors <ArrowDownwardRoundedIcon /></a>
+            <dl className="landing-stats">
+              <div><dt>{catalog?.total_records ?? '—'}</dt><dd>published factors</dd></div>
+              <div><dt>{catalog?.families.length ?? '—'}</dt><dd>selectable groups</dd></div>
+              <div><dt>16</dt><dd>EF 3.1 indicators</dd></div>
+            </dl>
           </div>
-          <div className="hero-visual">
-            <figure className="hero-figure">
-              <img
-                className="hero-photo"
-                src="/images/hero-pixabay-meadow.jpg"
-                alt="Painted meadow landscape: a winding stream, wildflowers in the foreground, and a farmhouse on the horizon under a cloudy sky."
-                fetchPriority="high"
-              />
-            </figure>
-          </div>
+          <figure className="landing-art">
+            <img
+              className="hero-photo"
+              src="/images/hero-pixabay-meadow.jpg"
+              alt="Painted meadow landscape: a winding stream, wildflowers in the foreground, and a farmhouse on the horizon under a cloudy sky."
+              fetchPriority="high"
+            />
+          </figure>
         </section>
-
-        <div className="catalog-strip reveal" aria-label="Loaded source coverage">
-          <img className="catalog-strip-art" src="/images/story-wind-meadow.jpg" alt="Stylised meadow with white wind turbines under a blue sky and cumulus clouds." loading="lazy" />
-          <div><strong>{catalog?.total_records ?? '—'}</strong><span>published factors</span></div>
-          <Divider orientation="vertical" flexItem />
-          <div><strong>{catalog?.families.length ?? '—'}</strong><span>selectable groups</span></div>
-          <Divider orientation="vertical" flexItem />
-          <div><strong>16</strong><span>EF 3.1 indicators</span></div>
-          <div className="catalog-strip-note">Carbonfact · v{catalog?.source_version ?? '1.1.0'} · open factor data</div>
-        </div>
 
         <svg className="section-divider" viewBox="0 0 1200 56" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 28C160 4 320 52 480 28S800 4 960 28 1120 50 1200 26V56H0Z" /></svg>
         <section className="visual-index reveal" aria-label="Browse apparel and footwear factor areas">
@@ -1259,7 +1260,7 @@ function App() {
         <footer className="app-footer">
           <div className="footer-brand">
             <img src="/brand/mark.svg" alt="" />
-            <div><strong>Environmental Impact Analyzer</strong><span>Apparel & footwear process data</span></div>
+            <div><strong>Terraledger</strong><span>Apparel & footwear process data</span></div>
           </div>
           <nav className="app-footer-links" aria-label="Legal and source links">
             <a href="/legal/privacy.html">Privacy</a>

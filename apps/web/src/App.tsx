@@ -820,16 +820,6 @@ function App() {
                 alt="Stylised coastal scene: a lookout watches a bay with a sailboat, wind turbines on distant hills and dark pine forest on the shore."
                 fetchPriority="high"
               />
-              <figcaption className="hero-card" aria-hidden="true">
-                <span className="hero-card-label">EF 3.1 · 16 INDICATORS</span>
-                <span className="hero-card-bars">
-                  <i style={{ height: '46%' }} />
-                  <i style={{ height: '72%' }} />
-                  <i style={{ height: '58%' }} />
-                  <i style={{ height: '88%' }} />
-                  <i style={{ height: '38%' }} />
-                </span>
-              </figcaption>
             </figure>
           </div>
         </section>

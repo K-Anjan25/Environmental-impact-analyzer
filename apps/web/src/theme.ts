@@ -3,11 +3,11 @@ import { createTheme } from '@mui/material/styles';
 const theme = createTheme({
   palette: {
     mode: 'light',
-    primary: { main: '#1f5a46', dark: '#164532', contrastText: '#ffffff' },
+    primary: { main: '#204654', dark: '#173440', contrastText: '#ffffff' },
     secondary: { main: '#5d7163' },
     warning: { main: '#8a5a00' },
     text: { primary: '#17231f', secondary: '#60716a' },
-    background: { default: '#f5f2ea', paper: '#ffffff' },
+    background: { default: '#F7F9E1', paper: '#ffffff' },
     divider: '#e5e9e4',
   },
   shape: { borderRadius: 14 },

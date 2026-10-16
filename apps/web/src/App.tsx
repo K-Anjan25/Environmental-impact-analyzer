@@ -762,9 +762,9 @@ function App() {
   return (
     <div className="app-shell app-layout">
       <aside className="sidebar" aria-label="Workspace navigation">
-        <a className="brand" href="#top" aria-label="TerraSolve home">
+        <a className="brand" href="#top" aria-label="EcoImpact Lab home">
           <img className="brand-mark-image" src="/brand/mark.svg" alt="" />
-          <span className="brand-name">TerraSolve</span>
+          <span className="brand-name">EcoImpact Lab</span>
         </a>
         <div className="sidebar-kicker">APPAREL & FOOTWEAR</div>
         <nav className="sidebar-navigation" aria-label="Main navigation">
@@ -789,9 +789,9 @@ function App() {
 
       <main id="top" className="main-content estimator-main">
         <header className="landing-nav">
-          <a className="landing-brand" href="#top" aria-label="TerraSolve home">
+          <a className="landing-brand" href="#top" aria-label="EcoImpact Lab home">
             <img src="/brand/mark.svg" alt="" />
-            <span>TerraSolve</span>
+            <span>EcoImpact Lab</span>
           </a>
           <nav className="landing-links" aria-label="Page sections">
             <a href="#process-library">Process library</a>
@@ -809,7 +809,7 @@ function App() {
               Measure the impact behind <span className="hero-title-accent">every process</span>
             </Typography>
             <Typography className="landing-lede">
-              TerraSolve compares published apparel and footwear factors across 16 EF 3.1 indicators, with source units and boundaries in view.
+              EcoImpact Lab compares published apparel and footwear factors across 16 EF 3.1 indicators, with source units and boundaries in view.
             </Typography>
             <a className="landing-cta" href="#process-library">Explore factors <ArrowDownwardRoundedIcon /></a>
             <dl className="landing-stats">
@@ -1281,7 +1281,7 @@ function App() {
         <footer className="app-footer">
           <div className="footer-brand">
             <img src="/brand/mark.svg" alt="" />
-            <div><strong>TerraSolve</strong><span>Apparel & footwear process data</span></div>
+            <div><strong>EcoImpact Lab</strong><span>Apparel & footwear process data</span></div>
           </div>
           <nav className="app-footer-links" aria-label="Legal and source links">
             <a href="/legal/privacy.html">Privacy</a>

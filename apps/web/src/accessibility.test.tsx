@@ -217,7 +217,7 @@ describe('process estimator accessibility', () => {
     expect(dashboardText).not.toContain('Open process data');
     expect(dashboardText).not.toContain('Open process library');
     expect(dashboardText).not.toContain('OPEN FACTORS');
-    expect(screen.getAllByText('TerraSolve')).toHaveLength(3);
+    expect(screen.getAllByText('EcoImpact Lab')).toHaveLength(3);
     const legalNavigation = screen.getByRole('navigation', { name: 'Legal and source links' });
     expect(legalNavigation).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Privacy' }).getAttribute('href')).toBe('/legal/privacy.html');

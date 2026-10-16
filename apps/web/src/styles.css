@@ -946,3 +946,7 @@ body { background: #F7F9E1; }
 .guide-more h2 { margin: 0 0 10px; font-size: 18px; color: #204654; }
 .guide-more ul { margin: 0; padding-left: 18px; }
 .guide-more a { color: #204654; font-weight: 600; }
+
+/* Sidebar removed: the hamburger menu is the only navigation */
+.sidebar { display: none !important; }
+.app-shell.app-layout, .app-shell.app-layout { padding-left: 0 !important; }

@@ -31,28 +31,20 @@ import {
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import ArrowDownwardRoundedIcon from '@mui/icons-material/ArrowDownwardRounded';
 import CalculateOutlinedIcon from '@mui/icons-material/CalculateOutlined';
-import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
-import FactoryOutlinedIcon from '@mui/icons-material/FactoryOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
-import QueryStatsOutlinedIcon from '@mui/icons-material/QueryStatsOutlined';
-import OpenInNewOutlinedIcon from '@mui/icons-material/OpenInNewOutlined';
 import ScienceOutlinedIcon from '@mui/icons-material/ScienceOutlined';
 import {
   calculateProcessEstimates,
-  getActiveSources,
   getFactorCatalog,
-  type ActiveDataSource,
   type FactorCatalog,
   type ProcessEstimateLine,
   type ProcessEstimateResponse,
   type ProcessFactor,
 } from './api';
 import { formatProcessEstimatesCsv, downloadProcessEstimatesCsv } from './export';
-import { EF31_SINGLE_SCORE_SOURCE, EF31_WEIGHTING_SOURCE } from './ef31-score';
 import { calculateFromCatalog } from './local-estimates';
 import {
   assessFlatBomMass,
@@ -360,105 +352,6 @@ function FactorSuggestionDialog({
   );
 }
 
-function SourceDialog({
-  open,
-  onClose,
-}: {
-  open: boolean;
-  onClose: () => void;
-}) {
-  const [sources, setSources] = useState<ActiveDataSource[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [sourceLoaded, setSourceLoaded] = useState(false);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    if (!open || sourceLoaded) return;
-    let current = true;
-    setLoading(true);
-    getActiveSources()
-      .then((items) => {
-        if (current) setSources(items);
-      })
-      .catch((requestError: unknown) => {
-        if (current) {
-          setError(requestError instanceof Error ? requestError.message : 'Source details could not be loaded.');
-        }
-      })
-      .finally(() => {
-        if (current) {
-          setLoading(false);
-          setSourceLoaded(true);
-        }
-      });
-    return () => {
-      current = false;
-    };
-  }, [open, sourceLoaded]);
-
-  return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth aria-labelledby="source-dialog-title">
-      <DialogTitle id="source-dialog-title" className="dialog-title">Method, source and reuse</DialogTitle>
-      <DialogContent dividers className="source-dialog-content">
-        <Stack spacing={2.5}>
-          <section>
-            <Typography component="h3" className="dialog-section-title">Implemented calculation</Typography>
-            <Typography variant="body2">
-              Each published process factor is scaled by its own reference-unit quantity, and the 16 midpoint indicators remain visible separately for every process row. The browser can map a user-declared input to a process as either its output quantity or its mass feed; supported unit conversions are explicit, and mass-feed conversion uses the source-reported Input required (kg) value. The browser also sums selected rows by indicator and calculates an EF 3.1 single score from the JRC normalisation and weighting factors. These are selected-row subtotals, not a complete product footprint or ranking.
-            </Typography>
-          </section>
-          <section>
-            <Typography component="h3" className="dialog-section-title">EF 3.1 single-score method</Typography>
-            <Typography variant="body2">
-              For each of the 16 EF midpoint categories, the browser divides the selected-row indicator total by the JRC global normalisation factor, multiplies by its EF weighting percentage as a fraction, and sums the weighted categories. This uses the JRC report's recommended final weights including robustness, scaled to 100% for all 16 categories; the report also gives an alternative set excluding three toxicity categories. Weighting reflects value choices, so inspect the separate indicator results alongside the selected-row score. Normalisation factors are reported to three significant figures. The results table shows each normalised value, weighting percentage, and contribution.
-            </Typography>
-            <p className="source-attribution-copy">
-              Method sources: the European Commission Joint Research Centre EF 3.1 Normalisation and Weighting Factors workbook, its EF weighting report, and its 2023 guide describing a 16-category single weighted score.{' '}
-              <a href={EF31_SINGLE_SCORE_SOURCE} target="_blank" rel="noreferrer">Open normalisation workbook <OpenInNewOutlinedIcon fontSize="inherit" /></a>{' · '}
-              <a href={EF31_WEIGHTING_SOURCE} target="_blank" rel="noreferrer">Open weighting report <OpenInNewOutlinedIcon fontSize="inherit" /></a>{' · '}
-              <a href="https://eplca.jrc.ec.europa.eu/uploads/JRC132621_MS_guide.pdf" target="_blank" rel="noreferrer">Open JRC single-score guide <OpenInNewOutlinedIcon fontSize="inherit" /></a>
-            </p>
-          </section>
-          <section>
-            <Typography component="h3" className="dialog-section-title">Data boundary and limits</Typography>
-            <Typography variant="body2">
-              Product inputs are a flat, user-declared worksheet. The optional BOM mass check runs only after you confirm that every declared line is a product component for the same functional unit; it compares supported input masses with your finished-product mass and cannot validate a hierarchy, composition, or completeness. Factor suggestions compare words in the input name with activity names; they require user confirmation and do not validate supplier/material equivalence or process boundaries. Composition inference, allocation, and automatic stage completion are not performed. A source-reported input/output mass difference may be shown; it is not a waste-treatment inventory, and no waste-treatment impact is added. The bundled factors contain no transport/distribution or waste-treatment/end-of-life records and do not cover all raw materials or product-specific stages. Do not sum overlapping or incompatible process boundaries. Missing or unmapped inputs are not zero. Factor reference units, modeled boundaries, and geographies vary by row. Use-phase records describe representative European consumer behavior. WTU is an EF 3.1 water-use impact indicator in m³ world-equivalent, not physical litres. The bundled source’s full ecoinvent-based background inventories are not included or reconstructed.
-            </Typography>
-          </section>
-          {loading && <CircularProgress size={22} aria-label="Loading source details" />}
-          {error && <Alert severity="error" onClose={() => setError('')}>{error}</Alert>}
-          {sources.map((source) => (
-            <section key={source.id} className="source-dialog-card">
-              <Typography component="h3" className="dialog-section-title">{source.name} · v{source.version}</Typography>
-              <Typography variant="body2">{source.scope_summary}</Typography>
-              <p className="source-attribution-copy">{source.attribution_text}</p>
-              <div className="source-dialog-links">
-                {source.attribution_links.map((link) => (
-                  <a key={link.url} href={link.url} target="_blank" rel="noreferrer">
-                    {link.label} <OpenInNewOutlinedIcon fontSize="inherit" />
-                  </a>
-                ))}
-              </div>
-              <Typography variant="body2"><strong>License for source-derived results:</strong> {source.result_license}. Attribution and ShareAlike apply.</Typography>
-              <Typography variant="body2"><strong>Underlying inventories:</strong> {source.background_database_note}</Typography>
-              <ul className="source-limitations">
-                {source.limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}
-              </ul>
-            </section>
-          ))}
-          <section>
-            <Typography component="h3" className="dialog-section-title">Privacy</Typography>
-            <Typography variant="body2">
-              The app has no user accounts, analytics, database, or calculation history. Product-input labels, quantities, units, associations, and the optional finished-product mass used for the flat BOM mass check stay in browser page memory and are never sent to the API; the mass check also requires your confirmation that every declared line is a product component for one functional unit. Unit conversion, mapped factor calculations, and the BOM mass diagnostic run locally in the browser. For manually entered process quantities, the API receives only selected factor IDs and those reference-unit quantities. Nothing is saved after the page is closed or reloaded. A downloaded CSV may contain the input labels, quantities, units, and finished-product mass you entered. The API access log is disabled and request bodies are not logged by the app. Hosting infrastructure may retain network metadata under its own operating policy.
-            </Typography>
-          </section>
-        </Stack>
-      </DialogContent>
-      <DialogActions><Button onClick={onClose} variant="contained">Close</Button></DialogActions>
-    </Dialog>
-  );
-}
-
 function App() {
   const [catalog, setCatalog] = useState<FactorCatalog | null>(null);
   const [catalogLoading, setCatalogLoading] = useState(true);
@@ -480,7 +373,6 @@ function App() {
   const [result, setResult] = useState<ProcessEstimateResponse | null>(null);
   const [calculating, setCalculating] = useState(false);
   const [error, setError] = useState('');
-  const [sourceDialogOpen, setSourceDialogOpen] = useState(false);
   const [suggestionInputId, setSuggestionInputId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -762,30 +654,6 @@ function App() {
 
   return (
     <div className="app-shell app-layout">
-      <aside className="sidebar" aria-label="Workspace navigation">
-        <a className="brand" href="#top" aria-label="EcoImpact Lab home">
-          <img className="brand-mark-image" src="/brand/mark.svg" alt="" />
-          <span className="brand-name">EcoImpact Lab</span>
-        </a>
-        <div className="sidebar-kicker">APPAREL & FOOTWEAR</div>
-        <nav className="sidebar-navigation" aria-label="Main navigation">
-          <a href="#top" aria-current="page" aria-label="Overview"><DashboardOutlinedIcon fontSize="small" /><span>Overview</span></a>
-          <a href="#product-inputs" aria-label="Product inputs"><Inventory2OutlinedIcon fontSize="small" /><span>Product inputs</span></a>
-          <a href="#process-library" aria-label="Process library"><FactoryOutlinedIcon fontSize="small" /><span>Process library</span></a>
-          <a href="#results-heading" aria-label="Results"><QueryStatsOutlinedIcon fontSize="small" /><span>Results</span></a>
-        </nav>
-        <div className="sidebar-bottom">
-          <div className="sidebar-source-card">
-            <span className="sidebar-source-label">PINNED SOURCE</span>
-            <strong>Carbonfact</strong>
-            <span>Version {catalog?.source_version ?? '1.1.0'} · CC BY-SA 4.0</span>
-            <span className="sidebar-source-count"><i aria-hidden="true" /> {catalog?.total_records ?? '302'} published factors</span>
-          </div>
-          <Button variant="text" startIcon={<InfoOutlinedIcon />} onClick={() => setSourceDialogOpen(true)} className="sidebar-method-button">
-            Method, source & privacy
-          </Button>
-        </div>
-      </aside>
 
 
       <main id="top" className="main-content estimator-main">
@@ -1264,17 +1132,13 @@ function App() {
             <img src="/brand/mark.svg" alt="" />
             <div><strong>EcoImpact Lab</strong><span>Apparel & footwear process data</span></div>
           </div>
-          <nav className="app-footer-links" aria-label="Legal and source links">
-            <a href="/legal/privacy.html">Privacy</a>
-            <a href="/legal/terms.html">Terms</a>
-            <a href="/legal/license.html">Software license</a>
-            <a href="/legal/data-sources.html">Data sources</a>
-            <button type="button" onClick={() => setSourceDialogOpen(true)}>Method details</button>
+          <nav className="app-footer-links" aria-label="Legal links">
+            <a href="/legal/privacy.html">Privacy policy</a>
+            <a href="/legal/terms.html">Terms of use</a>
           </nav>
         </footer>
       </main>
 
-      <SourceDialog open={sourceDialogOpen} onClose={() => setSourceDialogOpen(false)} />
       <FactorSuggestionDialog
         open={suggestionInputId !== null}
         input={suggestionInput}

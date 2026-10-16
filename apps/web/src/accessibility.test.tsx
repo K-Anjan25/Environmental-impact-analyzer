@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import axe from 'axe-core';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
@@ -206,7 +206,7 @@ describe('process estimator accessibility', () => {
     const { container } = render(<App />);
 
     expect(container.querySelector('.hero-photo')?.getAttribute('src')).toBe('/images/site-background-wind.jpg');
-    const brandMark = container.querySelector('.brand-mark-image');
+    const brandMark = container.querySelector('.landing-brand img');
     expect(brandMark?.getAttribute('alt')).toBe('');
     const dashboardText = container.textContent ?? '';
     expect(dashboardText).not.toContain('Source factors, not a product score');
@@ -218,12 +218,12 @@ describe('process estimator accessibility', () => {
     expect(dashboardText).not.toContain('Open process library');
     expect(dashboardText).not.toContain('OPEN FACTORS');
     expect(screen.getAllByText('EcoImpact Lab')).toHaveLength(3);
-    const legalNavigation = screen.getByRole('navigation', { name: 'Legal and source links' });
+    const legalNavigation = screen.getByRole('navigation', { name: 'Legal links' });
     expect(legalNavigation).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Privacy' }).getAttribute('href')).toBe('/legal/privacy.html');
-    expect(screen.getByRole('link', { name: 'Terms' }).getAttribute('href')).toBe('/legal/terms.html');
-    expect(screen.getByRole('link', { name: 'Software license' }).getAttribute('href')).toBe('/legal/license.html');
-    expect(screen.getByRole('link', { name: 'Data sources' }).getAttribute('href')).toBe('/legal/data-sources.html');
+    expect(screen.getByRole('link', { name: 'Privacy policy' }).getAttribute('href')).toBe('/legal/privacy.html');
+    expect(screen.getByRole('link', { name: 'Terms of use' }).getAttribute('href')).toBe('/legal/terms.html');
+    expect(screen.queryByRole('link', { name: 'Software license' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Data sources' })).toBeNull();
   });
 
   it('filters source factors by an exact source geography', async () => {
@@ -442,19 +442,4 @@ describe('process estimator accessibility', () => {
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:csv-download');
   });
 
-  it('shows source and privacy details in an accessible methodology dialog', async () => {
-    const fetchMock = stubApi();
-    render(<App />);
-    fireEvent.click(screen.getByRole('button', { name: 'Method, source & privacy' }));
-    await screen.findByRole('heading', { name: 'Implemented calculation' });
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/v1/sources'));
-    await screen.findByText(/Data source: Carbonfact Open Source LCA Database/);
-    expect(screen.getByRole('link', { name: 'Pinned source release' })).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'CC BY-SA 4.0 license' })).toBeTruthy();
-    expect(screen.getByText(/CC BY-SA 4.0\. Attribution and ShareAlike apply/)).toBeTruthy();
-    expect(screen.getByText(/Full background inventories are not included or reconstructed/)).toBeTruthy();
-    expect(screen.getByText(/Each published process factor is scaled by its own reference-unit quantity/)).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Privacy' })).toBeTruthy();
-    await expectNoAxeViolations();
-  });
 });

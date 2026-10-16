@@ -867,20 +867,6 @@ button, input, textarea { font: inherit; }
 .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline { border-color: #5a6fd6 !important; border-width: 1.5px; box-shadow: 0 0 0 3px rgba(90, 111, 214, 0.14); }
 .MuiOutlinedInput-root { transition: box-shadow 200ms ease; }
 
-/* Illustration used as quiet UI texture behind forms and results */
-.estimator-grid .ui-art-form.MuiPaper-root,
-.estimator-grid .ui-art-result.MuiPaper-root {
-  background-color: #fffefa;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-.estimator-grid .ui-art-form.MuiPaper-root {
-  background-image: linear-gradient(180deg, rgba(255, 254, 250, 0.95) 0%, rgba(255, 254, 250, 0.985) 70%), url('/images/story-footprint.jpg');
-}
-.estimator-grid .ui-art-result.MuiPaper-root {
-  background-image: linear-gradient(180deg, rgba(255, 254, 250, 0.95) 0%, rgba(255, 254, 250, 0.985) 70%), url('/images/story-valley.jpg');
-}
 
 /* Landing page: Terraledger hero with curved white panel and painted landscape */
 .landing-nav { position: relative; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 18px; margin: 0 0 14px; padding: 6px 4px; }
@@ -918,3 +904,6 @@ button, input, textarea { font: inherit; }
   .landing-art img { animation: none; }
   .landing-cta { transition: none; }
 }
+
+/* Site scenery: the turbine landscape sits behind the whole app, softened for legibility */
+body { background: linear-gradient(rgba(245, 242, 234, 0.9), rgba(245, 242, 234, 0.94)), url('/images/site-background-wind.jpg') center / cover fixed, #f5f2ea; }

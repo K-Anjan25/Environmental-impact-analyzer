@@ -762,9 +762,9 @@ function App() {
   return (
     <div className="app-shell app-layout">
       <aside className="sidebar" aria-label="Workspace navigation">
-        <a className="brand" href="#top" aria-label="Terraledger home">
+        <a className="brand" href="#top" aria-label="TerraSolve home">
           <img className="brand-mark-image" src="/brand/mark.svg" alt="" />
-          <span className="brand-name">Terraledger</span>
+          <span className="brand-name">TerraSolve</span>
         </a>
         <div className="sidebar-kicker">APPAREL & FOOTWEAR</div>
         <nav className="sidebar-navigation" aria-label="Main navigation">
@@ -789,9 +789,9 @@ function App() {
 
       <main id="top" className="main-content estimator-main">
         <header className="landing-nav">
-          <a className="landing-brand" href="#top" aria-label="Terraledger home">
+          <a className="landing-brand" href="#top" aria-label="TerraSolve home">
             <img src="/brand/mark.svg" alt="" />
-            <span>Terraledger</span>
+            <span>TerraSolve</span>
           </a>
           <nav className="landing-links" aria-label="Page sections">
             <a href="#process-library">Process library</a>
@@ -809,7 +809,7 @@ function App() {
               Measure the impact behind <span className="hero-title-accent">every process</span>
             </Typography>
             <Typography className="landing-lede">
-              Terraledger compares published apparel and footwear factors across 16 EF 3.1 indicators, with source units and boundaries in view.
+              TerraSolve compares published apparel and footwear factors across 16 EF 3.1 indicators, with source units and boundaries in view.
             </Typography>
             <a className="landing-cta" href="#process-library">Explore factors <ArrowDownwardRoundedIcon /></a>
             <dl className="landing-stats">
@@ -831,15 +831,15 @@ function App() {
         <svg className="section-divider" viewBox="0 0 1200 56" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 28C160 4 320 52 480 28S800 4 960 28 1120 50 1200 26V56H0Z" /></svg>
         <section className="visual-index reveal" aria-label="Browse apparel and footwear factor areas">
           <a className="visual-index-card textile-index-card" href="#process-library">
-            <img src="/images/textile-process-detail.jpg" alt="" loading="lazy" />
+            <img src="/images/story-footprint.jpg" alt="" loading="lazy" />
             <span className="visual-index-shade" />
-            <span className="visual-index-copy"><small>01 / TEXTILES</small><strong>Yarn · fabric · finishing</strong></span>
+            <span className="visual-index-copy"><small>FOOTPRINT</small><strong>Footprints on the land</strong></span>
             <span className="visual-index-arrow" aria-hidden="true">↗</span>
           </a>
           <a className="visual-index-card footwear-index-card" href="#process-library">
-            <img src="/images/footwear-material-detail.jpg" alt="" loading="lazy" />
+            <img src="/images/story-valley.jpg" alt="" loading="lazy" />
             <span className="visual-index-shade" />
-            <span className="visual-index-copy"><small>02 / FOOTWEAR</small><strong>Materials · assembly · use</strong></span>
+            <span className="visual-index-copy"><small>VALLEY</small><strong>Shared valleys</strong></span>
             <span className="visual-index-arrow" aria-hidden="true">↗</span>
           </a>
         </section>
@@ -848,11 +848,10 @@ function App() {
           <Paper component="section" elevation={0} className="form-card estimator-card ui-art-form" aria-labelledby="calculator-heading">
             <div className="card-heading-row">
               <div>
-                <div className="step-label">01 <span aria-hidden="true">·</span> SELECT PROCESS DATA</div>
+                <div className="step-label">SELECT PROCESS DATA</div>
                 <Typography id="calculator-heading" component="h2" variant="h5" className="card-title">Build a process estimate.</Typography>
               </div>
-              <div className="card-number" aria-hidden="true">01</div>
-            </div>
+                          </div>
 
             {catalogLoading && (
               <div className="catalog-loading" aria-busy="true"><CircularProgress size={22} aria-label="Loading process factors" /></div>
@@ -1195,7 +1194,7 @@ function App() {
           <Paper component="section" elevation={0} className="result-card result-panel ui-art-result" aria-labelledby="results-heading">
             <div className="result-card-top">
               <div>
-                <div className="step-label">02 <span aria-hidden="true">·</span> INDICATORS + SUBTOTAL</div>
+                <div className="step-label">INDICATORS + SUBTOTAL</div>
                 <Typography id="results-heading" component="h2" variant="h5" className="card-title">Process results.</Typography>
               </div>
               {result && <Chip label="Calculated" size="small" className="calculated-chip" />}
@@ -1260,7 +1259,7 @@ function App() {
         <footer className="app-footer">
           <div className="footer-brand">
             <img src="/brand/mark.svg" alt="" />
-            <div><strong>Terraledger</strong><span>Apparel & footwear process data</span></div>
+            <div><strong>TerraSolve</strong><span>Apparel & footwear process data</span></div>
           </div>
           <nav className="app-footer-links" aria-label="Legal and source links">
             <a href="/legal/privacy.html">Privacy</a>

@@ -816,8 +816,8 @@ function App() {
             <figure className="hero-figure">
               <img
                 className="hero-photo"
-                src="/images/textile-materials-hero.jpg"
-                alt="Cotton yarn, woven fabric swatches and natural fibres arranged in a textile studio."
+                src="/images/hero-art-landscape.jpg"
+                alt="Painted valley at dawn: a figure on a rocky cliff looks over a winding river, a restored village and wind turbines on the far hills."
                 fetchPriority="high"
               />
             </figure>

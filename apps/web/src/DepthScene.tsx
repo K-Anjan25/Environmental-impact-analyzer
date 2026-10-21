@@ -1,10 +1,9 @@
 import { useEffect, useRef } from 'react';
 
 /*
- * The EcoImpact journey: five slides along one scroll.
- * Each slide has an isolated studio image on the right and a text card on the left.
- * Slides hand over one at a time, with depth transitions driven by scroll.
- * Timing is described in docs/landing-journey-storyboard.md.
+ * The EcoImpact journey: five full-size cards that stack over one another as you scroll.
+ * Each card splits into a text panel and an image panel. The stage behind the cards is empty.
+ * Timing and layout are described in docs/landing-journey-storyboard.md.
  */
 
 type Slide = {
@@ -51,32 +50,23 @@ const SLIDES: Slide[] = [
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 const smooth = (t: number) => t * t * (3 - 2 * t);
-const slideCentre = (index: number) => index / (SLIDES.length - 1);
 
-// Text is fully visible within ±0.05 of a slide centre and gone beyond ±0.10,
-// so neighbouring cards are never on screen together.
-const textWeight = (p: number, index: number) => {
-  const distance = Math.abs(p - slideCentre(index));
-  return 1 - smooth(clamp((distance - 0.05) / 0.05, 0, 1));
-};
-
-// The image grows in over the 0.25 before its slide centre and out after it.
-const imageWeight = (p: number, index: number) =>
-  smooth(clamp(1 - Math.abs(p - slideCentre(index)) / 0.25, 0, 1));
+/*
+ * Card i has a stack position r = progress * (N - 1) - i.
+ * r < -1: not yet arrived, waiting below the stage.
+ * -1 <= r < 0: sliding up over the previous card.
+ * r >= 0: resting in the stack, pushed back and dimmed as newer cards cover it.
+ */
+const stackPosition = (p: number, index: number) => p * (SLIDES.length - 1) - index;
 
 export default function DepthScene() {
   const sectionRef = useRef<HTMLElement>(null);
-  const stageRef = useRef<HTMLDivElement>(null);
-  const backdropRef = useRef<HTMLDivElement>(null);
-  const textRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const artRefs = useRef<(HTMLElement | null)[]>([]);
+  const cardRefs = useRef<(HTMLElement | null)[]>([]);
   const dotRefs = useRef<(HTMLSpanElement | null)[]>([]);
 
   useEffect(() => {
     const section = sectionRef.current;
-    const stage = stageRef.current;
-    const backdrop = backdropRef.current;
-    if (!section || !stage || !backdrop) return undefined;
+    if (!section) return undefined;
 
     const reduceMotion =
       typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -90,41 +80,44 @@ export default function DepthScene() {
       const rect = section.getBoundingClientRect();
       const total = section.offsetHeight - window.innerHeight;
       progress = total > 0 ? clamp(-rect.top / total, 0, 1) : 0;
-      section.style.setProperty('--depth-p', progress.toFixed(3));
     };
 
-    // Paint one state: text cards, images, dots, and the backdrop parallax.
     const paint = (p: number) => {
       SLIDES.forEach((_, index) => {
-        const text = textRefs.current[index];
-        const art = artRefs.current[index];
+        const card = cardRefs.current[index];
         const dot = dotRefs.current[index];
-        const w = textWeight(p, index);
-        const e = imageWeight(p, index);
-        if (text) {
-          text.style.opacity = w.toFixed(3);
-          text.style.transform = `translate3d(0, ${((1 - w) * 22).toFixed(1)}px, 0)`;
-        }
-        if (art) {
-          // Depth: the image rises from below and comes forward out of the back plane.
-          art.style.opacity = e.toFixed(3);
-          art.style.transform = `translate3d(${((1 - e) * -40).toFixed(1)}px, ${((1 - e) * 36).toFixed(1)}px, ${((e - 1) * 220).toFixed(1)}px) scale(${(0.9 + 0.1 * e).toFixed(3)}) rotateY(${((1 - e) * -10).toFixed(2)}deg)`;
-          art.style.visibility = e > 0.01 ? 'visible' : 'hidden';
+        const r = stackPosition(p, index);
+        if (card) {
+          if (r < -1) {
+            card.style.transform = 'translate3d(0, 100%, 0)';
+            card.style.visibility = 'hidden';
+            card.style.filter = 'none';
+          } else if (r < 0) {
+            const e = smooth(r + 1);
+            card.style.transform = `translate3d(0, ${((1 - e) * 100).toFixed(2)}%, 0)`;
+            card.style.visibility = 'visible';
+            card.style.filter = 'none';
+          } else {
+            // Resting in the stack: recede slightly and dim as the next card covers it.
+            const depth = Math.min(r, 1);
+            card.style.transform = `translate3d(0, ${(-depth * 3).toFixed(2)}%, 0) scale(${(1 - 0.06 * depth).toFixed(4)})`;
+            card.style.visibility = 'visible';
+            card.style.filter = depth > 0 ? `brightness(${(1 - 0.5 * depth).toFixed(3)})` : 'none';
+          }
         }
         if (dot) {
-          dot.style.opacity = (0.3 + 0.7 * w).toFixed(3);
-          dot.style.transform = `scale(${(1 + 0.4 * w).toFixed(3)})`;
+          const focus = clamp(1 - Math.abs(r), 0, 1);
+          dot.style.opacity = (0.35 + 0.65 * focus).toFixed(3);
+          dot.style.transform = `scale(${(1 + 0.4 * focus).toFixed(3)})`;
         }
       });
-      // Backdrop moves slowest, so it reads as the farthest layer.
-      backdrop.style.transform = `translate3d(0, ${((0.5 - p) * 60).toFixed(1)}px, 0) scale(1.08)`;
     };
 
     const tick = (now: number) => {
       frameId = requestAnimationFrame(tick);
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
-      // Frame-rate independent easing, so the slides settle at the same speed on any device.
+      // Frame-rate independent easing, so the stack settles at the same speed on any device.
       shown += (progress - shown) * (reduceMotion ? 1 : 1 - Math.exp(-dt * 7));
       paint(shown);
     };
@@ -146,28 +139,17 @@ export default function DepthScene() {
 
   return (
     <section ref={sectionRef} className="depth-scene" aria-label="Walk through one process, step by step">
-      <div ref={stageRef} className="depth-stage">
-        <div ref={backdropRef} className="depth-backdrop" aria-hidden="true" />
+      <div className="depth-stage">
         {SLIDES.map((slide, index) => (
-          <figure
+          <article
             key={slide.title}
-            className="depth-art"
+            className="depth-card"
+            style={{ zIndex: index + 1 }}
             ref={(element) => {
-              artRefs.current[index] = element;
+              cardRefs.current[index] = element;
             }}
           >
-            <img src={slide.image} alt={slide.alt} loading="lazy" decoding="async" />
-          </figure>
-        ))}
-        <div className="depth-copy">
-          {SLIDES.map((slide, index) => (
-            <div
-              key={slide.title}
-              className="depth-step"
-              ref={(element) => {
-                textRefs.current[index] = element;
-              }}
-            >
+            <div className="depth-copy">
               <h2>{slide.title}</h2>
               <p>{slide.body}</p>
               {slide.cta ? (
@@ -176,8 +158,11 @@ export default function DepthScene() {
                 </a>
               ) : null}
             </div>
-          ))}
-        </div>
+            <div className="depth-art">
+              <img src={slide.image} alt={slide.alt} loading="lazy" decoding="async" />
+            </div>
+          </article>
+        ))}
         <div className="depth-dots" aria-hidden="true">
           {SLIDES.map((slide, index) => (
             <span

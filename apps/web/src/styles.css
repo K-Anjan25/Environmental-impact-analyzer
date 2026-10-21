@@ -961,29 +961,28 @@ body { background: linear-gradient(rgba(247, 249, 225, 0.9), rgba(247, 249, 225,
 .sidebar { display: none !important; }
 .app-shell.app-layout, .app-shell.app-layout { padding-left: 0 !important; }
 
-/* Journey: scroll-driven slides with isolated studio images and depth transitions */
-.depth-scene { position: relative; height: 440vh; margin: 12px 0 0; }
-.depth-stage { position: sticky; top: 0; height: 100vh; min-height: 520px; overflow: hidden; isolation: isolate; perspective: 1200px; border-radius: 28px; background: #204654; }
-.depth-backdrop { position: absolute; inset: -4%; z-index: 0; background: linear-gradient(rgba(23, 52, 64, 0.5), rgba(23, 52, 64, 0.55)), url('/images/site-background-wind.jpg') center / cover no-repeat; will-change: transform; }
-.depth-stage::after { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(90deg, rgba(23, 52, 64, 0.82) 0%, rgba(23, 52, 64, 0.4) 40%, rgba(23, 52, 64, 0) 60%); }
-.depth-art { position: absolute; z-index: 2; top: 14%; right: clamp(24px, 6vw, 96px); width: min(44%, 620px); height: 72%; margin: 0; transform-origin: 50% 50%; transform-style: preserve-3d; will-change: transform, opacity; visibility: hidden; }
-.depth-art img { display: block; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 30px 40px rgba(10, 30, 38, 0.45)); }
-.depth-copy { position: absolute; z-index: 3; left: clamp(22px, 6vw, 84px); top: 50%; transform: translateY(-50%); width: min(440px, 40%); display: grid; pointer-events: none; }
-.depth-step { grid-area: 1 / 1; opacity: 0; will-change: transform, opacity; }
-.depth-step h2.MuiTypography-root, .depth-step h2 { margin: 0 0 14px; color: #F7F9E1; font-size: clamp(30px, 4.2vw, 54px); font-weight: 800; line-height: 1.04; letter-spacing: -0.03em; text-shadow: 0 6px 24px rgba(10, 30, 38, 0.35); }
-.depth-step p { margin: 0; color: #d7ecf3; font-size: 17px; line-height: 1.6; text-shadow: 0 2px 14px rgba(10, 30, 38, 0.4); }
-.depth-dots { position: absolute; z-index: 3; left: clamp(22px, 6vw, 84px); bottom: 26px; display: flex; gap: 10px; }
+/* Journey: full-size cards that stack over an empty stage on scroll */
+.depth-scene { position: relative; height: 420vh; margin: 12px 0 0; }
+.depth-stage { position: sticky; top: 0; height: 100vh; min-height: 520px; overflow: hidden; border-radius: 28px; background: #F7F9E1; }
+.depth-card { position: absolute; inset: 0; display: grid; grid-template-columns: 42% 58%; border-radius: 28px; overflow: hidden; background: #173440; box-shadow: 0 -18px 50px rgba(23, 52, 64, 0.28); will-change: transform, filter; visibility: hidden; }
+.depth-copy { display: flex; flex-direction: column; justify-content: center; padding: 0 clamp(28px, 5vw, 80px) 56px; min-width: 0; }
+.depth-copy h2 { margin: 0 0 16px; color: #F7F9E1; font-size: clamp(30px, 4vw, 52px); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; }
+.depth-copy p { margin: 0; color: #d7ecf3; font-size: 17px; line-height: 1.6; max-width: 420px; }
+.depth-art { position: relative; display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 0; padding: 4%; background: #204654; }
+.depth-art img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.depth-dots { position: absolute; z-index: 40; left: clamp(28px, 5vw, 80px); bottom: 26px; display: flex; gap: 10px; }
 .depth-dots span { display: block; width: 9px; height: 9px; border-radius: 50%; background: #A9E0F1; }
-.depth-cta { display: inline-flex; align-items: center; margin-top: 22px; padding: 12px 20px; border-radius: 999px; background: #CAFFA6; color: #173440; font-weight: 700; font-size: 15px; text-decoration: none; pointer-events: auto; }
+.depth-cta { display: inline-flex; align-items: center; align-self: flex-start; margin-top: 22px; padding: 12px 20px; border-radius: 999px; background: #CAFFA6; color: #173440; font-weight: 700; font-size: 15px; text-decoration: none; }
 .depth-cta:hover { background: #F7F9E1; }
 @media (max-width: 680px) {
-  .depth-scene { height: 380vh; }
+  .depth-scene { height: 360vh; }
   .depth-stage { min-height: 460px; border-radius: 20px; }
-  .depth-stage::after { background: linear-gradient(180deg, rgba(23, 52, 64, 0.9) 0%, rgba(23, 52, 64, 0.6) 40%, rgba(23, 52, 64, 0) 62%); }
-  .depth-copy { top: 14%; width: calc(100% - 44px); transform: none; }
-  .depth-step p { font-size: 15px; }
-  .depth-art { top: auto; bottom: 6%; right: 50%; transform-origin: 50% 100%; width: 80%; height: 48%; }
-  .depth-dots { bottom: 16px; }
+  .depth-card { grid-template-columns: 1fr; grid-template-rows: 40% 60%; border-radius: 20px; }
+  .depth-copy { padding: 28px 24px 0; justify-content: flex-start; }
+  .depth-copy h2 { font-size: 30px; }
+  .depth-copy p { font-size: 15px; }
+  .depth-art { padding: 6% 8%; }
+  .depth-dots { bottom: 14px; left: 24px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .depth-scene { height: 300vh; }

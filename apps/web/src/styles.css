@@ -959,3 +959,22 @@ body { background: #F7F9E1; }
 /* Sidebar removed: the hamburger menu is the only navigation */
 .sidebar { display: none !important; }
 .app-shell.app-layout, .app-shell.app-layout { padding-left: 0 !important; }
+
+/* 3D depth scene: scroll-linked layers (three.js) */
+.depth-scene { position: relative; height: 260vh; margin: 12px 0 0; }
+.depth-stage { position: sticky; top: 0; height: 100vh; min-height: 520px; overflow: hidden; isolation: isolate; border-radius: 28px; background: linear-gradient(165deg, #2a5a6b 0%, #204654 68%, #173440 100%); }
+.depth-stage.depth-fallback { background: linear-gradient(rgba(23, 52, 64, 0.55), rgba(23, 52, 64, 0.75)), url('/images/site-background-wind.jpg') center / cover, #204654; }
+.depth-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
+.depth-copy { position: absolute; z-index: 2; left: clamp(22px, 6vw, 84px); top: 50%; transform: translateY(-50%); width: min(440px, 80%); display: grid; pointer-events: none; }
+.depth-step { grid-area: 1 / 1; opacity: 0; will-change: transform, opacity; }
+.depth-step h2.MuiTypography-root, .depth-step h2 { margin: 0 0 14px; color: #F7F9E1; font-size: clamp(30px, 4.2vw, 54px); font-weight: 800; line-height: 1.04; letter-spacing: -0.03em; text-shadow: 0 6px 24px rgba(10, 30, 38, 0.35); }
+.depth-step p { margin: 0; color: #d7ecf3; font-size: 17px; line-height: 1.6; text-shadow: 0 2px 14px rgba(10, 30, 38, 0.4); }
+@media (max-width: 680px) {
+  .depth-scene { height: 220vh; }
+  .depth-stage { min-height: 460px; border-radius: 20px; }
+  .depth-copy { top: 18%; width: calc(100% - 44px); transform: none; }
+  .depth-step p { font-size: 15px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .depth-scene { height: 180vh; }
+}

@@ -57,6 +57,7 @@ import { deriveProcessQuantity, type ProcessQuantityBasis } from './product-quan
 import { summarizeSelectedProcesses, type SelectedProcessSummary } from './product-summary';
 import { suggestFactorsByInputName } from './factor-suggestions';
 import SiteMenu from './SiteMenu';
+import DepthScene from './DepthScene';
 
 type ProductInput = {
   id: string;
@@ -692,6 +693,8 @@ function App() {
             />
           </figure>
         </section>
+
+        <DepthScene />
 
         <svg className="section-divider" viewBox="0 0 1200 56" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 28C160 4 320 52 480 28S800 4 960 28 1120 50 1200 26V56H0Z" /></svg>
         <section className="visual-index reveal" aria-label="Latest posts and guides">

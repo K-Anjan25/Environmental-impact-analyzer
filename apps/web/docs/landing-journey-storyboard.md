@@ -1,8 +1,8 @@
-# Landing journey storyboard (slide version)
+# Landing journey storyboard (stacked cards)
 
-The journey is one scroll-driven section with five slides. Each slide has an isolated studio image and a text card. Slides hand over one at a time with depth transitions. The backdrop is the site-wide image `/images/site-background-wind.jpg`.
+The journey is one scroll-driven section with five full-size cards. Each card rises over the previous one and the earlier cards recede underneath, like a stack. The stage behind the cards is an empty cream background. The site-wide turbine photo is not used in this section.
 
-## Slides
+## Cards
 
 | # | Title | Image | Text |
 |---|-------|-------|------|
@@ -12,27 +12,21 @@ The journey is one scroll-driven section with five slides. Each slide has an iso
 | 4 | Read the indicators | `journey-indicators.png` | All 16 EF 3.1 indicators, each with its unit. |
 | 5 | Start an estimate | `journey-closing.png` | Enter your own processes and quantities. Ends with the "Start an estimate" button. |
 
-## Timing
+## Stack timing
 
-- Slide k is centred at scroll progress k/4.
-- Text is fully visible within ±0.05 of its centre, and gone beyond ±0.10.
-- The image grows in over the 0.25 before its centre and out after it.
-- Progress is eased per frame (time constant about 1/7 s). Reduced motion skips the easing.
+- Card i has stack position r = progress × 4 − i.
+- r < −1: waiting below the stage (hidden).
+- −1 ≤ r < 0: rising over the previous card with smooth easing.
+- r ≥ 0: resting. Depth = min(r, 1). The card scales down by up to 6% and moves up by up to 3%, and it dims to 50% brightness as the next card covers it.
+- Progress is eased per frame (time constant about 1/7 s). Reduced motion skips the easing and shortens the section.
 
-## Depth
+## Layout
 
-- Images move in z and rotate slightly (`perspective` on the stage, `preserve-3d` on the image).
-- Images rise from below as they come forward.
-- The backdrop moves slowest, so it sits farthest back.
-- Text moves 22 px vertically at most. It never shares space with an image on desktop, and on narrow screens the text sits above the image.
-
-## Fit and layout
-
-- Images are `object-fit: contain` inside a fixed card, so each visual fits fully.
-- Desktop: text on the left, image on the right. A gradient scrim keeps the text readable.
-- Narrow (≤680 px): text at the top, image at the bottom, dots at the bottom edge.
-- Reduced motion: the scene is shorter (300vh), with no easing.
+- Each card is a full-size panel: a text panel (42%) and an image panel (58%).
+- The image panel uses `object-fit: contain` at 4% padding, so each image fits fully inside its boundary with no overlap.
+- Narrow (≤680 px): text on top (40%), image below (60%).
 
 ## Assets
 
-- Images are generated studio-style renders on plain backgrounds, with the backgrounds removed. They are not stock photos. No watermarks.
+- Images are generated studio-style renders with the background removed. They are not stock photos and contain no watermarks.
+- The closing image still has a faint grey floor shadow, and the globe has faint speckle at its edges.

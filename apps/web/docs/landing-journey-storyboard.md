@@ -23,10 +23,10 @@ The journey is one scroll-driven section with five full-size cards. Each card ri
 ## Layout
 
 - Each card is a full-size panel: a text panel (42%) and an image panel (58%).
-- The image panel uses `object-fit: contain` at 4% padding, so each image fits fully inside its boundary with no overlap.
+- The image panel fills its boundary with `object-fit: cover`. Text and image never overlap.
 - Narrow (≤680 px): text on top (40%), image below (60%).
 
 ## Assets
 
-- Images are generated studio-style renders with the background removed. They are not stock photos and contain no watermarks.
-- The closing image still has a faint grey floor shadow, and the globe has faint speckle at its edges.
+- Images are square generated studio renders, used as-is with their own dark-teal backgrounds (#204654). They are not stock photos and contain no watermarks.
+- Each image fills its panel with `object-fit: cover`, and a soft radial mask fades its edges into the panel colour.

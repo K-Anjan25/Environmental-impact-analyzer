@@ -906,7 +906,8 @@ button, input, textarea { font: inherit; }
 }
 
 /* Site scenery: the turbine landscape sits behind the whole app, softened for legibility */
-body { background: #F7F9E1; }
+/* Site-wide scenery: the turbine image sits behind every page, under a soft mist wash for legibility. */
+body { background: linear-gradient(rgba(247, 249, 225, 0.9), rgba(247, 249, 225, 0.94)), url('/images/site-background-wind.jpg') center / cover fixed, #F7F9E1; }
 
 /* Blog/news cards: recycling art as card background, article links below */
 .visual-index-card { position: relative; display: block; overflow: hidden; height: 220px; border-radius: 16px; color: #ffffff; text-decoration: none; box-shadow: 0 10px 24px rgba(32, 70, 84, 0.12); transition: transform 300ms ease, box-shadow 300ms ease; }
@@ -960,27 +961,30 @@ body { background: #F7F9E1; }
 .sidebar { display: none !important; }
 .app-shell.app-layout, .app-shell.app-layout { padding-left: 0 !important; }
 
-/* 3D depth scene: scroll-linked layers (three.js) */
+/* Journey: scroll-driven slides with isolated studio images and depth transitions */
 .depth-scene { position: relative; height: 440vh; margin: 12px 0 0; }
-.depth-stage { position: sticky; top: 0; height: 100vh; min-height: 520px; overflow: hidden; isolation: isolate; border-radius: 28px; background: linear-gradient(165deg, #2a5a6b 0%, #204654 68%, #173440 100%); }
-.depth-stage.depth-fallback { background: linear-gradient(rgba(23, 52, 64, 0.55), rgba(23, 52, 64, 0.75)), url('/images/site-background-wind.jpg') center / cover, #204654; }
-.depth-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
-.depth-stage::after { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(90deg, rgba(23, 52, 64, 0.94) 0%, rgba(23, 52, 64, 0.7) 36%, rgba(23, 52, 64, 0) 58%); }
-.depth-copy { position: absolute; z-index: 2; left: clamp(22px, 6vw, 84px); top: 50%; transform: translateY(-50%); width: min(440px, 40%); display: grid; pointer-events: none; }
+.depth-stage { position: sticky; top: 0; height: 100vh; min-height: 520px; overflow: hidden; isolation: isolate; perspective: 1200px; border-radius: 28px; background: #204654; }
+.depth-backdrop { position: absolute; inset: -4%; z-index: 0; background: linear-gradient(rgba(23, 52, 64, 0.5), rgba(23, 52, 64, 0.55)), url('/images/site-background-wind.jpg') center / cover no-repeat; will-change: transform; }
+.depth-stage::after { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(90deg, rgba(23, 52, 64, 0.82) 0%, rgba(23, 52, 64, 0.4) 40%, rgba(23, 52, 64, 0) 60%); }
+.depth-art { position: absolute; z-index: 2; top: 14%; right: clamp(24px, 6vw, 96px); width: min(44%, 620px); height: 72%; margin: 0; transform-origin: 50% 50%; transform-style: preserve-3d; will-change: transform, opacity; visibility: hidden; }
+.depth-art img { display: block; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 30px 40px rgba(10, 30, 38, 0.45)); }
+.depth-copy { position: absolute; z-index: 3; left: clamp(22px, 6vw, 84px); top: 50%; transform: translateY(-50%); width: min(440px, 40%); display: grid; pointer-events: none; }
 .depth-step { grid-area: 1 / 1; opacity: 0; will-change: transform, opacity; }
 .depth-step h2.MuiTypography-root, .depth-step h2 { margin: 0 0 14px; color: #F7F9E1; font-size: clamp(30px, 4.2vw, 54px); font-weight: 800; line-height: 1.04; letter-spacing: -0.03em; text-shadow: 0 6px 24px rgba(10, 30, 38, 0.35); }
 .depth-step p { margin: 0; color: #d7ecf3; font-size: 17px; line-height: 1.6; text-shadow: 0 2px 14px rgba(10, 30, 38, 0.4); }
+.depth-dots { position: absolute; z-index: 3; left: clamp(22px, 6vw, 84px); bottom: 26px; display: flex; gap: 10px; }
+.depth-dots span { display: block; width: 9px; height: 9px; border-radius: 50%; background: #A9E0F1; }
+.depth-cta { display: inline-flex; align-items: center; margin-top: 22px; padding: 12px 20px; border-radius: 999px; background: #CAFFA6; color: #173440; font-weight: 700; font-size: 15px; text-decoration: none; pointer-events: auto; }
+.depth-cta:hover { background: #F7F9E1; }
 @media (max-width: 680px) {
   .depth-scene { height: 380vh; }
   .depth-stage { min-height: 460px; border-radius: 20px; }
-  .depth-stage::after { background: linear-gradient(180deg, rgba(23, 52, 64, 0.94) 0%, rgba(23, 52, 64, 0.75) 36%, rgba(23, 52, 64, 0) 56%); }
-  .depth-copy { top: 16%; width: calc(100% - 44px); transform: none; }
+  .depth-stage::after { background: linear-gradient(180deg, rgba(23, 52, 64, 0.9) 0%, rgba(23, 52, 64, 0.6) 40%, rgba(23, 52, 64, 0) 62%); }
+  .depth-copy { top: 14%; width: calc(100% - 44px); transform: none; }
   .depth-step p { font-size: 15px; }
+  .depth-art { top: auto; bottom: 6%; right: 50%; transform-origin: 50% 100%; width: 80%; height: 48%; }
+  .depth-dots { bottom: 16px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .depth-scene { height: 300vh; }
 }
-
-/* Journey closing action */
-.depth-cta { display: inline-flex; align-items: center; margin-top: 22px; padding: 12px 20px; border-radius: 999px; background: #CAFFA6; color: #173440; font-weight: 700; font-size: 15px; text-decoration: none; pointer-events: auto; }
-.depth-cta:hover { background: #F7F9E1; }

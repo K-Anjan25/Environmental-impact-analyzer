@@ -1,15 +1,23 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
+/*
+ * "Process rail": the camera glides along a curved rail past three stations.
+ * Station 1 and 2 show process images. Station 3 is a ring of 16 nodes, one per
+ * EF 3.1 indicator, that lights up as the reader scrolls. Text sits on the left
+ * and each station sits on the right, so nothing overlaps.
+ */
+
 const FOV = 38;
-const CAMERA_Z = 12;
-const BACKGROUND = { src: '/images/site-background-wind.jpg', z: -9 };
-// Each step brings one image forward on the right side of the stage.
-const ITEM_DEPTH_Z = 1; // the active item sits here
-const ITEMS = [
+const DESIGN_DISTANCE = 7.2; // camera distance used to size the stations
+const STATION_X = [0, 11, 22];
+const INDICATOR_COUNT = 16;
+const BACKDROP_DISTANCE = 20; // the turbine backdrop is parented to the camera
+
+const STATIONS = [
   { src: '/images/recycling-globe.jpg' },
-  { src: '/images/recycling-icon.jpg' },
   { src: '/images/recycling-tshirt-cropped.jpg' },
+  { src: '/images/recycling-icon.jpg' },
 ];
 
 const STEPS = [
@@ -27,6 +35,9 @@ const STEPS = [
   },
 ];
 
+const COLOR_LIT = new THREE.Color(0xcaffa6); // Spring Meadow
+const COLOR_IDLE = new THREE.Color(0xa9e0f1); // Glacial Sky
+
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 const smooth = (t: number) => t * t * (3 - 2 * t);
 
@@ -39,13 +50,12 @@ function canUseWebGL(): boolean {
   }
 }
 
-// Visible world height and width at a given distance from the camera.
 function visibleSize(distance: number, aspect: number) {
   const height = 2 * distance * Math.tan(THREE.MathUtils.degToRad(FOV / 2));
   return { width: height * aspect, height };
 }
 
-// Size a plane to the image aspect, either filling the box (cover) or fitting inside it (contain).
+// Fill (cover) or fit (contain) an image aspect inside a box.
 function fitSize(imageAspect: number, boxWidth: number, boxHeight: number, cover: boolean) {
   const boxAspect = boxWidth / boxHeight;
   const useWidth = cover ? imageAspect < boxAspect : imageAspect > boxAspect;
@@ -68,15 +78,17 @@ export default function DepthScene() {
     const stage = stageRef.current;
     if (!section || !stage) return undefined;
 
-    const reduceMotion = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduceMotion =
+      typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let progress = 0;
     let smoothed = 0;
 
+    // Each step owns one third of the rail; step centres are at 0, 0.5 and 1.
     const updateSteps = (p: number) => {
-      const f = p * STEPS.length;
+      const f = p * (STEPS.length - 1);
       stepRefs.current.forEach((el, index) => {
         if (!el) return;
-        const t = clamp(1 - Math.abs(f - (index + 0.5)), 0, 1);
+        const t = clamp(1 - Math.abs(f - index), 0, 1);
         const e = smooth(t);
         el.style.opacity = e.toFixed(3);
         el.style.transform = `translate3d(0, ${((1 - e) * 36).toFixed(1)}px, 0)`;
@@ -121,94 +133,67 @@ export default function DepthScene() {
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(FOV, 1, 0.1, 100);
-    camera.position.z = CAMERA_Z;
+    scene.add(camera);
 
     const loader = new THREE.TextureLoader();
     const textures: THREE.Texture[] = [];
-    const materials: THREE.Material[] = [];
 
-    const makePlane = (z: number, opacity: number) => {
-      const material = new THREE.MeshBasicMaterial({ transparent: true, opacity, depthWrite: false });
+    // Turbine backdrop: parented to the camera so it always fills the view.
+    const backdropMaterial = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.9, depthWrite: false });
+    const backdrop = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), backdropMaterial);
+    backdrop.position.z = -BACKDROP_DISTANCE;
+    camera.add(backdrop);
+    let backdropAspect = 1;
+
+    // Stations: image planes placed along the rail.
+    const stationGroups = STATIONS.map((station, index) => {
+      const group = new THREE.Group();
+      group.position.x = STATION_X[index];
+      scene.add(group);
+      const material = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false });
       const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), material);
-      mesh.position.z = z;
-      scene.add(mesh);
-      materials.push(material);
-      return { mesh, material, aspect: 1 };
-    };
-
-    const background = makePlane(BACKGROUND.z, 1);
-    const items = ITEMS.map((item, index) => ({
-      ...makePlane(-2, 0),
-      side: index % 2 === 0 ? 1 : -1,
-      src: item.src,
-    }));
-
-    // Lay out every plane for the current stage size.
-    const layout = () => {
-      const width = stage.clientWidth;
-      const height = stage.clientHeight;
-      if (width === 0 || height === 0) return;
-      const aspect = width / height;
-      renderer.setSize(width, height, false);
-      camera.aspect = aspect;
-      camera.updateProjectionMatrix();
-
-      const narrow = aspect < 0.9;
-
-      // Background covers the whole view at its depth, with margin for parallax.
-      const bgView = visibleSize(CAMERA_Z - BACKGROUND.z, aspect);
-      const bgSize = fitSize(background.aspect, bgView.width * 1.12, bgView.height * 1.12, true);
-      background.mesh.geometry.dispose();
-      background.mesh.geometry = new THREE.PlaneGeometry(bgSize.width, bgSize.height);
-
-      // Items sit in their own column on the right (or the lower half on narrow screens).
-      const itemView = visibleSize(CAMERA_Z - ITEM_DEPTH_Z, aspect);
-      const boxWidth = narrow ? itemView.width * 0.78 : itemView.width * 0.36;
-      const boxHeight = narrow ? itemView.height * 0.44 : itemView.height * 0.7;
-      items.forEach((item) => {
-        const size = fitSize(item.aspect, boxWidth, boxHeight, false);
-        item.mesh.geometry.dispose();
-        item.mesh.geometry = new THREE.PlaneGeometry(size.width, size.height);
-        item.mesh.userData.slot = narrow
-          ? { x: 0, y: -itemView.height * 0.18 }
-          : { x: itemView.width * 0.25, y: 0 };
-      });
-    };
-
-    const textureFor = (src: string, onLoad: (texture: THREE.Texture) => void) => {
-      loader.load(src, (texture) => {
+      group.add(mesh);
+      let aspect = 1;
+      loader.load(station.src, (texture) => {
         texture.colorSpace = THREE.SRGBColorSpace;
         textures.push(texture);
-        onLoad(texture);
+        aspect = textureAspect(texture);
+        material.map = texture;
+        material.needsUpdate = true;
+        mesh.userData.aspect = aspect;
         layout();
       });
-    };
-
-    textureFor(BACKGROUND.src, (texture) => {
-      background.aspect = textureAspect(texture);
-      background.material.map = texture;
-      background.material.needsUpdate = true;
-    });
-    items.forEach((item) => {
-      textureFor(item.src, (texture) => {
-        item.aspect = textureAspect(texture);
-        item.material.map = texture;
-        item.material.needsUpdate = true;
-      });
+      return { group, mesh, material };
     });
 
-    // Floating particles add depth behind the images.
+    // Indicator ring on the last station.
+    const ringGroup = new THREE.Group();
+    stationGroups[2].group.add(ringGroup);
+    const ringLine = new THREE.Mesh(
+      new THREE.TorusGeometry(1, 0.012, 8, 128),
+      new THREE.MeshBasicMaterial({ color: COLOR_IDLE, transparent: true, opacity: 0.35, depthWrite: false }),
+    );
+    ringGroup.add(ringLine);
+    const nodes = Array.from({ length: INDICATOR_COUNT }, (_, index) => {
+      const material = new THREE.MeshBasicMaterial({ color: COLOR_IDLE, transparent: true, opacity: 0.35 });
+      const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.1, 14, 10), material);
+      mesh.userData.angle = (index / INDICATOR_COUNT) * Math.PI * 2;
+      ringGroup.add(mesh);
+      return { mesh, material };
+    });
+
+    // Floating particles add depth between the layers.
     const particleCount = 160;
     const positions = new Float32Array(particleCount * 3);
     for (let i = 0; i < particleCount; i += 1) {
-      positions[i * 3] = (Math.random() - 0.5) * 22;
+      positions[i * 3] = (Math.random() - 0.5) * 34;
       positions[i * 3 + 1] = (Math.random() - 0.5) * 12;
-      positions[i * 3 + 2] = -9 + Math.random() * 12;
+      positions[i * 3 + 2] = -8 + Math.random() * 14;
     }
     const particleGeometry = new THREE.BufferGeometry();
     particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     const particleMaterial = new THREE.PointsMaterial({
-      color: 0xa9e0f1,
+      color: COLOR_IDLE,
       size: 0.06,
       transparent: true,
       opacity: 0.7,
@@ -216,7 +201,6 @@ export default function DepthScene() {
     });
     const particles = new THREE.Points(particleGeometry, particleMaterial);
     scene.add(particles);
-    materials.push(particleMaterial);
 
     const pointer = { x: 0, y: 0 };
     const pointerTarget = { x: 0, y: 0 };
@@ -228,6 +212,69 @@ export default function DepthScene() {
     };
     stage.addEventListener('pointermove', onPointerMove);
 
+    // Rail: the camera passes each station from the left, so the object reads on the right.
+    let rail = new THREE.CatmullRomCurve3([new THREE.Vector3(0, 0, DESIGN_DISTANCE)]);
+
+    const layout = () => {
+      const width = stage.clientWidth;
+      const height = stage.clientHeight;
+      if (width === 0 || height === 0) return;
+      const aspect = width / height;
+      renderer.setSize(width, height, false);
+      camera.aspect = aspect;
+      camera.updateProjectionMatrix();
+
+      const narrow = aspect < 0.9;
+      const view = visibleSize(DESIGN_DISTANCE, aspect);
+      const cameraOffsetX = narrow ? 0 : -1.7;
+      const stationY = narrow ? -view.height * 0.2 : 0;
+
+      // Backdrop covers the full view at its depth, with margin for parallax.
+      const backView = visibleSize(BACKDROP_DISTANCE, aspect);
+      const backSize = fitSize(backdropAspect, backView.width * 1.15, backView.height * 1.15, true);
+      backdrop.geometry.dispose();
+      backdrop.geometry = new THREE.PlaneGeometry(backSize.width, backSize.height);
+
+      // Station images fit a box on the right, or the lower half on narrow screens.
+      const boxWidth = narrow ? view.width * 0.8 : view.width * 0.3;
+      const boxHeight = narrow ? view.height * 0.42 : view.height * 0.62;
+      let iconSize = { width: boxHeight, height: boxHeight };
+      stationGroups.forEach((station, index) => {
+        station.group.position.y = stationY;
+        const itemAspect = (station.mesh.userData.aspect as number | undefined) ?? 1;
+        const size = fitSize(itemAspect, boxWidth, boxHeight, false);
+        station.mesh.geometry.dispose();
+        station.mesh.geometry = new THREE.PlaneGeometry(size.width, size.height);
+        if (index === 2) iconSize = size;
+      });
+
+      // Ring sits around the icon image.
+      const radius = iconSize.width * 0.5 + 0.7;
+      ringLine.geometry.dispose();
+      ringLine.geometry = new THREE.TorusGeometry(radius, 0.012, 8, 128);
+      nodes.forEach(({ mesh }) => {
+        const angle = mesh.userData.angle as number;
+        mesh.position.set(Math.cos(angle) * radius, Math.sin(angle) * radius, 0.02);
+      });
+
+      // Camera rail through the three stations, with a dip between each.
+      const [s0, s1, s2] = STATION_X;
+      const mid01 = (s0 + s1) / 2 + cameraOffsetX;
+      const mid12 = (s1 + s2) / 2 + cameraOffsetX;
+      rail = new THREE.CatmullRomCurve3(
+        [
+          new THREE.Vector3(s0 + cameraOffsetX, 0.25, DESIGN_DISTANCE),
+          new THREE.Vector3(mid01, 1.2, DESIGN_DISTANCE - 2.2),
+          new THREE.Vector3(s1 + cameraOffsetX, -0.15, DESIGN_DISTANCE),
+          new THREE.Vector3(mid12, -1.0, DESIGN_DISTANCE - 2.2),
+          new THREE.Vector3(s2 + cameraOffsetX, 0.2, DESIGN_DISTANCE),
+        ],
+        false,
+        'catmullrom',
+        0.5,
+      );
+    };
+
     window.addEventListener('resize', layout);
     layout();
 
@@ -235,6 +282,7 @@ export default function DepthScene() {
     let time = 0;
     let last = performance.now();
     const timeScale = reduceMotion ? 0 : 1;
+    const base = new THREE.Vector3();
 
     const frame = (now: number) => {
       frameId = requestAnimationFrame(frame);
@@ -242,40 +290,54 @@ export default function DepthScene() {
       last = now;
       time += dt * timeScale;
 
-      smoothed += (progress - smoothed) * 0.08;
-      pointer.x += (pointerTarget.x - pointer.x) * 0.05;
-      pointer.y += (pointerTarget.y - pointer.y) * 0.05;
+      // Frame-rate independent easing, so the rail settles at the same speed on any device.
+      const ease = 1 - Math.exp(-dt * 7);
+      smoothed += (progress - smoothed) * ease;
+      pointer.x += (pointerTarget.x - pointer.x) * (1 - Math.exp(-dt * 4));
+      pointer.y += (pointerTarget.y - pointer.y) * (1 - Math.exp(-dt * 4));
 
-      // Background drifts slowly with scroll.
-      background.mesh.position.y = -(smoothed - 0.5) * 0.5 + pointer.y * 0.1;
-      background.mesh.position.x = pointer.x * 0.15;
+      // Camera follows the rail; pointer adds a small sway.
+      rail.getPoint(smoothed, base);
+      camera.position.set(base.x + pointer.x * 0.3, base.y + pointer.y * 0.2, base.z);
+      camera.lookAt(base.x, base.y, 0);
 
-      // Each step brings one item forward; the others recede and fade.
-      const f = smoothed * ITEMS.length;
-      items.forEach((item, index) => {
-        const t = clamp(1 - Math.abs(f - (index + 0.5)), 0, 1);
-        const e = smooth(t);
-        const slot = item.mesh.userData.slot as { x: number; y: number } | undefined;
-        const slotX = slot?.x ?? 0;
-        const slotY = slot?.y ?? 0;
-        item.mesh.position.set(
-          slotX + pointer.x * 0.2 + Math.sin(time * 0.5 + index) * 0.05 * timeScale,
-          slotY + (1 - e) * -0.9 + pointer.y * 0.15,
-          -2 + e * (ITEM_DEPTH_Z + 2),
-        );
-        item.mesh.rotation.y = (1 - e) * 0.6 * item.side + pointer.x * 0.04;
-        item.material.opacity = e;
-        item.mesh.visible = e > 0.01;
+      // Stations grow and brighten as the camera nears them.
+      stationGroups.forEach((station, index) => {
+        const proximity = clamp(1 - Math.abs(smoothed - index / 2) * 2.2, 0, 1);
+        const e = smooth(proximity);
+        station.group.scale.setScalar(0.86 + 0.14 * e);
+        station.material.opacity = 0.25 + 0.75 * e;
+        station.mesh.visible = e > 0.02;
+        station.mesh.position.z = (e - 1) * 1.2;
       });
 
-      camera.position.y = -(smoothed - 0.5) * 0.6 + pointer.y * 0.2;
-      camera.position.x = pointer.x * 0.25;
-      camera.lookAt(0, 0, 0);
+      // Indicators light up across the last part of the rail.
+      const lit = Math.floor(clamp((smoothed - 0.6) / 0.4, 0, 1) * INDICATOR_COUNT);
+      nodes.forEach(({ mesh, material }, index) => {
+        const isLit = index < lit;
+        material.color.copy(isLit ? COLOR_LIT : COLOR_IDLE);
+        material.opacity = isLit ? 1 : 0.35;
+        mesh.scale.setScalar(isLit ? 1.6 : 1);
+      });
+      ringGroup.rotation.z = time * 0.12 + smoothed * 0.8;
+
+      backdrop.position.x = pointer.x * 0.2;
+      backdrop.position.y = pointer.y * 0.15 - (smoothed - 0.5) * 0.4;
       particles.rotation.y = smoothed * 0.5 + time * 0.02;
 
       renderer.render(scene, camera);
     };
     frameId = requestAnimationFrame(frame);
+
+    // The backdrop texture loads separately from the stations.
+    loader.load('/images/site-background-wind.jpg', (texture) => {
+      texture.colorSpace = THREE.SRGBColorSpace;
+      textures.push(texture);
+      backdropAspect = textureAspect(texture);
+      backdropMaterial.map = texture;
+      backdropMaterial.needsUpdate = true;
+      layout();
+    });
 
     return () => {
       cancelAnimationFrame(frameId);
@@ -283,9 +345,12 @@ export default function DepthScene() {
       window.removeEventListener('resize', layout);
       stage.removeEventListener('pointermove', onPointerMove);
       scene.traverse((object) => {
-        if (object instanceof THREE.Mesh || object instanceof THREE.Points) object.geometry.dispose();
+        if (object instanceof THREE.Mesh || object instanceof THREE.Points) {
+          object.geometry.dispose();
+          const material = object.material as THREE.Material | THREE.Material[];
+          (Array.isArray(material) ? material : [material]).forEach((item) => item.dispose());
+        }
       });
-      materials.forEach((material) => material.dispose());
       textures.forEach((texture) => texture.dispose());
       renderer.dispose();
       renderer.domElement.remove();

@@ -29,7 +29,6 @@ import {
   Typography,
 } from '@mui/material';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import ArrowDownwardRoundedIcon from '@mui/icons-material/ArrowDownwardRounded';
 import CalculateOutlinedIcon from '@mui/icons-material/CalculateOutlined';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
@@ -56,8 +55,7 @@ import {
 import { deriveProcessQuantity, type ProcessQuantityBasis } from './product-quantity';
 import { summarizeSelectedProcesses, type SelectedProcessSummary } from './product-summary';
 import { suggestFactorsByInputName } from './factor-suggestions';
-import SiteMenu from './SiteMenu';
-import DepthScene from './DepthScene';
+import SiteLayout from './SiteLayout';
 
 type ProductInput = {
   id: string;
@@ -654,70 +652,14 @@ function App() {
   };
 
   return (
-    <div className="app-shell app-layout">
-
-
-      <main id="top" className="main-content estimator-main">
-        <header className="landing-nav">
-          <a className="landing-brand" href="#top" aria-label="EcoImpact Lab home">
-            <img src="/brand/mark.svg" alt="" />
-            <span>EcoImpact Lab</span>
-          </a>
-          <SiteMenu sourceVersion={catalog?.source_version ?? '1.1.0'} totalRecords={catalog?.total_records ?? '302'} />
-        </header>
-        <section className="landing-hero" aria-labelledby="hero-title">
-          <svg className="landing-wave" viewBox="0 0 1000 700" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-            <path d="M0 0H560C610 120 470 230 520 350S640 560 540 700H0Z" />
-          </svg>
-          <div className="landing-copy reveal">
-            <p className="landing-eyebrow">ENVIRONMENTAL IMPACT ANALYZER</p>
-            <Typography id="hero-title" component="h1" className="landing-title">
-              Measure the impact behind <span className="hero-title-accent">every process</span>
-            </Typography>
-            <Typography className="landing-lede">
-              EcoImpact Lab compares published apparel and footwear factors across 16 EF 3.1 indicators, with source units and boundaries in view.
-            </Typography>
-            <a className="landing-cta" href="#process-library">Explore factors <ArrowDownwardRoundedIcon /></a>
-            <dl className="landing-stats">
-              <div><dt>{catalog?.total_records ?? '—'}</dt><dd>published factors</dd></div>
-              <div><dt>{catalog?.families.length ?? '—'}</dt><dd>selectable groups</dd></div>
-              <div><dt>16</dt><dd>EF 3.1 indicators</dd></div>
-            </dl>
-          </div>
-          <figure className="landing-art">
-            <img
-              className="hero-photo"
-              src="/images/site-background-wind.jpg"
-              alt="Wind turbines on a rolling green hillside under a clear sky."
-              fetchPriority="high"
-            />
-          </figure>
-        </section>
-
-        <DepthScene />
-
-        <svg className="section-divider" viewBox="0 0 1200 56" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 28C160 4 320 52 480 28S800 4 960 28 1120 50 1200 26V56H0Z" /></svg>
-        <section className="visual-index reveal" aria-label="Latest posts and guides">
-          <a className="visual-index-card" href="#/guides/factors">
-            <img src="/images/recycling-globe.jpg" alt="" loading="lazy" />
-            <span className="visual-index-shade" />
-            <span className="visual-index-copy"><small>GUIDE</small><strong>How a process factor becomes a number</strong></span>
-            <span className="visual-index-arrow" aria-hidden="true">↗</span>
-          </a>
-          <a className="visual-index-card" href="#/guides/indicators">
-            <img src="/images/recycling-icon.jpg" alt="" loading="lazy" />
-            <span className="visual-index-shade" />
-            <span className="visual-index-copy"><small>EXPLAINER</small><strong>Reading the 16 EF 3.1 indicators</strong></span>
-            <span className="visual-index-arrow" aria-hidden="true">↗</span>
-          </a>
-          <a className="visual-index-card" href="#/guides/scope">
-            <img src="/images/recycling-tshirt-cropped.jpg" alt="" loading="lazy" />
-            <span className="visual-index-shade" />
-            <span className="visual-index-copy"><small>NEWS</small><strong>Why results are not whole-product footprints</strong></span>
-            <span className="visual-index-arrow" aria-hidden="true">↗</span>
-          </a>
-        </section>
-
+    <>
+      <SiteLayout current="calculator" sourceVersion={catalog?.source_version ?? '1.1.0'} totalRecords={catalog?.total_records ?? '302'}>
+        <div className="calculator-page">
+          <header className="page-heading">
+            <p className="landing-eyebrow">PROCESS CALCULATOR</p>
+            <h1 className="page-title">Calculate a process estimate.</h1>
+            <p className="page-lede">Choose published apparel and footwear processes, enter quantities, and read the 16 EF 3.1 indicators for each selected row.</p>
+          </header>
         <div className="estimator-grid">
           <Paper component="section" elevation={0} className="form-card estimator-card ui-art-form" aria-labelledby="calculator-heading">
             <div className="card-heading-row">
@@ -1130,17 +1072,8 @@ function App() {
           </Paper>
         </div>
 
-        <footer className="app-footer">
-          <div className="footer-brand">
-            <img src="/brand/mark.svg" alt="" />
-            <div><strong>EcoImpact Lab</strong><span>Apparel & footwear process data</span></div>
-          </div>
-          <nav className="app-footer-links" aria-label="Legal links">
-            <a href="/legal/privacy.html">Privacy policy</a>
-            <a href="/legal/terms.html">Terms of use</a>
-          </nav>
-        </footer>
-      </main>
+        </div>
+      </SiteLayout>
 
       <FactorSuggestionDialog
         open={suggestionInputId !== null}
@@ -1150,7 +1083,7 @@ function App() {
         onClose={() => setSuggestionInputId(null)}
         onSelect={addSuggestedFactor}
       />
-    </div>
+    </>
   );
 }
 

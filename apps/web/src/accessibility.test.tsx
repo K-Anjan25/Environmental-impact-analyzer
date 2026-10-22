@@ -4,6 +4,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import axe from 'axe-core';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
+import LandingPage from './LandingPage';
 import type {
   ActiveDataSource,
   FactorCatalog,
@@ -203,11 +204,12 @@ describe('process estimator accessibility', () => {
     expect(contrast(theme.palette.text.secondary, background)).toBeGreaterThanOrEqual(4.5);
 
     stubApi();
-    const { container } = render(<App />);
+    const landing = render(<LandingPage />);
+    expect(landing.container.querySelector('.hero-photo')?.getAttribute('src')).toBe('/images/site-background-wind.jpg');
+    expect(landing.container.querySelector('.site-brand img')?.getAttribute('alt')).toBe('');
+    landing.unmount();
 
-    expect(container.querySelector('.hero-photo')?.getAttribute('src')).toBe('/images/site-background-wind.jpg');
-    const brandMark = container.querySelector('.landing-brand img');
-    expect(brandMark?.getAttribute('alt')).toBe('');
+    const { container } = render(<App />);
     const dashboardText = container.textContent ?? '';
     expect(dashboardText).not.toContain('Source factors, not a product score');
     expect(dashboardText).not.toContain('Separate indicators. No combined score.');
@@ -218,7 +220,7 @@ describe('process estimator accessibility', () => {
     expect(dashboardText).not.toContain('Open process library');
     expect(dashboardText).not.toContain('OPEN FACTORS');
     expect(screen.getAllByText('EcoImpact Lab')).toHaveLength(2);
-    const legalNavigation = screen.getByRole('navigation', { name: 'Legal links' });
+    const legalNavigation = screen.getByRole('navigation', { name: 'Footer' });
     expect(legalNavigation).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Privacy policy' }).getAttribute('href')).toBe('/legal/privacy.html');
     expect(screen.getByRole('link', { name: 'Terms of use' }).getAttribute('href')).toBe('/legal/terms.html');

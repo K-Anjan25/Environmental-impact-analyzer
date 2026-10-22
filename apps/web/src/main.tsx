@@ -2,24 +2,67 @@ import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import App from './App';
-import GuidePage from './GuidePage';
-import { guideFromHash } from './guides';
+import AdminPostsPage from './AdminPostsPage';
+import LandingPage from './LandingPage';
+import { BlogIndexPage, BlogPostPage, BlogTypePage } from './BlogPages';
+import SiteLayout from './SiteLayout';
+import { parseRoute, routeHref, type Route } from './router';
 import theme from './theme';
 import './styles.css';
 
+function currentHash(): string {
+  return window.location.hash;
+}
+
+function RouteView({ route }: { route: Route }) {
+  switch (route.name) {
+    case 'home':
+      return <LandingPage />;
+    case 'calculator':
+      return <App />;
+    case 'blog-index':
+      return <BlogIndexPage />;
+    case 'blog-type':
+      return <BlogTypePage type={route.type} />;
+    case 'blog-post':
+      return <BlogPostPage type={route.type} slug={route.slug} />;
+    case 'admin-posts':
+      return <AdminPostsPage />;
+    default:
+      return (
+        <SiteLayout current="home">
+          <div className="blog-page">
+            <header className="page-heading">
+              <h1 className="page-title">Page not found</h1>
+              <p className="page-lede">The page you asked for does not exist.</p>
+              <a className="landing-cta" href="#/">Back to the home page</a>
+            </header>
+          </div>
+        </SiteLayout>
+      );
+  }
+}
+
 function Root() {
-  const [hash, setHash] = useState(window.location.hash);
+  const [hash, setHash] = useState(currentHash);
+
   useEffect(() => {
     const onChange = () => {
-      setHash(window.location.hash);
-      if (!guideFromHash(window.location.hash)) return;
+      const next = currentHash();
+      // Old guide links redirect to their blog post URL.
+      const route = parseRoute(next);
+      if (route.name === 'blog-post' && next.startsWith('#/guides/')) {
+        window.location.replace(routeHref(route));
+        return;
+      }
+      setHash(next);
       window.scrollTo({ top: 0 });
     };
     window.addEventListener('hashchange', onChange);
     return () => window.removeEventListener('hashchange', onChange);
   }, []);
-  const guide = guideFromHash(hash);
-  return guide ? <GuidePage guide={guide} /> : <App />;
+
+  return <RouteView route={parseRoute(hash)} />;
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

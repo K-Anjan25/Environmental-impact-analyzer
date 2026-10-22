@@ -48,8 +48,8 @@ export default function LandingPage() {
         <figure className="landing-art">
           <img
             className="hero-photo"
-            src="/images/site-background-wind.jpg"
-            alt="Wind turbines on a rolling green hillside under a clear sky."
+            src="/images/hero-environment.png"
+            alt="A restored river valley with a planted hillside, a solar-roofed building, and a clear sky."
             fetchPriority="high"
           />
         </figure>

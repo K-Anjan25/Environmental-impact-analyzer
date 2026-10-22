@@ -79,13 +79,13 @@ describe('CSV export', () => {
   it('exports a manual input association as context and leaves unassociated input results blank', () => {
     const csv = formatProcessEstimatesCsv(estimate, {
       productInputs: [
-        { id: 'input-1', name: 'Upper fabric', quantity: '0.35', unit: 'kg' },
-        { id: 'input-2', name: 'Rubber outsole', quantity: '0.18', unit: 'kg' },
+        { id: 'input-1', name: 'Upper fabric', quantity: '0.35', unit: 'kg', parentId: null },
+        { id: 'input-2', name: 'Rubber outsole', quantity: '0.18', unit: 'kg', parentId: null },
       ],
-      processLinks: [{ factorId: 'factor-1', productInputId: 'input-1' }],
+      processLinks: [{ factorId: 'factor-1', familyId: 'spinning', productInputId: 'input-1' }],
     });
     const lines = csv.split('\r\n');
-    expect(lines).toHaveLength(5);
+    expect(lines).toHaveLength(6);
     expect(lines[0]).toContain('declared_input_name');
     expect(lines[0]).toContain('input_association_status');
     expect(lines[0]).toContain('bom_mass_status');
@@ -146,7 +146,7 @@ describe('CSV export', () => {
 
   it('exports a flat BOM mass diagnostic separately from environmental results', () => {
     const context = {
-      productInputs: [{ id: 'fabric', name: 'Fabric', quantity: '0.25', unit: 'kg' }],
+      productInputs: [{ id: 'fabric', name: 'Fabric', quantity: '0.25', unit: 'kg', parentId: null }],
       processLinks: [],
       finishedProductMassKg: '0.3',
     };
@@ -167,8 +167,8 @@ describe('CSV export', () => {
 
   it('distinguishes a locally mapped input from a manual context association', () => {
     const csv = formatProcessEstimatesCsv(estimate, {
-      productInputs: [{ id: 'input-1', name: 'Cotton feed', quantity: '550', unit: 'g' }],
-      processLinks: [{ factorId: 'factor-1', productInputId: 'input-1', quantityBasis: 'declared-input' }],
+      productInputs: [{ id: 'input-1', name: 'Cotton feed', quantity: '550', unit: 'g', parentId: null }],
+      processLinks: [{ factorId: 'factor-1', familyId: 'spinning', productInputId: 'input-1', quantityBasis: 'declared-input' }],
     });
     expect(csv).toContain('declared input mass used locally as process feed');
     expect(csv).toContain('declared input mass converted using source input-required value');

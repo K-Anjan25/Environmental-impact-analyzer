@@ -628,7 +628,7 @@ button, input, textarea { font: inherit; }
 .visual-index-card:hover img { transform: scale(1.04); }
 .visual-index-shade { background: linear-gradient(90deg, rgba(21, 43, 33, 0.77) 0%, rgba(22, 42, 33, 0.35) 65%, rgba(22, 42, 33, 0.13) 100%), linear-gradient(0deg, rgba(17, 38, 31, 0.3), transparent 60%); }
 .visual-index-copy { display: flex; flex-direction: column; gap: 5px; padding: 20px 20px 18px; }
-.visual-index-copy small { color: #d8e2d0; font-size: 8px; font-weight: 800; letter-spacing: 0.15em; }
+.visual-index-copy small { color: #ffffff; font-size: 10px; font-weight: 800; letter-spacing: 0.15em; text-shadow: 0 1px 2px rgba(10, 30, 36, 0.55); }
 .visual-index-copy strong { color: #fffdf6; font-family: Georgia, 'Times New Roman', serif; font-size: 19px; font-weight: 500; letter-spacing: -0.025em; }
 .visual-index-arrow { position: absolute; right: 17px; bottom: 17px; display: grid; width: 29px; height: 29px; place-items: center; border: 1px solid rgba(255, 255, 255, 0.47); border-radius: 50%; font-size: 13px; transition: background 180ms ease, transform 180ms ease; }
 .visual-index-card:hover .visual-index-arrow { transform: translate(2px, -2px); background: rgba(255, 255, 255, 0.18); }
@@ -962,7 +962,7 @@ body { background: linear-gradient(rgba(247, 249, 225, 0.9), rgba(247, 249, 225,
 .app-shell.app-layout, .app-shell.app-layout { padding-left: 0 !important; }
 
 /* Journey: full-size cards that stack over an empty stage on scroll */
-.depth-scene { position: relative; height: 420vh; margin: 12px 0 0; }
+.depth-scene { position: relative; height: 260vh; margin: 12px 0 0; }
 .depth-stage { position: sticky; top: 0; height: 100vh; min-height: 520px; overflow: hidden; border-radius: 28px; background: #F7F9E1; }
 .depth-card { position: absolute; inset: 0; display: grid; grid-template-columns: 42% 58%; border-radius: 28px; overflow: hidden; background: #173440; box-shadow: 0 -18px 50px rgba(23, 52, 64, 0.28); will-change: transform, filter; visibility: hidden; }
 .depth-copy { display: flex; flex-direction: column; justify-content: center; padding: 0 clamp(28px, 5vw, 80px) 56px; min-width: 0; }
@@ -973,7 +973,7 @@ body { background: linear-gradient(rgba(247, 249, 225, 0.9), rgba(247, 249, 225,
 .depth-cta { display: inline-flex; align-items: center; align-self: flex-start; margin-top: 22px; padding: 12px 20px; border-radius: 999px; background: #CAFFA6; color: #173440; font-weight: 700; font-size: 15px; text-decoration: none; }
 .depth-cta:hover { background: #F7F9E1; }
 @media (max-width: 680px) {
-  .depth-scene { height: 360vh; }
+  .depth-scene { height: 240vh; }
   .depth-stage { min-height: 460px; border-radius: 20px; }
   .depth-card { grid-template-columns: 1fr; grid-template-rows: 40% 60%; border-radius: 20px; }
   .depth-copy { padding: 28px 24px 0; justify-content: flex-start; }
@@ -981,7 +981,7 @@ body { background: linear-gradient(rgba(247, 249, 225, 0.9), rgba(247, 249, 225,
   .depth-copy p { font-size: 15px; }
   }
 @media (prefers-reduced-motion: reduce) {
-  .depth-scene { height: 300vh; }
+  .depth-scene { height: 200vh; }
 }
 
 /* ---------------------------------------------------------------
@@ -1175,7 +1175,7 @@ body { background: linear-gradient(rgba(247, 249, 225, 0.9), rgba(247, 249, 225,
 
 /* Journey: one card frame stays on screen. Only its content fades: out, then in (sequential, never overlapping). */
 .depth-card { opacity: 1; visibility: visible; }
-.depth-content { transition: opacity 380ms ease; }
+.depth-content { transition: opacity 220ms ease; }
 .depth-content.is-fading { opacity: 0; }
 @media (prefers-reduced-motion: reduce) {
   .depth-content { transition-duration: 1ms; }
@@ -1188,3 +1188,31 @@ body { background: linear-gradient(rgba(247, 249, 225, 0.9), rgba(247, 249, 225,
 .blog-section-heading a:hover, .post-card-link:hover, .post-external a:hover { text-decoration: none; }
 .site-footer-links a { text-decoration: none; }
 .blog-section-heading a { text-decoration: none; }
+
+/* Product mass check, functional unit, and product boundary (calculator) */
+.bom-mass-check-workspace > .MuiTextField-root { display: block; max-width: 100%; margin-top: 10px; box-sizing: border-box; }
+.bom-mass-check-workspace .MuiInputLabel-root { max-width: calc(100% - 28px); line-height: 1.25; white-space: normal; }
+.bom-mass-check-workspace .MuiFormHelperText-root { margin: 3px 2px 0; font-size: 9px; color: #56655d; }
+.functional-unit-fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 10px; margin-top: 10px; }
+.functional-unit-fields .MuiFormControl-root, .functional-unit-fields .MuiTextField-root { min-width: 0; }
+.product-boundary { margin-top: 12px; padding: 10px 12px; border: 1px solid #dfe7dc; border-radius: 11px; background: #fffefa; color: #40594a; }
+.product-boundary-blocked { border-color: #e3c3b8; }
+.product-boundary-stages-missing { border-color: #e6d9b8; }
+.product-boundary-selected-stages-only { border-color: #bfd9c8; }
+.product-boundary-title { display: block; color: #2b4437; font-size: 10.5px; font-weight: 700; line-height: 1.35; overflow-wrap: anywhere; }
+.product-boundary-verdict { margin: 6px 0 2px; color: #2b4437; font-size: 10px; line-height: 1.45; }
+.product-boundary-subtotal { margin: 0 0 8px; color: #56655d; font-size: 9.5px; line-height: 1.4; }
+.stage-coverage-list { display: grid; gap: 5px; margin: 0; padding: 0; list-style: none; }
+.stage-coverage-item { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 1px 8px; padding: 6px 8px; border-radius: 8px; background: #f6f9f3; font-size: 9.5px; line-height: 1.4; }
+.stage-code { grid-row: span 3; color: #2b4437; font-weight: 750; }
+.stage-name { color: #2b4437; font-weight: 650; overflow-wrap: anywhere; }
+.stage-status { color: #3a5a47; font-weight: 650; }
+.stage-note { color: #4f5f57; }
+.stage-covered .stage-status { color: #1f6b47; }
+.stage-required-missing .stage-status, .stage-no-open-factor .stage-status { color: #7a4e0c; }
+.stage-excluded .stage-status { color: #4f5f57; }
+.boundary-issues { margin: 8px 0 0; padding-left: 16px; color: #8a3b2a; font-size: 9.5px; line-height: 1.45; }
+.boundary-issue-warning { color: #6e5210; }
+@media (max-width: 560px) { .functional-unit-fields { grid-template-columns: 1fr; } }
+
+.stage-excluded-summary { margin: 8px 0 0; color: #4f5f57; font-size: 9.5px; line-height: 1.45; }

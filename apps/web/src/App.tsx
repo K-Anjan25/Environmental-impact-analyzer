@@ -46,7 +46,6 @@ import {
 import { formatProcessEstimatesCsv, downloadProcessEstimatesCsv } from './export';
 import { calculateFromCatalog } from './local-estimates';
 import {
-  assessFlatBomMass,
   describeBomMassStatus,
   reviewProductInputUse,
   type BomMassAssessment,
@@ -54,14 +53,29 @@ import {
 } from './product-bom';
 import { deriveProcessQuantity, type ProcessQuantityBasis } from './product-quantity';
 import { summarizeSelectedProcesses, type SelectedProcessSummary } from './product-summary';
+import {
+  assessProductBoundary,
+  FUNCTIONAL_UNIT_BASIS,
+  PRODUCT_CATEGORY_LABEL,
+  type ProductBoundaryResult,
+  type ProductCategory,
+} from './product-boundary';
 import { suggestFactorsByInputName } from './factor-suggestions';
 import SiteLayout from './SiteLayout';
+
+const STAGE_STATUS_LABEL: Record<ProductBoundaryResult['stageCoverage'][number]['status'], string> = {
+  covered: 'Covered by linked rows',
+  'required-missing': 'Required, not covered',
+  'no-open-factor': 'Required, no open factor in bundled data',
+  excluded: 'Outside declared boundary',
+};
 
 type ProductInput = {
   id: string;
   name: string;
   quantity: string;
   unit: string;
+  parentId: string | null;
 };
 
 type SelectedProcess = {
@@ -366,6 +380,9 @@ function App() {
   const [productInputUnitDraft, setProductInputUnitDraft] = useState('');
   const [finishedProductMassDraft, setFinishedProductMassDraft] = useState('');
   const [flatBomScopeConfirmed, setFlatBomScopeConfirmed] = useState(false);
+  const [functionalUnitCategory, setFunctionalUnitCategory] = useState<ProductCategory>('footwear');
+  const [functionalUnitDescription, setFunctionalUnitDescription] = useState('');
+  const [productInputParentDraft, setProductInputParentDraft] = useState('');
   const [editingProductInputId, setEditingProductInputId] = useState<string | null>(null);
   const [productInputError, setProductInputError] = useState('');
   const productInputSequence = useRef(0);
@@ -434,10 +451,24 @@ function App() {
     }))),
     [productInputs, selectedProcesses],
   );
-  const bomMassAssessment = useMemo(
-    () => assessFlatBomMass(productInputs, finishedProductMassDraft, flatBomScopeConfirmed),
-    [productInputs, finishedProductMassDraft, flatBomScopeConfirmed],
-  );
+  const productBoundary = useMemo<ProductBoundaryResult>(() => assessProductBoundary({
+    functionalUnit: {
+      category: functionalUnitCategory,
+      basis: FUNCTIONAL_UNIT_BASIS[functionalUnitCategory],
+      description: functionalUnitDescription,
+    },
+    inputs: productInputs,
+    parentIdByInput: new Map(productInputs.map((item) => [item.id, item.parentId])),
+    processLinks: selectedProcesses.map((line) => ({
+      productInputId: line.productInputId,
+      quantityBasis: line.quantityBasis,
+      factorId: line.factor.id,
+      familyId: line.factor.family_id,
+    })),
+    finishedProductMass: finishedProductMassDraft,
+    scopeConfirmed: flatBomScopeConfirmed,
+  }), [productInputs, selectedProcesses, finishedProductMassDraft, flatBomScopeConfirmed, functionalUnitCategory, functionalUnitDescription]);
+  const bomMassAssessment = productBoundary.massAssessment;
   const selectedProcessSummary = useMemo(
     () => result ? summarizeSelectedProcesses(result.results) : null,
     [result],
@@ -451,6 +482,7 @@ function App() {
     setProductInputNameDraft('');
     setProductInputQuantityDraft('');
     setProductInputUnitDraft('');
+    setProductInputParentDraft('');
     setEditingProductInputId(null);
     setProductInputError('');
   };
@@ -476,9 +508,15 @@ function App() {
       return;
     }
 
+    const parentId = productInputParentDraft || null;
+    if (parentId !== null && parentId === editingProductInputId) {
+      setProductInputError('A component cannot be its own parent.');
+      return;
+    }
+
     if (editingProductInputId) {
       setProductInputs((current) => current.map((item) => item.id === editingProductInputId
-        ? { ...item, name, quantity: productInputQuantityDraft.trim(), unit }
+        ? { ...item, name, quantity: productInputQuantityDraft.trim(), unit, parentId }
         : item));
     } else {
       productInputSequence.current += 1;
@@ -487,6 +525,7 @@ function App() {
         name,
         quantity: productInputQuantityDraft.trim(),
         unit,
+        parentId,
       }]);
     }
     clearProductInputDraft();
@@ -500,6 +539,7 @@ function App() {
     setProductInputNameDraft(item.name);
     setProductInputQuantityDraft(item.quantity);
     setProductInputUnitDraft(item.unit);
+    setProductInputParentDraft(item.parentId ?? '');
     setProductInputError('');
   };
 
@@ -643,9 +683,15 @@ function App() {
       flatBomScopeConfirmed,
       processLinks: selectedProcesses.map((line) => ({
         factorId: line.factor.id,
+        familyId: line.factor.family_id,
         productInputId: line.productInputId,
         quantityBasis: line.quantityBasis,
       })),
+      functionalUnit: {
+        category: functionalUnitCategory,
+        basis: FUNCTIONAL_UNIT_BASIS[functionalUnitCategory],
+        description: functionalUnitDescription,
+      },
       summary: selectedProcessSummary,
     });
     downloadProcessEstimatesCsv(csv, 'environmental-process-estimates.csv');
@@ -709,6 +755,21 @@ function App() {
                   onChange={(event) => setProductInputUnitDraft(event.target.value)}
                   slotProps={{ htmlInput: { maxLength: 40 } }}
                 />
+                <FormControl size="small" fullWidth>
+                  <InputLabel id="product-input-parent-label">Part of</InputLabel>
+                  <Select
+                    labelId="product-input-parent-label"
+                    id="product-input-parent"
+                    value={productInputParentDraft}
+                    label="Part of"
+                    onChange={(event) => setProductInputParentDraft(event.target.value)}
+                  >
+                    <MenuItem value="">Top-level line</MenuItem>
+                    {productInputs
+                      .filter((item) => item.id !== editingProductInputId)
+                      .map((item) => <MenuItem key={item.id} value={item.id}>{item.name}</MenuItem>)}
+                  </Select>
+                </FormControl>
               </div>
               <div className="product-input-actions">
                 <Button
@@ -731,7 +792,7 @@ function App() {
                     <div className="product-input-item" key={item.id}>
                       <div className="product-input-item-copy">
                         <span className="product-input-index">{String(index + 1).padStart(2, '0')}</span>
-                        <div><strong>{item.name}</strong><span>{item.quantity} {item.unit}</span></div>
+                        <div><strong>{item.name}</strong><span>{item.quantity} {item.unit}{item.parentId ? ` · part of ${productInputs.find((parent) => parent.id === item.parentId)?.name ?? 'a missing line'}` : ''}</span></div>
                       </div>
                       <div className="product-input-item-actions">
                         <Button size="small" onClick={() => setSuggestionInputId(item.id)}>Find factor</Button>
@@ -748,6 +809,33 @@ function App() {
               )}
               <details className="bom-mass-check-workspace">
                 <summary>Product mass check</summary>
+                <div className="functional-unit-fields">
+                  <FormControl size="small" fullWidth>
+                    <InputLabel id="functional-unit-category-label">Product category</InputLabel>
+                    <Select
+                      labelId="functional-unit-category-label"
+                      id="functional-unit-category"
+                      value={functionalUnitCategory}
+                      label="Product category"
+                      onChange={(event) => {
+                        setFunctionalUnitCategory(event.target.value as ProductCategory);
+                        setFlatBomScopeConfirmed(false);
+                      }}
+                    >
+                      <MenuItem value="footwear">Footwear (per pair)</MenuItem>
+                      <MenuItem value="apparel">Apparel (per piece)</MenuItem>
+                    </Select>
+                  </FormControl>
+                  <TextField
+                    size="small"
+                    fullWidth
+                    label="Functional unit"
+                    placeholder="e.g., one pair of women's boots"
+                    value={functionalUnitDescription}
+                    onChange={(event) => setFunctionalUnitDescription(event.target.value)}
+                    slotProps={{ htmlInput: { maxLength: 140 } }}
+                  />
+                </div>
                 <FormControlLabel
                   className="bom-mass-confirmation"
                   control={(
@@ -762,7 +850,9 @@ function App() {
                 <TextField
                   type="number"
                   size="small"
-                  label="Finished product mass per functional unit (kg)"
+                  fullWidth
+                  label="Finished product mass (kg)"
+                  helperText="Mass of one functional unit"
                   value={finishedProductMassDraft}
                   onChange={(event) => setFinishedProductMassDraft(event.target.value)}
                   slotProps={{ htmlInput: { min: 0, step: 'any' } }}
@@ -783,11 +873,38 @@ function App() {
                     <strong>{describeBomMassStatus(bomMassAssessment)}</strong>
                   </div>
                 )}
+                <div className={`product-boundary product-boundary-${productBoundary.verdict}`} aria-live="polite">
+                  <strong className="product-boundary-title">
+                    {PRODUCT_CATEGORY_LABEL[functionalUnitCategory]}: {functionalUnitDescription.trim() || 'functional unit not described'}
+                  </strong>
+                  <p className="product-boundary-verdict">{productBoundary.verdictText}</p>
+                  <p className="product-boundary-subtotal">{productBoundary.subtotalLabel}</p>
+                  <ul className="stage-coverage-list" aria-label="Declared life-cycle stages">
+                    {productBoundary.stageCoverage.filter((item) => item.inBoundary).map((item) => (
+                      <li key={item.stage} className={`stage-coverage-item stage-${item.status}`}>
+                        <span className="stage-code">{item.stage}</span>
+                        <span className="stage-name">{item.label}</span>
+                        <span className="stage-status">{STAGE_STATUS_LABEL[item.status]}</span>
+                        <span className="stage-note">{item.note}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="stage-excluded-summary">
+                    Excluded from this subtotal: {productBoundary.stageCoverage.filter((item) => !item.inBoundary).map((item) => `${item.stage} ${item.label.toLowerCase()}`).join('; ')}. No licensed factor rows for transport, distribution, or end-of-life stages are in the bundled data.
+                  </p>
+                  {[...productBoundary.functionalUnitIssues, ...productBoundary.structureIssues].length > 0 && (
+                    <ul className="boundary-issues" aria-label="Structure issues">
+                      {[...productBoundary.functionalUnitIssues, ...productBoundary.structureIssues].map((issue) => (
+                        <li key={`${issue.code}-${issue.inputIds.join('-')}`} className={`boundary-issue boundary-issue-${issue.severity}`}>{issue.message}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </details>
             </section>
 
             {catalog && (
-              <form id="process-library" onSubmit={calculate} className="estimator-form reveal">
+              <form id="process-library" onSubmit={calculate} className="estimator-form">
                 <div className="form-grid two-col">
                   <FormControl fullWidth size="small">
                     <InputLabel id="family-label">Process family</InputLabel>
@@ -914,7 +1031,7 @@ function App() {
                 </div>
 
                 {selectedProcesses.length > 0 && (
-                  <section className="selected-processes reveal" aria-labelledby="selected-processes-heading">
+                  <section className="selected-processes" aria-labelledby="selected-processes-heading">
                     <div className="selected-processes-heading">
                       <Typography id="selected-processes-heading" component="h3" className="output-heading">Selected process rows</Typography>
                       <Chip label={`${selectedProcesses.length} / ${MAX_PROCESS_LINES}`} size="small" className="soft-chip" />

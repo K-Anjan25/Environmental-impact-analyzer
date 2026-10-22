@@ -5,7 +5,8 @@ import {
   EF31_WEIGHTING_SOURCE,
   type Ef31IndicatorCode,
 } from './ef31-score';
-import { assessFlatBomMass, describeBomMassStatus } from './product-bom';
+import { describeBomMassStatus } from './product-bom';
+import { assessProductBoundary, type FunctionalUnitDefinition } from './product-boundary';
 import type { ProcessQuantityBasis } from './product-quantity';
 import type { SelectedProcessSummary } from './product-summary';
 
@@ -14,10 +15,12 @@ export interface ProductInputExportRecord {
   name: string;
   quantity: string;
   unit: string;
+  parentId: string | null;
 }
 
 export interface ProcessInputExportLink {
   factorId: string;
+  familyId: string;
   productInputId: string | null;
   quantityBasis?: ProcessQuantityBasis;
 }
@@ -25,6 +28,7 @@ export interface ProcessInputExportLink {
 export interface ProcessEstimateExportContext {
   productInputs: ProductInputExportRecord[];
   processLinks: ProcessInputExportLink[];
+  functionalUnit?: FunctionalUnitDefinition;
   finishedProductMassKg?: string;
   flatBomScopeConfirmed?: boolean;
   summary?: SelectedProcessSummary | null;
@@ -159,7 +163,32 @@ export function formatProcessEstimatesCsv(
   const finishedProductMass = context?.finishedProductMassKg ?? '';
   if (productInputs.length > 0 || finishedProductMass.trim() !== '') {
     const flatBomScopeConfirmed = context?.flatBomScopeConfirmed === true;
-    const bomMass = assessFlatBomMass(productInputs, finishedProductMass, flatBomScopeConfirmed);
+    const boundary = assessProductBoundary({
+      functionalUnit: context?.functionalUnit ?? { category: 'footwear', basis: 'pair', description: '' },
+      inputs: productInputs,
+      parentIdByInput: new Map(productInputs.map((input) => [input.id, input.parentId])),
+      processLinks: (context?.processLinks ?? []).map((link) => ({
+        productInputId: link.productInputId,
+        quantityBasis: link.quantityBasis ?? 'manual',
+        factorId: link.factorId,
+        familyId: link.familyId,
+      })),
+      finishedProductMass,
+      scopeConfirmed: flatBomScopeConfirmed,
+    });
+    const bomMass = boundary.massAssessment;
+    rows.push({
+      record_type: 'product_boundary',
+      input_association_status: boundary.verdictText,
+      bom_scope_confirmed: flatBomScopeConfirmed,
+      bom_mass_status: boundary.verdict,
+      functional_unit: boundary.functionalUnit.description,
+      functional_unit_category: boundary.functionalUnit.category,
+      stage_coverage: boundary.stageCoverage.map((item) => `${item.stage}:${item.status}`).join(' | '),
+      declared_boundary: 'A1 raw materials + A3 manufacturing',
+      excluded_stages: 'A2 transport to factory; A4 distribution; B use; C1-C4 end of life (no licensed factor rows in bundled data)',
+      aggregation: 'selected-stage subtotal; not a complete product footprint',
+    });
     rows.push({
       record_type: 'bom_mass_check',
       input_association_status: describeBomMassStatus(bomMass),

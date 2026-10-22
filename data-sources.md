@@ -65,6 +65,19 @@ The Carbonfact release states that its full Brightway/Activity Browser inventori
 - The source process categories cover material production, textile manufacturing, footwear assembly, garment assembly, and use phase. Units include kg yarn/fabric/product, pair of footwear, square metre PU leather, minutes of ironing, and kg detergent.
 - `WORLD`, `GLO`, and country-specific descriptors are displayed as supplied. A source geography tag does not establish full coverage of a market or the specific origin of a user product.
 - `Input required (kg)` can be used by a user-confirmed, browser-local mapping to convert a declared mass feed into a process output reference quantity. Where the reference unit is a mass, the app shows a source-derived input/output mass difference. An optional flat-BOM check runs only after the user confirms every declared line is a product component for the same functional unit; it compares supported declared masses with a user-entered finished-product mass and marks unconvertible lines as incomplete. Both diagnostics are arithmetic/mass-flow only: they do not add upstream-material burdens or waste-treatment impacts, validate product composition, or establish complete mass balance.
+
+### Product boundary, functional unit, and stage coverage
+
+The calculator's product boundary (`apps/web/src/product-boundary.ts`) is a set of explicit, testable rules:
+
+- **Functional unit:** footwear is per pair and apparel is per piece. The user must describe the unit, and the basis must match the category.
+- **Declared boundary:** cradle-to-gate manufacturing subtotal, **A1 raw materials + A3 manufacturing**. A2 transport to factory, A4 distribution, B use, and C1–C4 end of life are excluded and listed in every report.
+- **Component hierarchy:** each declared line may name a parent. Only leaf components (lines with no children) are counted toward the mass closure, so an assembly is never double counted. The app blocks duplicate sibling names, orphan parents, parent loops, assemblies whose declared mass does not equal the sum of their components (0.5% tolerance), and a parent that is both itemised and linked to a process row.
+- **Non-overlap:** the same component linked to the same factor row twice is blocked. Manual context-only links never count as stage coverage.
+- **Product-specific coverage rules:** footwear needs A1 from a PU leather or natural rubber row and A3 from a shoe-assembly row. Apparel needs A3 from a textile manufacturing or garment assembly row. Apparel A1 (fibre production) has no rows in the bundled data, so it is reported as not coverable.
+- **Verdict:** `blocked` (structure or mass issues), `stages-missing` (a required stage is uncovered), or `selected-stages-only` (A1 and A3 covered). The last one is always labelled a partial cradle-to-gate subtotal, not a complete product footprint.
+
+**Stages not integrated, and why.** Transport, distribution, use-phase end of life, and waste treatment factors are not in the bundled open dataset. The app does not add them from any other source. Public candidates were checked: DEFRA/DESNZ conversion factors (Open Government Licence v3.0) cover transport and waste, but only for GHG, not the 16 EF 3.1 indicators this calculator reports, so they would make the indicator set inconsistent. Ecoinvent-based transport and waste datasets require a commercial licence. The stages are therefore excluded from the declared boundary rather than estimated.
 - Source DQR fields (P, TiR, TeR, GR) are preserved in CSV exports when published; they are never combined with impacts or turned into an environmental score.
 - WTU is EF 3.1 water use in m³ world-equivalent; it is not a physical volume measurement. Use-phase records describe representative European consumer behaviour even where a row descriptor is tagged `GLO`.
 - The source describes v1.1.0 as an early release. The app pins the version and does not silently update its scores from the main branch.

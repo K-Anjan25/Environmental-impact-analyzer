@@ -51,7 +51,7 @@ const SLIDES: Slide[] = [
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
 /** Time for the current step's content to fade out, and again for the next step's content to fade in. */
-const FADE_MS = 380;
+const FADE_MS = 220;
 
 /*
  * One card frame stays on screen the whole time. Only its content changes, in two sequential steps:

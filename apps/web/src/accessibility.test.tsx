@@ -381,7 +381,7 @@ describe('process estimator accessibility', () => {
 
     fireEvent.click(screen.getByText('Product mass check'));
     fireEvent.click(screen.getByRole('checkbox', { name: 'All declared lines are product components for one functional unit' }));
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'Finished product mass (kg)' }), {
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Finished product mass per functional unit (kg)' }), {
       target: { value: '0.35' },
     });
     expect(await screen.findByText('Declared input mass matches finished-product mass within calculator precision.')).toBeTruthy();

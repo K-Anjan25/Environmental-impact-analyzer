@@ -877,16 +877,19 @@ function App() {
                   )}
                   label="All declared lines are product components for one functional unit"
                 />
-                <TextField
-                  type="number"
-                  size="small"
-                  fullWidth
-                  label="Finished product mass (kg)"
-                  helperText="Mass of one functional unit"
-                  value={finishedProductMassDraft}
-                  onChange={(event) => setFinishedProductMassDraft(event.target.value)}
-                  slotProps={{ htmlInput: { min: 0, step: 'any' } }}
-                />
+                <div className="bom-mass-field">
+                  <label className="bom-mass-field-label" htmlFor="finished-product-mass">Finished product mass per functional unit (kg)</label>
+                  <TextField
+                    id="finished-product-mass"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    placeholder="e.g., 0.42"
+                    value={finishedProductMassDraft}
+                    onChange={(event) => setFinishedProductMassDraft(event.target.value)}
+                    slotProps={{ htmlInput: { min: 0, step: 'any', 'aria-label': 'Finished product mass per functional unit (kg)' } }}
+                  />
+                </div>
                 {bomMassAssessment.status === 'scope-not-confirmed' && (
                   <div className="bom-mass-compact" aria-live="polite">
                     <strong>{describeBomMassStatus(bomMassAssessment)}</strong>
@@ -959,7 +962,7 @@ function App() {
                       label="C3 and C4 end-of-life route"
                       value={endOfLifeDraft}
                       onChange={(event) => setEndOfLifeDraft(event.target.value as EndOfLifeRoute | '')}
-                      slotProps={{ select: { displayEmpty: true, renderValue: (value) => value === '' ? 'Not declared' : END_OF_LIFE_FACTORS[value as EndOfLifeRoute].label } }}
+                      slotProps={{ inputLabel: { shrink: true }, select: { displayEmpty: true, renderValue: (value) => value === '' ? 'Not declared' : END_OF_LIFE_FACTORS[value as EndOfLifeRoute].label } }}
                     >
                       <MenuItem value="">Not declared</MenuItem>
                       {END_OF_LIFE_OPTIONS.map(([id, option]) => (<MenuItem key={id} value={id}>{option.label}</MenuItem>))}

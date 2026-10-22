@@ -76,7 +76,7 @@ button, input, textarea { font: inherit; }
   box-shadow: 0 18px 46px rgba(43, 60, 48, 0.065), 0 2px 7px rgba(43, 60, 48, 0.025);
 }
 .form-card.MuiPaper-root { padding: 29px 30px 24px; }
-.result-card.MuiPaper-root { padding: 29px 30px 22px; position: sticky; top: 18px; }
+.result-card.MuiPaper-root { padding: 29px 30px 22px; }
 .card-heading-row, .result-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
 .card-heading-row { margin-bottom: 24px; }
 .step-label { color: #5a7063; font-size: 9px; letter-spacing: 0.15em; margin-bottom: 9px; }
@@ -338,7 +338,7 @@ button, input, textarea { font: inherit; }
 .estimator-grid { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr); gap: 22px; align-items: start; }
 .estimator-card.MuiPaper-root, .result-panel.MuiPaper-root { min-width: 0; }
 .estimator-card.MuiPaper-root { padding-bottom: 28px; }
-.result-panel.MuiPaper-root { position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow: auto; scrollbar-color: #b6c9bf transparent; }
+.result-panel.MuiPaper-root { scrollbar-color: #b6c9bf transparent; }
 .estimator-form { display: flex; flex-direction: column; gap: 17px; }
 .estimator-form .MuiFormControl-root, .estimator-form .MuiTextField-root { min-width: 0; }
 .estimator-form .MuiFormHelperText-root { color: #63716b; font-size: 10.5px; }
@@ -350,13 +350,16 @@ button, input, textarea { font: inherit; }
 .product-input-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .product-input-actions .MuiAlert-root { flex: 1 1 100%; }
 .product-input-list { margin-top: 3px; }
-.bom-mass-check-workspace { padding-top: 8px; border-top: 1px solid #e2e8df; color: #40594a; font-size: 10px; }
+.bom-mass-check-workspace { padding-top: 8px; border-top: 1px solid #e2e8df; color: #40594a; font-size: 13px; }
+.bom-mass-check-workspace summary { font-size: 13px; }
+.bom-mass-check-workspace .MuiFormHelperText-root { font-size: 12px; }
+.bom-mass-check-workspace .MuiFormControlLabel-label { font-size: 13px; }
 .bom-mass-check-workspace summary { cursor: pointer; font-weight: 750; }
 .bom-mass-confirmation.MuiFormControlLabel-root { align-items: flex-start; margin: 6px 0 0; }
 .bom-mass-confirmation .MuiCheckbox-root { padding: 3px 6px 3px 0; }
 .bom-mass-confirmation .MuiFormControlLabel-label { font-size: 10px; line-height: 1.4; }
-.bom-mass-check-workspace > .MuiTextField-root { display: block; max-width: 320px; margin-top: 10px; }
-.bom-mass-compact { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-top: 8px; color: #5d6e64; font-size: 9px; line-height: 1.45; }
+.bom-mass-check-workspace > .MuiTextField-root { display: block; width: 100%; max-width: 100%; margin-top: 10px; box-sizing: border-box; }
+.bom-mass-compact { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-top: 8px; color: #5d6e64; font-size: 12px; line-height: 1.45; }
 .bom-mass-compact strong { flex: 1 1 100%; color: #435c4b; font-weight: 650; }
 .product-input-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 8px; border: 1px solid #e2e8df; border-radius: 10px; background: #fffefa; }
 .product-input-item-copy { display: flex; align-items: flex-start; gap: 8px; min-width: 0; }
@@ -961,28 +964,6 @@ body { background: linear-gradient(rgba(247, 249, 225, 0.9), rgba(247, 249, 225,
 .sidebar { display: none !important; }
 .app-shell.app-layout, .app-shell.app-layout { padding-left: 0 !important; }
 
-/* Journey: full-size cards that stack over an empty stage on scroll */
-.depth-scene { position: relative; height: 260vh; margin: 12px 0 0; }
-.depth-stage { position: sticky; top: 0; height: 100vh; min-height: 520px; overflow: hidden; border-radius: 28px; background: #F7F9E1; }
-.depth-card { position: absolute; inset: 0; display: grid; grid-template-columns: 42% 58%; border-radius: 28px; overflow: hidden; background: #173440; box-shadow: 0 -18px 50px rgba(23, 52, 64, 0.28); will-change: transform, filter; visibility: hidden; }
-.depth-copy { display: flex; flex-direction: column; justify-content: center; padding: 0 clamp(28px, 5vw, 80px) 56px; min-width: 0; }
-.depth-copy h2 { margin: 0 0 16px; color: #F7F9E1; font-size: clamp(30px, 4vw, 52px); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; }
-.depth-copy p { margin: 0; color: #d7ecf3; font-size: 17px; line-height: 1.6; max-width: 420px; }
-.depth-art { position: relative; min-width: 0; min-height: 0; overflow: hidden; background: #204654; }
-.depth-art img { display: block; width: 100%; height: 100%; object-fit: cover; -webkit-mask-image: radial-gradient(ellipse at center, #000 62%, transparent 100%); mask-image: radial-gradient(ellipse at center, #000 62%, transparent 100%); }
-.depth-cta { display: inline-flex; align-items: center; align-self: flex-start; margin-top: 22px; padding: 12px 20px; border-radius: 999px; background: #CAFFA6; color: #173440; font-weight: 700; font-size: 15px; text-decoration: none; }
-.depth-cta:hover { background: #F7F9E1; }
-@media (max-width: 680px) {
-  .depth-scene { height: 240vh; }
-  .depth-stage { min-height: 460px; border-radius: 20px; }
-  .depth-card { grid-template-columns: 1fr; grid-template-rows: 40% 60%; border-radius: 20px; }
-  .depth-copy { padding: 28px 24px 0; justify-content: flex-start; }
-  .depth-copy h2 { font-size: 30px; }
-  .depth-copy p { font-size: 15px; }
-  }
-@media (prefers-reduced-motion: reduce) {
-  .depth-scene { height: 200vh; }
-}
 
 /* ---------------------------------------------------------------
    Site layout v2: full-width sections, square section edges,
@@ -1015,9 +996,6 @@ body { background: linear-gradient(rgba(247, 249, 225, 0.9), rgba(247, 249, 225,
 .visual-index-empty .visual-index-copy strong { color: #F7F9E1; font-size: 19px; }
 .visual-index-card:focus-visible { outline: 2px solid #5a6fd6; outline-offset: -4px; }
 
-.depth-scene { width: 100%; margin: 0; }
-.depth-stage { border-radius: 0; min-height: 100vh; }
-.depth-card { border-radius: 0; box-shadow: none; }
 
 .section-divider { display: none; }
 .estimator-card.MuiPaper-root, .form-card.MuiPaper-root, .result-card.MuiPaper-root, .result-panel.MuiPaper-root { border-radius: 0; }
@@ -1149,8 +1127,6 @@ body { background: linear-gradient(rgba(247, 249, 225, 0.9), rgba(247, 249, 225,
 .landing-art { inset: 20px 20px 20px auto; width: calc(58% - 20px); border-radius: var(--radius-lg); overflow: hidden; }
 .landing-art img, .hero-photo { border-radius: var(--radius-lg); }
 
-.depth-stage { padding: 14px; box-sizing: border-box; }
-.depth-card { inset: 14px; border-radius: var(--radius-lg); }
 
 .visual-index-grid { gap: 14px; }
 .visual-index-card { border-radius: var(--radius-lg); min-height: 280px; }
@@ -1169,17 +1145,8 @@ body { background: linear-gradient(rgba(247, 249, 225, 0.9), rgba(247, 249, 225,
 
 @media (max-width: 900px) {
   .landing-art { position: relative; inset: auto; width: calc(100% - 32px); max-width: calc(100% - 32px); margin: 0 16px 16px; height: 260px; }
-  .depth-stage { padding: 10px; }
-  .depth-card { inset: 10px; }
 }
 
-/* Journey: one card frame stays on screen. Only its content fades: out, then in (sequential, never overlapping). */
-.depth-card { opacity: 1; visibility: visible; }
-.depth-content { transition: opacity 220ms ease; }
-.depth-content.is-fading { opacity: 0; }
-@media (prefers-reduced-motion: reduce) {
-  .depth-content { transition-duration: 1ms; }
-}
 
 /* No hover underlines on nav, footer, blog filters, or blog links. */
 .site-nav a:hover, .site-nav a:focus-visible,
@@ -1190,8 +1157,8 @@ body { background: linear-gradient(rgba(247, 249, 225, 0.9), rgba(247, 249, 225,
 .blog-section-heading a { text-decoration: none; }
 
 /* Product mass check, functional unit, and product boundary (calculator) */
-.bom-mass-check-workspace > .MuiTextField-root { display: block; max-width: 100%; margin-top: 10px; box-sizing: border-box; }
-.bom-mass-check-workspace .MuiInputLabel-root { max-width: calc(100% - 28px); line-height: 1.25; white-space: normal; }
+.bom-mass-check-workspace .MuiTextField-root .MuiInputLabel-root { max-width: calc(100% - 28px); overflow: visible; white-space: normal; line-height: 1.25; }
+.bom-mass-check-workspace .MuiTextField-root .MuiInputBase-root { min-width: 0; }
 .bom-mass-check-workspace .MuiFormHelperText-root { margin: 3px 2px 0; font-size: 9px; color: #56655d; }
 .functional-unit-fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 10px; margin-top: 10px; }
 .functional-unit-fields .MuiFormControl-root, .functional-unit-fields .MuiTextField-root { min-width: 0; }
@@ -1225,3 +1192,41 @@ body { background: linear-gradient(rgba(247, 249, 225, 0.9), rgba(247, 249, 225,
 .stage-ghg-only .stage-status { color: #3a5a47; }
 .stage-not-declared .stage-status { color: #4f5f57; }
 .stage-excluded-summary { margin: 8px 0 0; color: #4f5f57; font-size: 9.5px; line-height: 1.45; }
+
+/* Journey: scroll-driven slides. Each slide is one flat card; text and image occupy separate columns. */
+.depth-scene { position: relative; width: 100%; height: calc(100vh + 300vh); margin: 0; }
+.depth-stage { position: sticky; top: 0; height: 100vh; min-height: 520px; overflow: hidden; perspective: none; }
+.depth-card {
+  position: absolute; left: 50%; top: 50%; width: min(1180px, calc(100% - 10vw)); height: min(560px, calc(100vh - 96px)); min-height: 420px;
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 0;
+  transform-origin: 50% 100%; translate: -50% -50%; border-radius: 22px; overflow: hidden;
+  background: rgba(255, 254, 250, 0.94); border: 1px solid rgba(45, 71, 53, 0.12);
+  box-shadow: 0 24px 60px rgba(32, 70, 84, 0.16);
+  transition: transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1), opacity 220ms ease;
+  will-change: transform, opacity;
+}
+.depth-copy { display: flex; flex-direction: column; justify-content: center; gap: 0; padding: clamp(28px, 4vw, 64px); min-width: 0; }
+.depth-count { margin: 0 0 14px; color: #1f6b52; font-size: 12px; font-weight: 800; letter-spacing: 0.14em; }
+.depth-copy h2 { margin: 0 0 16px; color: #173440; font-size: clamp(30px, 3.6vw, 50px); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; overflow-wrap: anywhere; }
+.depth-copy p { margin: 0; color: #2c4a55; font-size: 17px; line-height: 1.6; max-width: 440px; }
+.depth-art { position: relative; min-width: 0; min-height: 0; display: flex; align-items: center; justify-content: center; padding: clamp(20px, 3vw, 40px); box-sizing: border-box; background: #e8efe6; overflow: hidden; }
+.depth-art img { display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
+.depth-cta { display: inline-flex; align-items: center; align-self: flex-start; margin-top: 24px; padding: 12px 22px; border-radius: 999px; background: #173440; color: #F7F9E1; font-weight: 700; font-size: 15px; text-decoration: none; }
+.depth-cta:hover { background: #1f6b52; }
+.depth-cta:focus-visible { outline: 2px solid #1f6b52; outline-offset: 3px; }
+@media (max-width: 760px) {
+  .depth-stage { min-height: 560px; }
+  .depth-card { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); top: calc(50% + 60px); width: calc(100% - 28px); height: calc(100vh - 200px); min-height: 440px; }
+  .depth-copy { padding: 24px 22px 8px; justify-content: flex-start; }
+  .depth-copy h2 { font-size: 28px; }
+  .depth-copy p { font-size: 15px; }
+  .depth-art { padding: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .depth-scene { height: auto; }
+  .depth-card { transition: none; }
+}
+
+.bom-mass-field { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; min-width: 0; }
+.bom-mass-field-label { display: block; color: #2b4437; font-size: 13px; font-weight: 650; line-height: 1.4; overflow-wrap: anywhere; }
+.bom-mass-field .MuiTextField-root { min-width: 0; }

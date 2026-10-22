@@ -61,6 +61,8 @@ export function postTypeFromSegment(segment: string): PostType | undefined {
   return POST_TYPES.find((type) => POST_TYPE_SEGMENT[type] === segment);
 }
 
+const RETIRED_NEWS_IMAGE = '/images/recycling-tshirt-cropped.jpg';
+
 export const POSTS_STORAGE_KEY = 'ecoimpact.posts.v1';
 export const POSTS_CHANGED_EVENT = 'ecoimpact:posts-changed';
 
@@ -105,7 +107,7 @@ const SEED_POSTS: Post[] = [
       'This tool sums the processes you select. It does not model every upstream supplier, transport leg, use phase, or end-of-life step for a finished item.',
       'Treat a result as the impact of the processes you chose, and state that scope whenever you share it.',
     ],
-    image: '/images/recycling-tshirt-cropped.jpg',
+    image: '/images/news-process-boundary.jpg',
     imageAlt: 'Illustration of a green recycling T-shirt held in a hand, with leaves and a hanger.',
     status: 'published',
     updatedAt: '2026-10-01T00:00:00.000Z',
@@ -139,7 +141,10 @@ export function loadPosts(): Post[] {
   if (!raw) return SEED_POSTS.map((post) => ({ ...post, body: [...post.body] }));
   try {
     const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.filter(isPost) : [];
+    // Saved posts from before the image rename point at the old file; move them to the new one.
+    return Array.isArray(parsed)
+      ? parsed.filter(isPost).map((post) => (post.image === RETIRED_NEWS_IMAGE ? { ...post, image: '/images/news-process-boundary.jpg' } : post))
+      : [];
   } catch {
     return [];
   }

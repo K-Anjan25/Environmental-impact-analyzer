@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 
 /*
  * The EcoImpact journey: five full-size cards that stack over one another as you scroll.
- * Each card splits into a text panel and an image panel. The stage behind the cards is empty.
+ * Each card splits into a text panel and an image panel. Cards cross-fade; nothing slides.
  * Timing and layout are described in docs/landing-journey-storyboard.md.
  */
 
@@ -53,16 +53,15 @@ const smooth = (t: number) => t * t * (3 - 2 * t);
 
 /*
  * Card i has a stack position r = progress * (N - 1) - i.
- * r < -1: not yet arrived, waiting below the stage.
- * -1 <= r < 0: sliding up over the previous card.
- * r >= 0: resting in the stack, pushed back and dimmed as newer cards cover it.
+ * r < -1: not yet visible.
+ * -1 <= r < 0: fading in over the previous card.
+ * r >= 0: fully visible; the next card fades in over it.
  */
 const stackPosition = (p: number, index: number) => p * (SLIDES.length - 1) - index;
 
 export default function DepthScene() {
   const sectionRef = useRef<HTMLElement>(null);
   const cardRefs = useRef<(HTMLElement | null)[]>([]);
-  const dotRefs = useRef<(HTMLSpanElement | null)[]>([]);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -82,33 +81,21 @@ export default function DepthScene() {
       progress = total > 0 ? clamp(-rect.top / total, 0, 1) : 0;
     };
 
+    // Cross-fade only: each card dissolves in over the previous one. No movement, scale, or dimming.
     const paint = (p: number) => {
       SLIDES.forEach((_, index) => {
         const card = cardRefs.current[index];
-        const dot = dotRefs.current[index];
+        if (!card) return;
         const r = stackPosition(p, index);
-        if (card) {
-          if (r < -1) {
-            card.style.transform = 'translate3d(0, 100%, 0)';
-            card.style.visibility = 'hidden';
-            card.style.filter = 'none';
-          } else if (r < 0) {
-            const e = smooth(r + 1);
-            card.style.transform = `translate3d(0, ${((1 - e) * 100).toFixed(2)}%, 0)`;
-            card.style.visibility = 'visible';
-            card.style.filter = 'none';
-          } else {
-            // Resting in the stack: recede slightly and dim as the next card covers it.
-            const depth = Math.min(r, 1);
-            card.style.transform = `translate3d(0, ${(-depth * 3).toFixed(2)}%, 0) scale(${(1 - 0.06 * depth).toFixed(4)})`;
-            card.style.visibility = 'visible';
-            card.style.filter = depth > 0 ? `brightness(${(1 - 0.5 * depth).toFixed(3)})` : 'none';
-          }
-        }
-        if (dot) {
-          const focus = clamp(1 - Math.abs(r), 0, 1);
-          dot.style.opacity = (0.35 + 0.65 * focus).toFixed(3);
-          dot.style.transform = `scale(${(1 + 0.4 * focus).toFixed(3)})`;
+        if (r < -1) {
+          card.style.opacity = '0';
+          card.style.visibility = 'hidden';
+        } else if (r < 0) {
+          card.style.opacity = smooth(r + 1).toFixed(4);
+          card.style.visibility = 'visible';
+        } else {
+          card.style.opacity = '1';
+          card.style.visibility = 'visible';
         }
       });
     };
@@ -163,16 +150,6 @@ export default function DepthScene() {
             </div>
           </article>
         ))}
-        <div className="depth-dots" aria-hidden="true">
-          {SLIDES.map((slide, index) => (
-            <span
-              key={slide.title}
-              ref={(element) => {
-                dotRefs.current[index] = element;
-              }}
-            />
-          ))}
-        </div>
       </div>
     </section>
   );

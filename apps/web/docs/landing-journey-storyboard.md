@@ -1,6 +1,6 @@
 # Landing journey storyboard (stacked cards)
 
-The journey is one scroll-driven section with five full-size cards. Each card rises over the previous one and the earlier cards recede underneath, like a stack. The stage behind the cards is an empty cream background. The site-wide turbine photo is not used in this section.
+The journey is one scroll-driven section with five full-size cards. Each card cross-fades into the next as you scroll. Nothing slides. The stage behind the cards is an empty cream background. The site-wide turbine photo is not used in this section.
 
 ## Cards
 
@@ -12,13 +12,14 @@ The journey is one scroll-driven section with five full-size cards. Each card ri
 | 4 | Read the indicators | `journey-indicators.png` | All 16 EF 3.1 indicators, each with its unit. |
 | 5 | Start an estimate | `journey-closing.png` | Enter your own processes and quantities. Ends with the "Start an estimate" button. |
 
-## Stack timing
+## Fade timing
 
-- Card i has stack position r = progress × 4 − i.
-- r < −1: waiting below the stage (hidden).
-- −1 ≤ r < 0: rising over the previous card with smooth easing.
-- r ≥ 0: resting. Depth = min(r, 1). The card scales down by up to 6% and moves up by up to 3%, and it dims to 50% brightness as the next card covers it.
-- Progress is eased per frame (time constant about 1/7 s). Reduced motion skips the easing and shortens the section.
+- Card i has position r = progress × 4 − i.
+- r < −1: not visible.
+- −1 ≤ r < 0: fades in over the previous card (opacity eases from 0 to 1).
+- r ≥ 0: fully visible; the next card fades in over it.
+- Cards only change opacity. No slide, scale, or dimming, and no dot indicator.
+- Progress is eased per frame (time constant about 1/7 s).
 
 ## Layout
 

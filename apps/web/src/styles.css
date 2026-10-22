@@ -970,8 +970,6 @@ body { background: linear-gradient(rgba(247, 249, 225, 0.9), rgba(247, 249, 225,
 .depth-copy p { margin: 0; color: #d7ecf3; font-size: 17px; line-height: 1.6; max-width: 420px; }
 .depth-art { position: relative; min-width: 0; min-height: 0; overflow: hidden; background: #204654; }
 .depth-art img { display: block; width: 100%; height: 100%; object-fit: cover; -webkit-mask-image: radial-gradient(ellipse at center, #000 62%, transparent 100%); mask-image: radial-gradient(ellipse at center, #000 62%, transparent 100%); }
-.depth-dots { position: absolute; z-index: 40; left: clamp(28px, 5vw, 80px); bottom: 26px; display: flex; gap: 10px; }
-.depth-dots span { display: block; width: 9px; height: 9px; border-radius: 50%; background: #A9E0F1; }
 .depth-cta { display: inline-flex; align-items: center; align-self: flex-start; margin-top: 22px; padding: 12px 20px; border-radius: 999px; background: #CAFFA6; color: #173440; font-weight: 700; font-size: 15px; text-decoration: none; }
 .depth-cta:hover { background: #F7F9E1; }
 @media (max-width: 680px) {
@@ -981,8 +979,7 @@ body { background: linear-gradient(rgba(247, 249, 225, 0.9), rgba(247, 249, 225,
   .depth-copy { padding: 28px 24px 0; justify-content: flex-start; }
   .depth-copy h2 { font-size: 30px; }
   .depth-copy p { font-size: 15px; }
-  .depth-dots { bottom: 14px; left: 24px; }
-}
+  }
 @media (prefers-reduced-motion: reduce) {
   .depth-scene { height: 300vh; }
 }
@@ -1021,7 +1018,6 @@ body { background: linear-gradient(rgba(247, 249, 225, 0.9), rgba(247, 249, 225,
 .depth-scene { width: 100%; margin: 0; }
 .depth-stage { border-radius: 0; min-height: 100vh; }
 .depth-card { border-radius: 0; box-shadow: none; }
-.depth-card:not(:first-child) { box-shadow: 0 -18px 50px rgba(23, 52, 64, 0.28); }
 
 .section-divider { display: none; }
 .estimator-card.MuiPaper-root, .form-card.MuiPaper-root, .result-card.MuiPaper-root, .result-panel.MuiPaper-root { border-radius: 0; }
@@ -1155,7 +1151,6 @@ body { background: linear-gradient(rgba(247, 249, 225, 0.9), rgba(247, 249, 225,
 
 .depth-stage { padding: 14px; box-sizing: border-box; }
 .depth-card { inset: 14px; border-radius: var(--radius-lg); }
-.depth-card:not(:first-child) { box-shadow: 0 -14px 40px rgba(23, 52, 64, 0.28); }
 
 .visual-index-grid { gap: 14px; }
 .visual-index-card { border-radius: var(--radius-lg); min-height: 280px; }

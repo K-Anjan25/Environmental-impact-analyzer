@@ -997,7 +997,7 @@ body { background: linear-gradient(rgba(247, 249, 225, 0.9), rgba(247, 249, 225,
 .site-layout { min-height: 100vh; display: flex; flex-direction: column; }
 .site-main { flex: 1 0 auto; width: 100%; outline: none; }
 
-.site-topbar { position: sticky; top: 0; z-index: 20; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; padding: 12px clamp(20px, 4vw, 56px); background: rgba(247, 249, 225, 0.96); border-bottom: 1px solid rgba(23, 52, 64, 0.12); }
+.site-topbar { position: sticky; top: 0; z-index: 20; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; padding: 12px clamp(20px, 4vw, 56px); background: #F7F9E1; border-bottom: 1px solid rgba(23, 52, 64, 0.12); }
 .site-brand { justify-self: start; display: inline-flex; align-items: center; gap: 10px; color: #173440; font-weight: 800; font-size: 18px; letter-spacing: -0.01em; text-decoration: none; }
 .site-brand img { width: 30px; height: 30px; }
 .site-nav { display: flex; align-items: center; gap: clamp(14px, 2.4vw, 34px); }
@@ -1007,10 +1007,10 @@ body { background: linear-gradient(rgba(247, 249, 225, 0.9), rgba(247, 249, 225,
 .site-nav a:hover { text-decoration: underline; text-underline-offset: 4px; }
 .site-topbar .site-menu-button { justify-self: end; color: #173440; }
 
-.landing-hero { width: 100vw; margin: 0 calc(50% - 50vw); min-height: min(84vh, 720px); border-radius: 0; box-shadow: none; background: #fffefa; }
+.landing-hero { width: 100%; margin: 0; min-height: min(84vh, 720px); border-radius: 0; box-shadow: none; background: #fffefa; }
 .landing-copy { padding: clamp(40px, 7vw, 112px) clamp(24px, 6vw, 96px); max-width: 720px; }
 .landing-art { border-radius: 0; }
-.visual-index { width: 100vw; margin: 0 calc(50% - 50vw) 0; padding: 0; display: grid; grid-template-columns: 1fr; gap: 0; }
+.visual-index { width: 100%; margin: 0; padding: 0 clamp(20px, 6vw, 96px) 24px; box-sizing: border-box; display: grid; grid-template-columns: 1fr; gap: 0; }
 .visual-index-heading { margin: 0; padding: clamp(28px, 4vw, 48px) clamp(24px, 6vw, 96px) 16px; color: #173440; font-size: clamp(22px, 2.6vw, 32px); font-weight: 800; letter-spacing: -0.02em; }
 .visual-index-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .visual-index-card { border-radius: 0; min-height: 300px; }
@@ -1018,7 +1018,7 @@ body { background: linear-gradient(rgba(247, 249, 225, 0.9), rgba(247, 249, 225,
 .visual-index-empty .visual-index-copy strong { color: #F7F9E1; font-size: 19px; }
 .visual-index-card:focus-visible { outline: 2px solid #5a6fd6; outline-offset: -4px; }
 
-.depth-scene { width: 100vw; margin: 0 calc(50% - 50vw); }
+.depth-scene { width: 100%; margin: 0; }
 .depth-stage { border-radius: 0; min-height: 100vh; }
 .depth-card { border-radius: 0; box-shadow: none; }
 .depth-card:not(:first-child) { box-shadow: 0 -18px 50px rgba(23, 52, 64, 0.28); }
@@ -1137,4 +1137,43 @@ body { background: linear-gradient(rgba(247, 249, 225, 0.9), rgba(247, 249, 225,
   .landing-art { position: relative; width: 100%; height: 280px; inset: auto; }
   .landing-title.MuiTypography-root { font-size: clamp(30px, 8vw, 40px); }
   .visual-index-heading { padding-inline: 24px; }
+}
+
+/* ---------------------------------------------------------------
+   Rounding scale and no horizontal scroll.
+   14px: panels, cards, media, and journey cards.
+   8px: inputs and small controls. Pills: tabs and main buttons only.
+   Full-width bands stay edge to edge; their content is rounded.
+   --------------------------------------------------------------- */
+:root { --radius-lg: 14px; --radius-sm: 8px; }
+.site-layout { overflow-x: clip; }
+.site-main, .site-topbar, .site-footer { max-width: 100%; box-sizing: border-box; }
+
+.landing-hero { overflow: hidden; }
+.landing-art { inset: 20px 20px 20px auto; width: calc(58% - 20px); border-radius: var(--radius-lg); overflow: hidden; }
+.landing-art img, .hero-photo { border-radius: var(--radius-lg); }
+
+.depth-stage { padding: 14px; box-sizing: border-box; }
+.depth-card { inset: 14px; border-radius: var(--radius-lg); }
+.depth-card:not(:first-child) { box-shadow: 0 -14px 40px rgba(23, 52, 64, 0.28); }
+
+.visual-index-grid { gap: 14px; }
+.visual-index-card { border-radius: var(--radius-lg); min-height: 280px; }
+.visual-index-empty { border-radius: var(--radius-lg); }
+
+.post-card, .post-figure, .post-card-media { border-radius: var(--radius-lg); }
+.post-card-media { border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+.post-figure img { border-radius: var(--radius-lg); }
+.admin-form, .admin-list-item { border-radius: var(--radius-lg); }
+.admin-field input, .admin-field select, .admin-field textarea, .admin-secondary, .admin-danger { border-radius: var(--radius-sm); }
+.calculator-page .form-card.MuiPaper-root, .calculator-page .estimator-card.MuiPaper-root,
+.calculator-page .result-card.MuiPaper-root, .calculator-page .result-panel.MuiPaper-root { border-radius: var(--radius-lg); }
+.MuiOutlinedInput-root { border-radius: var(--radius-sm) !important; }
+.blog-tabs a { border-radius: 999px; }
+.post-external .landing-cta, .landing-cta { border-radius: 999px; }
+
+@media (max-width: 900px) {
+  .landing-art { position: relative; inset: auto; width: calc(100% - 32px); max-width: calc(100% - 32px); margin: 0 16px 16px; height: 260px; }
+  .depth-stage { padding: 10px; }
+  .depth-card { inset: 10px; }
 }

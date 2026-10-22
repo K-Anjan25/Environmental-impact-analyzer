@@ -57,6 +57,7 @@ import {
   assessProductBoundary,
   FUNCTIONAL_UNIT_BASIS,
   PRODUCT_CATEGORY_LABEL,
+  type LifeCycleStage,
   type ProductBoundaryResult,
   type ProductCategory,
 } from './product-boundary';
@@ -80,6 +81,24 @@ const STAGE_STATUS_LABEL: Record<ProductBoundaryResult['stageCoverage'][number][
 };
 
 type GhgFreightDraft = { mode: FreightMode; distanceKm: string };
+const FUNCTIONAL_UNIT_EXAMPLES: Record<ProductCategory, string[]> = {
+  footwear: ["one pair of women's boots", 'one pair of sneakers'],
+  apparel: ['one knitted t-shirt', 'one pair of trousers'],
+};
+/** Where each scenario stage is entered. Buttons focus these fields; hash links would change the route. */
+const SCENARIO_FIELD_FOR_STAGE: Partial<Record<LifeCycleStage, { id: string; label: string }>> = {
+  A2: { id: 'ghg-inbound-distance', label: 'Enter A2 distance' },
+  A4: { id: 'ghg-distribution-distance', label: 'Enter A4 distance' },
+  C2: { id: 'ghg-to-waste-distance', label: 'Enter C2 distance' },
+  C3: { id: 'ghg-end-of-life', label: 'Choose end-of-life route' },
+  C4: { id: 'ghg-end-of-life', label: 'Choose end-of-life route' },
+};
+function focusField(id: string) {
+  const element = document.getElementById(id);
+  if (!element) return;
+  element.scrollIntoView({ block: 'center' });
+  element.focus({ preventScroll: true });
+}
 const FREIGHT_MODE_OPTIONS = Object.entries(FREIGHT_FACTORS) as Array<[FreightMode, (typeof FREIGHT_FACTORS)[FreightMode]]>;
 const END_OF_LIFE_OPTIONS = Object.entries(END_OF_LIFE_FACTORS) as Array<[EndOfLifeRoute, (typeof END_OF_LIFE_FACTORS)[EndOfLifeRoute]]>;
 
@@ -381,7 +400,7 @@ function FactorSuggestionDialog({
 
 function App() {
   const [catalog, setCatalog] = useState<FactorCatalog | null>(null);
-  const [catalogLoading, setCatalogLoading] = useState(true);
+  const [, setCatalogLoading] = useState(true);
   const [catalogError, setCatalogError] = useState('');
   const [familyFilter, setFamilyFilter] = useState('');
   const [geographyFilter, setGeographyFilter] = useState('');
@@ -493,6 +512,8 @@ function App() {
     },
   }), [productInputs, selectedProcesses, finishedProductMassDraft, flatBomScopeConfirmed, functionalUnitCategory, functionalUnitDescription, inboundDraft, distributionDraft, toWasteKmDraft, endOfLifeDraft]);
   const bomMassAssessment = productBoundary.massAssessment;
+  const massBalanced = bomMassAssessment.status === 'balanced';
+  const scenarioHint = (value: string) => (!massBalanced && value.trim() !== '' ? 'Not counted until the product mass check balances.' : undefined);
   const selectedProcessSummary = useMemo(
     () => result ? summarizeSelectedProcesses(result.results) : null,
     [result],
@@ -745,9 +766,6 @@ function App() {
               </div>
                           </div>
 
-            {catalogLoading && (
-              <div className="catalog-loading" aria-busy="true"><CircularProgress size={22} aria-label="Loading process factors" /></div>
-            )}
             {catalogError && (
               <Alert severity="error" onClose={() => setCatalogError('')}>
                 {catalogError} Reload the page to retry the bundled factor catalog.
@@ -866,6 +884,12 @@ function App() {
                     slotProps={{ htmlInput: { maxLength: 140 } }}
                   />
                 </div>
+                <div className="fu-suggestions" aria-label="Functional unit examples">
+                  <span className="fu-suggestions-label">Examples:</span>
+                  {FUNCTIONAL_UNIT_EXAMPLES[functionalUnitCategory].map((example) => (
+                    <Chip key={example} size="small" variant="outlined" label={example} onClick={() => setFunctionalUnitDescription(example)} />
+                  ))}
+                </div>
                 <FormControlLabel
                   className="bom-mass-confirmation"
                   control={(
@@ -925,10 +949,12 @@ function App() {
                     <TextField
                       type="number"
                       size="small"
+                      id="ghg-inbound-distance"
                       label="A2 inbound distance (km)"
                       value={inboundDraft.distanceKm}
                       onChange={(event) => setInboundDraft((draft) => ({ ...draft, distanceKm: event.target.value }))}
-                      slotProps={{ htmlInput: { min: 0, step: 'any' } }}
+                      helperText={scenarioHint(inboundDraft.distanceKm)}
+                      slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: 0, step: 'any' } }}
                     />
                     <TextField
                       select
@@ -943,22 +969,27 @@ function App() {
                     <TextField
                       type="number"
                       size="small"
+                      id="ghg-distribution-distance"
                       label="A4 distribution distance (km)"
                       value={distributionDraft.distanceKm}
                       onChange={(event) => setDistributionDraft((draft) => ({ ...draft, distanceKm: event.target.value }))}
-                      slotProps={{ htmlInput: { min: 0, step: 'any' } }}
+                      helperText={scenarioHint(distributionDraft.distanceKm)}
+                      slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: 0, step: 'any' } }}
                     />
                     <TextField
                       type="number"
                       size="small"
+                      id="ghg-to-waste-distance"
                       label="C2 distance to waste (km, HGV)"
                       value={toWasteKmDraft}
                       onChange={(event) => setToWasteKmDraft(event.target.value)}
-                      slotProps={{ htmlInput: { min: 0, step: 'any' } }}
+                      helperText={scenarioHint(toWasteKmDraft)}
+                      slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: 0, step: 'any' } }}
                     />
                     <TextField
                       select
                       size="small"
+                      id="ghg-end-of-life"
                       label="C3 and C4 end-of-life route"
                       value={endOfLifeDraft}
                       onChange={(event) => setEndOfLifeDraft(event.target.value as EndOfLifeRoute | '')}
@@ -995,6 +1026,16 @@ function App() {
                         <span className="stage-name">{item.label}</span>
                         <span className="stage-status">{STAGE_STATUS_LABEL[item.status]}</span>
                         <span className="stage-note">{item.note}</span>
+                        {item.status === 'not-declared' && SCENARIO_FIELD_FOR_STAGE[item.stage] ? (
+                          <button type="button" className="stage-action" onClick={() => focusField(SCENARIO_FIELD_FOR_STAGE[item.stage]!.id)}>
+                            {SCENARIO_FIELD_FOR_STAGE[item.stage]!.label}
+                          </button>
+                        ) : null}
+                        {item.status === 'required-missing' ? (
+                          <button type="button" className="stage-action" onClick={() => focusField('product-inputs')}>
+                            Link a process row
+                          </button>
+                        ) : null}
                       </li>
                     ))}
                   </ul>
@@ -1012,6 +1053,9 @@ function App() {
               </details>
             </section>
 
+            {!catalog && !catalogError && (
+              <p className="catalog-status" role="status">Loading process factors…</p>
+            )}
             {catalog && (
               <form id="process-library" onSubmit={calculate} className="estimator-form">
                 <div className="form-grid two-col">

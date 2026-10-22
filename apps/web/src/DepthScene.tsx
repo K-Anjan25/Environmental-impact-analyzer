@@ -125,7 +125,6 @@ export default function DepthScene() {
               inert={!isActive}
             >
               <div className="depth-copy">
-                <p className="depth-count">{String(index + 1).padStart(2, '0')} / {String(SLIDES.length).padStart(2, '0')}</p>
                 <h2>{slide.title}</h2>
                 <p>{slide.body}</p>
                 {slide.cta ? (

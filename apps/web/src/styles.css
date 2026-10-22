@@ -1230,3 +1230,12 @@ body { background: linear-gradient(rgba(247, 249, 225, 0.9), rgba(247, 249, 225,
 .bom-mass-field { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; min-width: 0; }
 .bom-mass-field-label { display: block; color: #2b4437; font-size: 13px; font-weight: 650; line-height: 1.4; overflow-wrap: anywhere; }
 .bom-mass-field .MuiTextField-root { min-width: 0; }
+
+/* Calculator: non-blocking status, functional unit examples, stage actions, scenario hints */
+.catalog-status { margin: 0 0 12px; color: #4f6459; font-size: 13px; }
+.fu-suggestions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; }
+.fu-suggestions-label { color: #4f6459; font-size: 12px; font-weight: 700; }
+.stage-action { justify-self: start; margin-top: 6px; padding: 6px 12px; border: 1px solid #1f6b52; border-radius: 999px; background: #fffefa; color: #1f6b52; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+.stage-action:hover { background: #e6f2ec; }
+.stage-action:focus-visible { outline: 2px solid #1f6b52; outline-offset: 2px; }
+.stage-coverage-item .stage-action { grid-column: 1 / -1; justify-self: start; white-space: nowrap; margin-top: 4px; }

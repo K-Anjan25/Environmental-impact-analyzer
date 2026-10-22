@@ -80,7 +80,7 @@ export default function LandingPage() {
               <a key={type} className="visual-index-card visual-index-empty" href={`#/blogs/${POST_TYPE_SEGMENT[type]}`}>
                 <span className="visual-index-copy">
                   <small>{POST_TYPE_LABEL[type].toUpperCase()}</small>
-                  <strong>No {POST_TYPE_LABEL[type].toLowerCase()} posted yet</strong>
+                  <strong>No {POST_TYPE_LABEL[type].toLowerCase()} published yet</strong>
                 </span>
               </a>
             ),

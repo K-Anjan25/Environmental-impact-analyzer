@@ -71,7 +71,7 @@ function PostCard({ post }: { post: Post }) {
 function BlogTabs({ current }: { current: PostType | 'all' }) {
   return (
     <nav className="blog-tabs" aria-label="Blog types">
-      <a href="#/blogs" aria-current={current === 'all' ? 'page' : undefined}>All posts</a>
+      <a href="#/blogs" aria-current={current === 'all' ? 'page' : undefined}>All blogs</a>
       {POST_TYPES.map((type) => (
         <a key={type} href={routeHref({ name: 'blog-type', type })} aria-current={current === type ? 'page' : undefined}>
           {POST_TYPE_PLURAL[type]}
@@ -150,8 +150,8 @@ export function BlogPostPage({ type, slug }: { type: PostType; slug: string }) {
       <SiteLayout current="blogs">
         <div className="blog-page">
           <header className="page-heading">
-            <h1 className="page-title">Post not found</h1>
-            <p className="page-lede">This post may have been unpublished or moved.</p>
+            <h1 className="page-title">Blog not found</h1>
+            <p className="page-lede">This blog may have been unpublished or moved.</p>
             <a className="landing-cta" href={routeHref({ name: 'blog-type', type })}>Back to {POST_TYPE_PLURAL[type].toLowerCase()}</a>
           </header>
         </div>

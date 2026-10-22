@@ -21,7 +21,7 @@ import { postHref } from './router';
  * Post editor: create, edit, and delete blog posts (guides, explainers, and news).
  * This page is hidden for now. It is not linked from the menu or footer.
  */
-export default function AdminPostsPage() {
+export default function AdminBlogsPage() {
   const [posts, setPosts] = useState<Post[]>(() => loadPosts());
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<PostInput>(EMPTY_POST_INPUT);
@@ -31,7 +31,7 @@ export default function AdminPostsPage() {
 
   useEffect(() => {
     const previous = document.title;
-    document.title = 'Manage posts · EcoImpact Lab';
+    document.title = 'Manage blogs · EcoImpact Lab';
     let robots = document.querySelector<HTMLMetaElement>('meta[name="robots"]');
     const created = !robots;
     if (!robots) {
@@ -75,15 +75,15 @@ export default function AdminPostsPage() {
     try {
       if (editingId) {
         updatePost(editingId, form);
-        setMessage('Post updated.');
+        setMessage('Blog updated.');
       } else {
         createPost(form);
-        setMessage('Post created.');
+        setMessage('Blog created.');
       }
       setPosts(loadPosts());
       reset();
     } catch (error) {
-      setSaveError(error instanceof Error ? error.message : 'The post could not be saved.');
+      setSaveError(error instanceof Error ? error.message : 'The blog could not be saved.');
     }
   };
 
@@ -101,7 +101,7 @@ export default function AdminPostsPage() {
     deletePost(post.id);
     if (editingId === post.id) reset();
     setPosts(loadPosts());
-    setMessage('Post deleted.');
+    setMessage('Blog deleted.');
   };
 
   const describedBy = (key: keyof PostInput) => (errors[key] ? `${key}-error` : undefined);
@@ -110,18 +110,18 @@ export default function AdminPostsPage() {
     <SiteLayout current="blogs">
       <div className="blog-page admin-page">
         <header className="page-heading">
-          <p className="landing-eyebrow">POST MANAGEMENT</p>
-          <h1 className="page-title">Manage posts</h1>
-          <p className="page-lede">Create, edit, and delete guides, explainers, and news. Published posts appear on the blogs. Drafts stay hidden.</p>
+          <p className="landing-eyebrow">BLOG MANAGEMENT</p>
+          <h1 className="page-title">Manage blogs</h1>
+          <p className="page-lede">Create, edit, and delete blogs: guides, explainers, and news. Published blogs appear on the blog pages. Drafts stay hidden.</p>
         </header>
 
         <div role="status" aria-live="polite" className="admin-status">{message}</div>
 
         <section className="admin-form-section" aria-labelledby="post-form-heading">
-          <h2 id="post-form-heading">{editingId ? 'Edit post' : 'New post'}</h2>
+          <h2 id="post-form-heading">{editingId ? 'Edit blog' : 'New blog'}</h2>
           <form className="admin-form" onSubmit={submit} noValidate>
             <div className="admin-field">
-              <label htmlFor="post-type">Post type</label>
+              <label htmlFor="post-type">Blog type</label>
               <select
                 id="post-type"
                 value={form.type}
@@ -163,7 +163,7 @@ export default function AdminPostsPage() {
             </div>
 
             <div className="admin-field admin-field-wide">
-              <label htmlFor="post-body">Post text</label>
+              <label htmlFor="post-body">Blog text</label>
               <textarea
                 id="post-body"
                 rows={8}
@@ -223,15 +223,15 @@ export default function AdminPostsPage() {
             {saveError ? <p role="alert" className="admin-error admin-error-summary">{saveError}</p> : null}
 
             <div className="admin-actions">
-              <button type="submit" className="landing-cta">{editingId ? 'Save changes' : 'Create post'}</button>
+              <button type="submit" className="landing-cta">{editingId ? 'Save changes' : 'Create blog'}</button>
               {editingId ? <button type="button" className="admin-secondary" onClick={reset}>Cancel edit</button> : null}
             </div>
           </form>
         </section>
 
         <section className="admin-list-section" aria-labelledby="post-list-heading">
-          <h2 id="post-list-heading">All posts ({posts.length})</h2>
-          {posts.length === 0 ? <p className="blog-empty">No posts yet.</p> : null}
+          <h2 id="post-list-heading">All blogs ({posts.length})</h2>
+          {posts.length === 0 ? <p className="blog-empty">No blogs yet.</p> : null}
           <ul className="admin-list">
             {posts.map((post) => (
               <li key={post.id} className="admin-list-item">

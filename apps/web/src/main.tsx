@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import App from './App';
-import AdminPostsPage from './AdminPostsPage';
+import AdminBlogsPage from './AdminBlogsPage';
 import LandingPage from './LandingPage';
 import { BlogIndexPage, BlogPostPage, BlogTypePage } from './BlogPages';
 import SiteLayout from './SiteLayout';
@@ -26,8 +26,8 @@ function RouteView({ route }: { route: Route }) {
       return <BlogTypePage type={route.type} />;
     case 'blog-post':
       return <BlogPostPage type={route.type} slug={route.slug} />;
-    case 'admin-posts':
-      return <AdminPostsPage />;
+    case 'admin-blogs':
+      return <AdminBlogsPage />;
     default:
       return (
         <SiteLayout current="home">

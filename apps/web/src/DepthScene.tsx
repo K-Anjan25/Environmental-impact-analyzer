@@ -49,16 +49,13 @@ const SLIDES: Slide[] = [
 ];
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
-const smooth = (t: number) => t * t * (3 - 2 * t);
 
 /*
- * Card i has a stack position r = progress * (N - 1) - i.
- * r < -1: not yet visible.
- * -1 <= r < 0: fading in over the previous card.
- * r >= 0: fully visible; the next card fades in over it.
+ * Binary, sequential transitions: exactly one step is active at a time.
+ * The outgoing step fades out completely, then the next step fades in.
+ * CSS delays the incoming fade, so two steps are never visible together.
+ * Timing is in docs/landing-journey-storyboard.md.
  */
-const stackPosition = (p: number, index: number) => p * (SLIDES.length - 1) - index;
-
 export default function DepthScene() {
   const sectionRef = useRef<HTMLElement>(null);
   const cardRefs = useRef<(HTMLElement | null)[]>([]);
@@ -67,58 +64,33 @@ export default function DepthScene() {
     const section = sectionRef.current;
     if (!section) return undefined;
 
-    const reduceMotion =
-      typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let activeIndex = -1;
 
-    let progress = 0;
-    let shown = 0;
-    let frameId = 0;
-    let last = performance.now();
+    const activeFor = (progress: number) => Math.round(clamp(progress, 0, 1) * (SLIDES.length - 1));
 
-    const readProgress = () => {
-      const rect = section.getBoundingClientRect();
-      const total = section.offsetHeight - window.innerHeight;
-      progress = total > 0 ? clamp(-rect.top / total, 0, 1) : 0;
-    };
-
-    // Cross-fade only: each card dissolves in over the previous one. No movement, scale, or dimming.
-    const paint = (p: number) => {
-      SLIDES.forEach((_, index) => {
-        const card = cardRefs.current[index];
+    const apply = (index: number) => {
+      if (index === activeIndex) return;
+      activeIndex = index;
+      cardRefs.current.forEach((card, i) => {
         if (!card) return;
-        const r = stackPosition(p, index);
-        if (r < -1) {
-          card.style.opacity = '0';
-          card.style.visibility = 'hidden';
-        } else if (r < 0) {
-          card.style.opacity = smooth(r + 1).toFixed(4);
-          card.style.visibility = 'visible';
-        } else {
-          card.style.opacity = '1';
-          card.style.visibility = 'visible';
-        }
+        const isActive = i === index;
+        card.classList.toggle('is-active', isActive);
+        card.setAttribute('aria-hidden', isActive ? 'false' : 'true');
       });
     };
 
-    const tick = (now: number) => {
-      frameId = requestAnimationFrame(tick);
-      const dt = Math.min(0.05, (now - last) / 1000);
-      last = now;
-      // Frame-rate independent easing, so the stack settles at the same speed on any device.
-      shown += (progress - shown) * (reduceMotion ? 1 : 1 - Math.exp(-dt * 7));
-      paint(shown);
+    const onScroll = () => {
+      const rect = section.getBoundingClientRect();
+      const total = section.offsetHeight - window.innerHeight;
+      const progress = total > 0 ? clamp(-rect.top / total, 0, 1) : 0;
+      apply(activeFor(progress));
     };
 
-    const onScroll = () => readProgress();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
-    readProgress();
-    shown = progress;
-    paint(progress);
-    frameId = requestAnimationFrame(tick);
+    onScroll();
 
     return () => {
-      cancelAnimationFrame(frameId);
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
     };
@@ -131,7 +103,6 @@ export default function DepthScene() {
           <article
             key={slide.title}
             className="depth-card"
-            style={{ zIndex: index + 1 }}
             ref={(element) => {
               cardRefs.current[index] = element;
             }}

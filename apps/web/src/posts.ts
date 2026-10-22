@@ -1,7 +1,7 @@
 /*
  * Blog posts: one store for guides, explainers, and news.
  * Posts live in localStorage for now, so CRUD works in the browser without a server.
- * The admin screen that edits them is hidden (route #/admin/posts, not linked from any menu).
+ * The admin screen that edits them is hidden (route #/admin/blogs, not linked from any menu).
  */
 
 export type PostType = 'guide' | 'explainer' | 'news';
@@ -171,11 +171,11 @@ function uniqueSlug(posts: Post[], type: PostType, base: string, ignoreId?: stri
 
 export function validatePostInput(input: PostInput): PostErrors {
   const errors: PostErrors = {};
-  if (!POST_TYPES.includes(input.type)) errors.type = 'Choose a post type.';
+  if (!POST_TYPES.includes(input.type)) errors.type = 'Choose a blog type.';
   if (!input.title.trim()) errors.title = 'Enter a title.';
   if (input.title.trim().length > 140) errors.title = 'Keep the title under 140 characters.';
   if (!input.summary.trim()) errors.summary = 'Enter a short summary.';
-  if (!input.body.trim()) errors.body = 'Enter the post text. Separate paragraphs with a blank line.';
+  if (!input.body.trim()) errors.body = 'Enter the blog text. Separate paragraphs with a blank line.';
   const url = input.externalUrl.trim();
   if (url) {
     try {
@@ -228,7 +228,7 @@ export function createPost(input: PostInput): Post {
 export function updatePost(id: string, input: PostInput): Post {
   const posts = loadPosts();
   const existing = posts.find((post) => post.id === id);
-  if (!existing) throw new Error('That post no longer exists.');
+  if (!existing) throw new Error('That blog no longer exists.');
   const slug = existing.type === input.type && existing.slug
     ? existing.slug
     : uniqueSlug(posts, input.type, slugify(input.title), id);

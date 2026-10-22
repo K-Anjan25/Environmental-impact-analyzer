@@ -1172,3 +1172,19 @@ body { background: linear-gradient(rgba(247, 249, 225, 0.9), rgba(247, 249, 225,
   .depth-stage { padding: 10px; }
   .depth-card { inset: 10px; }
 }
+
+/* Journey: binary slide change. One step is visible at a time; the outgoing step
+   fades out fully (450ms) before the incoming step starts to fade in (after 450ms). */
+.depth-card { opacity: 0; visibility: hidden; transition: opacity 450ms ease 0ms, visibility 0s linear 450ms; }
+.depth-card.is-active { opacity: 1; visibility: visible; transition: opacity 450ms ease 450ms, visibility 0s linear 0s; }
+@media (prefers-reduced-motion: reduce) {
+  .depth-card, .depth-card.is-active { transition-duration: 1ms; transition-delay: 0ms; }
+}
+
+/* No hover underlines on nav, footer, blog filters, or blog links. */
+.site-nav a:hover, .site-nav a:focus-visible,
+.site-footer-links a:hover, .site-footer-links a:focus-visible,
+.blog-tabs a:hover, .blog-tabs a:focus-visible,
+.blog-section-heading a:hover, .post-card-link:hover, .post-external a:hover { text-decoration: none; }
+.site-footer-links a { text-decoration: none; }
+.blog-section-heading a { text-decoration: none; }

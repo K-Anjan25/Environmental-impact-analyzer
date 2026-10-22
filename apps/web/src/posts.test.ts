@@ -103,7 +103,7 @@ describe('routes', () => {
 
   it('keeps the calculator, hidden admin, and legacy guide links', () => {
     expect(parseRoute('#/calculator')).toEqual({ name: 'calculator' });
-    expect(parseRoute('#/admin/posts')).toEqual({ name: 'admin-posts' });
+    expect(parseRoute('#/admin/blogs')).toEqual({ name: 'admin-blogs' });
     expect(parseRoute('#/guides/scope')).toEqual({ name: 'blog-post', type: 'news', slug: 'scope' });
     expect(parseRoute('#top')).toEqual({ name: 'home' });
     expect(parseRoute('')).toEqual({ name: 'home' });

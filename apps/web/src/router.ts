@@ -6,7 +6,7 @@ export type Route =
   | { name: 'blog-index' }
   | { name: 'blog-type'; type: PostType }
   | { name: 'blog-post'; type: PostType; slug: string }
-  | { name: 'admin-posts' }
+  | { name: 'admin-blogs' }
   | { name: 'not-found' };
 
 /** Old guide links (#/guides/<slug>) map to the blog post type they now belong to. */
@@ -49,7 +49,7 @@ export function parseRoute(hash: string): Route {
     return { name: 'not-found' };
   }
 
-  if (parts[0] === 'admin' && parts[1] === 'posts' && parts.length === 2) return { name: 'admin-posts' };
+  if (parts[0] === 'admin' && parts[1] === 'blogs' && parts.length === 2) return { name: 'admin-blogs' };
 
   return { name: 'not-found' };
 }
@@ -66,8 +66,8 @@ export function routeHref(route: Route): string {
       return `#/blogs/${POST_TYPE_SEGMENT[route.type]}`;
     case 'blog-post':
       return `#/blogs/${POST_TYPE_SEGMENT[route.type]}/${encodeURIComponent(route.slug)}`;
-    case 'admin-posts':
-      return '#/admin/posts';
+    case 'admin-blogs':
+      return '#/admin/blogs';
     default:
       return '#/';
   }

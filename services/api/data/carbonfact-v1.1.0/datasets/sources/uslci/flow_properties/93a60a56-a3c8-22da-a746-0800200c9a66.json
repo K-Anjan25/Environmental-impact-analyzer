@@ -1,0 +1,1 @@
+{"@type":"FlowProperty","@id":"93a60a56-a3c8-22da-a746-0800200c9a66","name":"Volume","description":"","category":"Technical flow properties","version":"00.01.001","lastChange":"2025-07-15T12:41:46.037Z","flowPropertyType":"PHYSICAL_QUANTITY","unitGroup":{"@type":"UnitGroup","@id":"93a60a57-a3c8-12da-a746-0800200c9a66","name":"Units of volume","category":"Technical unit groups"}}

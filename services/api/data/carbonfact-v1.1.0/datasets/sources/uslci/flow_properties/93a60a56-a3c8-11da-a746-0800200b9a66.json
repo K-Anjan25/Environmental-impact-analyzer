@@ -1,0 +1,1 @@
+{"@type":"FlowProperty","@id":"93a60a56-a3c8-11da-a746-0800200b9a66","name":"Mass","description":"","category":"Technical flow properties","version":"00.01.001","lastChange":"2025-07-15T12:42:19.448Z","flowPropertyType":"PHYSICAL_QUANTITY","unitGroup":{"@type":"UnitGroup","@id":"93a60a57-a4c8-11da-a746-0800200c9a66","name":"Units of mass","category":"Technical unit groups"}}

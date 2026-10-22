@@ -1,0 +1,1 @@
+{"@type":"FlowProperty","@id":"c0447923-0e60-4b3c-97c2-a86dddd9eea5","name":"Time","description":"","category":"Technical flow properties","version":"00.01.001","lastChange":"2025-07-15T12:41:50.546Z","flowPropertyType":"PHYSICAL_QUANTITY","unitGroup":{"@type":"UnitGroup","@id":"af638906-3ec7-4314-8de7-f76039f2dd01","name":"Units of time","category":"Technical unit groups"}}

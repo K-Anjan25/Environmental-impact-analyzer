@@ -1,0 +1,1 @@
+{"@type":"UnitGroup","@id":"01d54e11-f5a6-43e2-a7d9-ec307ae96c1b","name":"Currencies","category":"Economic unit groups","version":"00.00.001","lastChange":"2022-03-28T23:48:56.346Z","units":[{"@type":"Unit","@id":"d0d3bdb1-311a-4ea7-8d37-808f11adbc61","name":"USD","conversionFactor":1.0,"isRefUnit":true}]}

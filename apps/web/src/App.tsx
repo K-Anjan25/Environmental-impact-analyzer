@@ -1054,7 +1054,20 @@ function App() {
             </section>
 
             {!catalog && !catalogError && (
-              <p className="catalog-status" role="status">Loading process factors…</p>
+              <div className="process-skeleton" aria-busy="true">
+                <span className="visually-hidden" role="status">Loading process factors</span>
+                <div className="process-skeleton-row" aria-hidden="true">
+                  <span className="skeleton-bar skeleton-bar-label" />
+                  <span className="skeleton-bar skeleton-bar-field" />
+                </div>
+                <div className="process-skeleton-row" aria-hidden="true">
+                  <span className="skeleton-bar skeleton-bar-field" />
+                  <span className="skeleton-bar skeleton-bar-field" />
+                </div>
+                <div className="process-skeleton-row" aria-hidden="true">
+                  <span className="skeleton-bar skeleton-bar-wide" />
+                </div>
+              </div>
             )}
             {catalog && (
               <form id="process-library" onSubmit={calculate} className="estimator-form">

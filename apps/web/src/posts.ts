@@ -77,7 +77,7 @@ const SEED_POSTS: Post[] = [
       'Each published factor pairs a process with a reference unit, such as one kilogram of material or one piece of product.',
       'When you enter a quantity, the calculator converts it to that reference unit and multiplies it by the factor for each indicator. Check the unit shown next to each factor before you enter a quantity.',
     ],
-    image: '/images/recycling-globe.jpg',
+    image: '/images/recycling-globe.webp',
     imageAlt: 'Illustration of a recycling globe.',
     status: 'published',
     updatedAt: '2026-10-01T00:00:00.000Z',
@@ -92,7 +92,7 @@ const SEED_POSTS: Post[] = [
       'The Environmental Footprint 3.1 method reports 16 impact categories, including climate change, water use, land use, and resource use.',
       'Each indicator has its own unit, so values cannot be added together or ranked across indicators without a separate weighting step. The results table shows each indicator on its own line.',
     ],
-    image: '/images/recycling-icon.jpg',
+    image: '/images/recycling-icon.webp',
     imageAlt: 'Recycling icon.',
     status: 'published',
     updatedAt: '2026-10-01T00:00:00.000Z',
@@ -107,7 +107,7 @@ const SEED_POSTS: Post[] = [
       'This tool sums the processes you select. It does not model every upstream supplier, transport leg, use phase, or end-of-life step for a finished item.',
       'Treat a result as the impact of the processes you chose, and state that scope whenever you share it.',
     ],
-    image: '/images/news-process-boundary.jpg',
+    image: '/images/news-process-boundary.webp',
     imageAlt: 'Illustration of a green recycling T-shirt held in a hand, with leaves and a hanger.',
     status: 'published',
     updatedAt: '2026-10-01T00:00:00.000Z',
@@ -135,6 +135,19 @@ function isPost(value: unknown): value is Post {
   );
 }
 
+/** Saved posts may still point at image files that were converted to WebP. Map them to the new names. */
+const LEGACY_IMAGE_PATHS: Record<string, string> = {
+  [RETIRED_NEWS_IMAGE]: '/images/news-process-boundary.webp',
+  '/images/news-process-boundary.jpg': '/images/news-process-boundary.webp',
+  '/images/recycling-globe.jpg': '/images/recycling-globe.webp',
+  '/images/recycling-icon.jpg': '/images/recycling-icon.webp',
+  '/images/hero-environment.png': '/images/hero-environment.webp',
+};
+function migrateImagePath(post: Post): Post {
+  const next = post.image ? LEGACY_IMAGE_PATHS[post.image] : undefined;
+  return next ? { ...post, image: next } : post;
+}
+
 export function loadPosts(): Post[] {
   const store = storage();
   const raw = store?.getItem(POSTS_STORAGE_KEY);
@@ -143,7 +156,7 @@ export function loadPosts(): Post[] {
     const parsed: unknown = JSON.parse(raw);
     // Saved posts from before the image rename point at the old file; move them to the new one.
     return Array.isArray(parsed)
-      ? parsed.filter(isPost).map((post) => (post.image === RETIRED_NEWS_IMAGE ? { ...post, image: '/images/news-process-boundary.jpg' } : post))
+      ? parsed.filter(isPost).map(migrateImagePath)
       : [];
   } catch {
     return [];

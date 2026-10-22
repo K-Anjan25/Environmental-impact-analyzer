@@ -48,7 +48,7 @@ export default function LandingPage() {
         <figure className="landing-art">
           <img
             className="hero-photo"
-            src="/images/hero-environment.png"
+            src="/images/hero-environment.webp"
             alt="A restored river valley with a planted hillside, a solar-roofed building, and a clear sky."
             fetchPriority="high"
           />

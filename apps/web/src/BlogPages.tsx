@@ -81,6 +81,75 @@ function BlogTabs({ current }: { current: PostType | 'all' }) {
   );
 }
 
+const POSTS_PER_PAGE = 6;
+
+/**
+ * Posts in pages of six. "Load more" adds the next page to the list. The numbered
+ * pages are the fallback: each one shows only its own six posts, so every post is
+ * reachable without loading the rest.
+ */
+function PostList({ posts, listId }: { posts: Post[]; listId: string }) {
+  const [count, setCount] = useState(POSTS_PER_PAGE);
+  const [page, setPage] = useState<number | null>(null);
+  const pageCount = Math.ceil(posts.length / POSTS_PER_PAGE);
+  const visible = page === null ? posts.slice(0, count) : posts.slice((page - 1) * POSTS_PER_PAGE, page * POSTS_PER_PAGE);
+  const remaining = Math.max(0, posts.length - count);
+
+  return (
+    <>
+      <div className="post-grid" id={listId}>
+        {visible.map((post) => <PostCard key={post.id} post={post} />)}
+      </div>
+      <p className="post-list-status" role="status">
+        Showing {visible.length} of {posts.length} {posts.length === 1 ? 'post' : 'posts'}
+      </p>
+      {posts.length > POSTS_PER_PAGE ? (
+        <div className="post-list-controls">
+          {page === null && remaining > 0 ? (
+            <button
+              type="button"
+              className="load-more"
+              onClick={() => setCount((current) => current + POSTS_PER_PAGE)}
+            >
+              Load more ({Math.min(POSTS_PER_PAGE, remaining)} of {remaining} left)
+            </button>
+          ) : null}
+          <nav className="post-pages" aria-label="Blog pages">
+            <ul>
+              <li>
+                <button
+                  type="button"
+                  className={page === null ? 'is-current' : ''}
+                  aria-current={page === null ? 'page' : undefined}
+                  onClick={() => {
+                    setPage(null);
+                    setCount(POSTS_PER_PAGE);
+                  }}
+                >
+                  All
+                </button>
+              </li>
+              {Array.from({ length: pageCount }, (_, index) => index + 1).map((number) => (
+                <li key={number}>
+                  <button
+                    type="button"
+                    className={page === number ? 'is-current' : ''}
+                    aria-current={page === number ? 'page' : undefined}
+                    aria-label={`Page ${number}`}
+                    onClick={() => setPage(number)}
+                  >
+                    {number}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+      ) : null}
+    </>
+  );
+}
+
 export function BlogIndexPage() {
   const posts = usePublishedPosts();
   return (
@@ -93,9 +162,7 @@ export function BlogIndexPage() {
         </header>
         <BlogTabs current="all" />
         {posts.length ? (
-          <div className="post-grid" id="all-blogs-list">
-            {posts.map((post) => <PostCard key={post.id} post={post} />)}
-          </div>
+          <PostList key="all" posts={posts} listId="all-blogs-list" />
         ) : (
           <p className="blog-empty">No blogs published yet.</p>
         )}
@@ -115,9 +182,7 @@ export function BlogTypePage({ type }: { type: PostType }) {
         </header>
         <BlogTabs current={type} />
         {posts.length ? (
-          <div className="post-grid" id={`${POST_TYPE_SEGMENT[type]}-list`}>
-            {posts.map((post) => <PostCard key={post.id} post={post} />)}
-          </div>
+          <PostList key={type} posts={posts} listId={`${POST_TYPE_SEGMENT[type]}-list`} />
         ) : (
           <p className="blog-empty">No {POST_TYPE_PLURAL[type].toLowerCase()} published yet.</p>
         )}

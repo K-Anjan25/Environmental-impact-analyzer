@@ -105,14 +105,49 @@ describe('component hierarchy and identity', () => {
 });
 
 describe('stage coverage and verdict', () => {
-  it('never reports a complete product for footwear: A2, A4, and end of life are outside the boundary', () => {
+  it('never reports a complete product: the best verdict is a partial boundary', () => {
     const result = assessProductBoundary(input({
       processLinks: [link('upper', 'synthetic-pu-leather'), link('sole', 'shoe-assembly-sneaker')],
     }));
-    expect(result.verdict).toBe('selected-stages-only');
+    expect(result.verdict).toBe('partial-boundary');
     expect(result.verdictText).toContain('not a complete product footprint');
+    expect(result.verdictText).not.toMatch(/\bcomplete\b(?! product footprint)/i);
     const excluded = result.stageCoverage.filter((item) => !item.inBoundary).map((item) => item.stage);
-    expect(excluded).toEqual(['A2', 'A4', 'B', 'C1', 'C2', 'C3', 'C4']);
+    expect(excluded).toEqual(['B', 'C1']);
+  });
+
+  it('marks undeclared transport and end-of-life stages as not declared, not missing', () => {
+    const result = assessProductBoundary(input({
+      processLinks: [link('upper', 'synthetic-pu-leather'), link('sole', 'shoe-assembly-sneaker')],
+    }));
+    const statuses = Object.fromEntries(result.stageCoverage.map((item) => [item.stage, item.status]));
+    expect(statuses).toMatchObject({ A1: 'covered', A3: 'covered', A2: 'not-declared', A4: 'not-declared', C2: 'not-declared', C3: 'not-declared', C4: 'not-declared', B: 'excluded', C1: 'excluded' });
+    expect(result.missingRequiredStages).toEqual([]);
+  });
+
+  it('shows a GHG-only layer for declared transport and end-of-life without touching the EF stages', () => {
+    const result = assessProductBoundary(input({
+      processLinks: [link('upper', 'synthetic-pu-leather'), link('sole', 'shoe-assembly-sneaker')],
+      ghg: {
+        distribution: { mode: 'hgv-articulated', distanceKm: '500' },
+        endOfLife: 'landfill-mixed-ci',
+      },
+    }));
+    const statuses = Object.fromEntries(result.stageCoverage.map((item) => [item.stage, item.status]));
+    expect(statuses.A4).toBe('ghg-only');
+    expect(statuses.C3).toBe('ghg-only');
+    expect(statuses.C4).toBe('ghg-only');
+    expect(statuses.A1).toBe('covered');
+    expect(result.ghg.lines.map((line) => line.stage)).toEqual(['A4', 'C3']);
+    expect(result.verdict).toBe('partial-boundary');
+  });
+
+  it('blocks the verdict when a GHG scenario is invalid', () => {
+    const result = assessProductBoundary(input({
+      processLinks: [link('upper', 'synthetic-pu-leather'), link('sole', 'shoe-assembly-sneaker')],
+      ghg: { toWasteKm: '-5' },
+    }));
+    expect(result.verdict).toBe('blocked');
   });
 
   it('requires a PU leather or rubber row for footwear raw materials', () => {

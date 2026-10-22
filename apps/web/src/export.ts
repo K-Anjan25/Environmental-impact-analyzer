@@ -7,6 +7,7 @@ import {
 } from './ef31-score';
 import { describeBomMassStatus } from './product-bom';
 import { assessProductBoundary, type FunctionalUnitDefinition } from './product-boundary';
+import { DEFRA_2026_SOURCE, type GhgDeclarations } from './ghg-supplement';
 import type { ProcessQuantityBasis } from './product-quantity';
 import type { SelectedProcessSummary } from './product-summary';
 
@@ -31,6 +32,7 @@ export interface ProcessEstimateExportContext {
   functionalUnit?: FunctionalUnitDefinition;
   finishedProductMassKg?: string;
   flatBomScopeConfirmed?: boolean;
+  ghg?: GhgDeclarations;
   summary?: SelectedProcessSummary | null;
 }
 
@@ -93,6 +95,22 @@ const columns = [
   'bom_mass_coverage_percent',
   'bom_unconvertible_input_names',
   'bom_method_note',
+  'functional_unit',
+  'functional_unit_category',
+  'stage_coverage',
+  'declared_boundary',
+  'excluded_stages',
+  'ghg_stage',
+  'ghg_label',
+  'ghg_kg_co2e_per_functional_unit',
+  'ghg_calculation',
+  'ghg_indicator_scope',
+  'ghg_source',
+  'ghg_source_licence',
+  'ghg_source_licence_url',
+  'ghg_source_url',
+  'ghg_retrieved',
+  'ghg_source_note',
 ];
 
 function quantityBasisLabel(basis: ProcessQuantityBasis): string {
@@ -175,6 +193,7 @@ export function formatProcessEstimatesCsv(
       })),
       finishedProductMass,
       scopeConfirmed: flatBomScopeConfirmed,
+      ghg: context?.ghg,
     });
     const bomMass = boundary.massAssessment;
     rows.push({
@@ -185,10 +204,36 @@ export function formatProcessEstimatesCsv(
       functional_unit: boundary.functionalUnit.description,
       functional_unit_category: boundary.functionalUnit.category,
       stage_coverage: boundary.stageCoverage.map((item) => `${item.stage}:${item.status}`).join(' | '),
-      declared_boundary: 'A1 raw materials + A3 manufacturing',
-      excluded_stages: 'A2 transport to factory; A4 distribution; B use; C1-C4 end of life (no licensed factor rows in bundled data)',
-      aggregation: 'selected-stage subtotal; not a complete product footprint',
+      declared_boundary: 'EF 3.1: A1 raw materials + A3 manufacturing. GHG only: A2 transport to factory, A4 distribution, C2 transport to waste treatment, C3-C4 waste treatment and disposal.',
+      excluded_stages: 'B use (excluded on purpose); C1 deconstruction (excluded on purpose)',
+      aggregation: 'EF 3.1 subtotal (selected rows, A1 + A3) and a separate climate-change layer; never summed together; not a complete product footprint',
     });
+    for (const line of boundary.ghg.lines) {
+      rows.push({
+        record_type: 'ghg_supplement',
+        ghg_stage: line.stage,
+        ghg_label: line.label,
+        ghg_kg_co2e_per_functional_unit: line.kgCo2e,
+        ghg_calculation: line.detail,
+        ghg_indicator_scope: 'climate change (GHG), IPCC AR5 GWP-100 embedded; not one of the 16 EF 3.1 indicators',
+        ghg_source: DEFRA_2026_SOURCE.name,
+        ghg_source_licence: DEFRA_2026_SOURCE.licence,
+        ghg_source_licence_url: DEFRA_2026_SOURCE.licenceUrl,
+        ghg_source_url: DEFRA_2026_SOURCE.publisherUrl,
+        ghg_retrieved: DEFRA_2026_SOURCE.retrieved,
+        ghg_source_note: DEFRA_2026_SOURCE.transcriptionNote,
+        aggregation: 'climate change only; separate from the EF 3.1 subtotal; not a complete product footprint',
+      });
+    }
+    if (boundary.ghg.totalKgCo2e !== null) {
+      rows.push({
+        record_type: 'ghg_supplement_total',
+        ghg_stage: boundary.ghg.declaredStages.join(' | '),
+        ghg_kg_co2e_per_functional_unit: boundary.ghg.totalKgCo2e,
+        ghg_indicator_scope: 'climate change (GHG) only',
+        aggregation: 'sum of declared A2, A4, C2, C3-C4 climate-change lines; not added to the EF 3.1 subtotal',
+      });
+    }
     rows.push({
       record_type: 'bom_mass_check',
       input_association_status: describeBomMassStatus(bomMass),
@@ -199,7 +244,7 @@ export function formatProcessEstimatesCsv(
       bom_mass_difference_kg: bomMass.differenceKg,
       bom_mass_coverage_percent: bomMass.massCoveragePercent,
       bom_unconvertible_input_names: bomMass.unconvertibleInputNames.join(' | '),
-      bom_method_note: 'Arithmetic comparison of user-declared flat input mass with finished-product mass per functional unit; not a composition, completeness, or environmental-impact validation.',
+      bom_method_note: 'Arithmetic check that the user-declared component masses close to the finished-product mass per functional unit. It validates mass closure only; it does not validate component identity, material composition, or environmental impact.',
       aggregation: 'mass diagnostic only; not an environmental impact',
     });
   }

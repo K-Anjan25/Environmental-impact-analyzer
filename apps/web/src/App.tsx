@@ -60,15 +60,29 @@ import {
   type ProductBoundaryResult,
   type ProductCategory,
 } from './product-boundary';
+import {
+  DEFRA_2026_SOURCE,
+  END_OF_LIFE_FACTORS,
+  FREIGHT_FACTORS,
+  type EndOfLifeRoute,
+  type FreightMode,
+} from './ghg-supplement';
 import { suggestFactorsByInputName } from './factor-suggestions';
 import SiteLayout from './SiteLayout';
 
 const STAGE_STATUS_LABEL: Record<ProductBoundaryResult['stageCoverage'][number]['status'], string> = {
-  covered: 'Covered by linked rows',
+  covered: 'EF 3.1 covered by linked rows',
+  'ghg-only': 'Climate change (GHG) only',
+  'not-declared': 'Not declared (climate change only)',
   'required-missing': 'Required, not covered',
   'no-open-factor': 'Required, no open factor in bundled data',
-  excluded: 'Outside declared boundary',
+  excluded: 'Excluded on purpose',
 };
+
+type GhgFreightDraft = { mode: FreightMode; distanceKm: string };
+const FREIGHT_MODE_OPTIONS = Object.entries(FREIGHT_FACTORS) as Array<[FreightMode, (typeof FREIGHT_FACTORS)[FreightMode]]>;
+const END_OF_LIFE_OPTIONS = Object.entries(END_OF_LIFE_FACTORS) as Array<[EndOfLifeRoute, (typeof END_OF_LIFE_FACTORS)[EndOfLifeRoute]]>;
+
 
 type ProductInput = {
   id: string;
@@ -379,6 +393,10 @@ function App() {
   const [productInputQuantityDraft, setProductInputQuantityDraft] = useState('');
   const [productInputUnitDraft, setProductInputUnitDraft] = useState('');
   const [finishedProductMassDraft, setFinishedProductMassDraft] = useState('');
+  const [inboundDraft, setInboundDraft] = useState<GhgFreightDraft>({ mode: 'hgv-articulated', distanceKm: '' });
+  const [distributionDraft, setDistributionDraft] = useState<GhgFreightDraft>({ mode: 'hgv-articulated', distanceKm: '' });
+  const [toWasteKmDraft, setToWasteKmDraft] = useState('');
+  const [endOfLifeDraft, setEndOfLifeDraft] = useState<EndOfLifeRoute | ''>('');
   const [flatBomScopeConfirmed, setFlatBomScopeConfirmed] = useState(false);
   const [functionalUnitCategory, setFunctionalUnitCategory] = useState<ProductCategory>('footwear');
   const [functionalUnitDescription, setFunctionalUnitDescription] = useState('');
@@ -467,7 +485,13 @@ function App() {
     })),
     finishedProductMass: finishedProductMassDraft,
     scopeConfirmed: flatBomScopeConfirmed,
-  }), [productInputs, selectedProcesses, finishedProductMassDraft, flatBomScopeConfirmed, functionalUnitCategory, functionalUnitDescription]);
+    ghg: {
+      inbound: inboundDraft.distanceKm.trim() === '' ? null : inboundDraft,
+      distribution: distributionDraft.distanceKm.trim() === '' ? null : distributionDraft,
+      toWasteKm: toWasteKmDraft.trim() === '' ? null : toWasteKmDraft,
+      endOfLife: endOfLifeDraft === '' ? null : endOfLifeDraft,
+    },
+  }), [productInputs, selectedProcesses, finishedProductMassDraft, flatBomScopeConfirmed, functionalUnitCategory, functionalUnitDescription, inboundDraft, distributionDraft, toWasteKmDraft, endOfLifeDraft]);
   const bomMassAssessment = productBoundary.massAssessment;
   const selectedProcessSummary = useMemo(
     () => result ? summarizeSelectedProcesses(result.results) : null,
@@ -681,6 +705,12 @@ function App() {
       productInputs,
       finishedProductMassKg: finishedProductMassDraft,
       flatBomScopeConfirmed,
+      ghg: {
+        inbound: inboundDraft.distanceKm.trim() === '' ? null : inboundDraft,
+        distribution: distributionDraft.distanceKm.trim() === '' ? null : distributionDraft,
+        toWasteKm: toWasteKmDraft.trim() === '' ? null : toWasteKmDraft,
+        endOfLife: endOfLifeDraft === '' ? null : endOfLifeDraft,
+      },
       processLinks: selectedProcesses.map((line) => ({
         factorId: line.factor.id,
         familyId: line.factor.family_id,
@@ -873,6 +903,82 @@ function App() {
                     <strong>{describeBomMassStatus(bomMassAssessment)}</strong>
                   </div>
                 )}
+                <fieldset className="ghg-inputs">
+                  <legend>Transport and end of life (climate change only)</legend>
+                  <p className="ghg-source-note">
+                    Factors: {DEFRA_2026_SOURCE.name}, {DEFRA_2026_SOURCE.licence}, retrieved {DEFRA_2026_SOURCE.retrieved}. These cover climate change (kg CO2e) only, not the 16 EF 3.1 indicators.
+                  </p>
+                  <div className="form-grid two-col">
+                    <TextField
+                      select
+                      size="small"
+                      label="A2 inbound transport mode"
+                      value={inboundDraft.mode}
+                      onChange={(event) => setInboundDraft((draft) => ({ ...draft, mode: event.target.value as FreightMode }))}
+                      slotProps={{ select: { renderValue: (value) => FREIGHT_FACTORS[value as FreightMode].label } }}
+                    >
+                      {FREIGHT_MODE_OPTIONS.map(([id, option]) => (<MenuItem key={id} value={id}>{option.label}</MenuItem>))}
+                    </TextField>
+                    <TextField
+                      type="number"
+                      size="small"
+                      label="A2 inbound distance (km)"
+                      value={inboundDraft.distanceKm}
+                      onChange={(event) => setInboundDraft((draft) => ({ ...draft, distanceKm: event.target.value }))}
+                      slotProps={{ htmlInput: { min: 0, step: 'any' } }}
+                    />
+                    <TextField
+                      select
+                      size="small"
+                      label="A4 distribution mode"
+                      value={distributionDraft.mode}
+                      onChange={(event) => setDistributionDraft((draft) => ({ ...draft, mode: event.target.value as FreightMode }))}
+                      slotProps={{ select: { renderValue: (value) => FREIGHT_FACTORS[value as FreightMode].label } }}
+                    >
+                      {FREIGHT_MODE_OPTIONS.map(([id, option]) => (<MenuItem key={id} value={id}>{option.label}</MenuItem>))}
+                    </TextField>
+                    <TextField
+                      type="number"
+                      size="small"
+                      label="A4 distribution distance (km)"
+                      value={distributionDraft.distanceKm}
+                      onChange={(event) => setDistributionDraft((draft) => ({ ...draft, distanceKm: event.target.value }))}
+                      slotProps={{ htmlInput: { min: 0, step: 'any' } }}
+                    />
+                    <TextField
+                      type="number"
+                      size="small"
+                      label="C2 distance to waste (km, HGV)"
+                      value={toWasteKmDraft}
+                      onChange={(event) => setToWasteKmDraft(event.target.value)}
+                      slotProps={{ htmlInput: { min: 0, step: 'any' } }}
+                    />
+                    <TextField
+                      select
+                      size="small"
+                      label="C3 and C4 end-of-life route"
+                      value={endOfLifeDraft}
+                      onChange={(event) => setEndOfLifeDraft(event.target.value as EndOfLifeRoute | '')}
+                      slotProps={{ select: { displayEmpty: true, renderValue: (value) => value === '' ? 'Not declared' : END_OF_LIFE_FACTORS[value as EndOfLifeRoute].label } }}
+                    >
+                      <MenuItem value="">Not declared</MenuItem>
+                      {END_OF_LIFE_OPTIONS.map(([id, option]) => (<MenuItem key={id} value={id}>{option.label}</MenuItem>))}
+                    </TextField>
+                  </div>
+                  <p className="ghg-subtotal" aria-live="polite">
+                    <strong>Climate change (GHG) layer, separate from the EF 3.1 subtotal:</strong>{' '}
+                    {productBoundary.ghg.totalKgCo2e === null
+                      ? 'no transport or end-of-life value declared yet.'
+                      : `${numberForDisplay(productBoundary.ghg.totalKgCo2e)} kg CO2e per functional unit for ${productBoundary.ghg.declaredStages.join(', ')} (not a complete footprint).`}
+                  </p>
+                  {productBoundary.ghg.lines.length > 0 && (
+                    <ul className="ghg-lines">
+                      {productBoundary.ghg.lines.map((line) => (
+                        <li key={line.stage}><strong>{line.stage}</strong> {line.label}: {numberForDisplay(line.kgCo2e)} kg CO2e <span className="ghg-detail">({line.detail})</span></li>
+                      ))}
+                    </ul>
+                  )}
+                </fieldset>
                 <div className={`product-boundary product-boundary-${productBoundary.verdict}`} aria-live="polite">
                   <strong className="product-boundary-title">
                     {PRODUCT_CATEGORY_LABEL[functionalUnitCategory]}: {functionalUnitDescription.trim() || 'functional unit not described'}
@@ -890,7 +996,7 @@ function App() {
                     ))}
                   </ul>
                   <p className="stage-excluded-summary">
-                    Excluded from this subtotal: {productBoundary.stageCoverage.filter((item) => !item.inBoundary).map((item) => `${item.stage} ${item.label.toLowerCase()}`).join('; ')}. No licensed factor rows for transport, distribution, or end-of-life stages are in the bundled data.
+                    Excluded on purpose: {productBoundary.stageCoverage.filter((item) => !item.inBoundary).map((item) => `${item.stage} ${item.label.toLowerCase()} (${item.note})`).join(' ')}
                   </p>
                   {[...productBoundary.functionalUnitIssues, ...productBoundary.structureIssues].length > 0 && (
                     <ul className="boundary-issues" aria-label="Structure issues">

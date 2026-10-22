@@ -161,8 +161,26 @@ describe('CSV export', () => {
     expect(bomRow).toContain('inputs-below-product-mass');
     expect(bomRow).toContain('0.25');
     expect(bomRow).toContain('0.3');
-    expect(bomRow).toContain('user-declared flat input mass');
+    expect(bomRow).toContain('validates mass closure only');
     expect(bomRow).toContain('mass diagnostic only; not an environmental impact');
+  });
+
+  it('exports DEFRA 2026 climate-change rows with source, licence, and retrieval date, separate from EF 3.1', () => {
+    const csv = formatProcessEstimatesCsv(estimate, {
+      productInputs: [{ id: 'fabric', name: 'Fabric', quantity: '0.25', unit: 'kg', parentId: null }],
+      processLinks: [],
+      finishedProductMassKg: '0.3',
+      flatBomScopeConfirmed: true,
+      ghg: { endOfLife: 'landfill-mixed-ci' },
+    });
+    const ghgRow = csv.split('\r\n').find((line) => line.startsWith('ghg_supplement,')) ?? '';
+    expect(ghgRow).toContain('C3');
+    expect(ghgRow).toContain('Open Government Licence v3.0');
+    expect(ghgRow).toContain('2026-10-22');
+    expect(ghgRow).toContain('not one of the 16 EF 3.1 indicators');
+    const boundaryRow = csv.split('\r\n').find((line) => line.startsWith('product_boundary,')) ?? '';
+    expect(boundaryRow).toContain('separate climate-change layer');
+    expect(boundaryRow).not.toMatch(/\bcomplete product footprint\b(?<!not a complete product footprint)/);
   });
 
   it('distinguishes a locally mapped input from a manual context association', () => {

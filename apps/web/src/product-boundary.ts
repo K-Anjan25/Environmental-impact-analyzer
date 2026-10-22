@@ -1,13 +1,15 @@
 import { unitToKilograms } from './product-quantity';
 import { assessFlatBomMass, type BomMassAssessment, type ProductBomInput } from './product-bom';
+import { assessGhgSupplement, type GhgDeclarations, type GhgSupplementResult } from './ghg-supplement';
 
 /*
  * Product boundary, functional unit, component hierarchy, and stage-coverage rules.
  *
- * The app can only report what the bundled, openly licensed factor rows cover. These rules make
- * that explicit: every declared component must be identifiable and placed in a hierarchy whose
- * masses close; every linked process row is mapped to one life-cycle stage; and a stage subtotal
- * is labelled as partial unless every stage in the declared boundary is covered.
+ * Two layers are reported separately and never added together:
+ * - EF 3.1 (16 indicators): only A1 and A3, from the bundled, openly licensed Carbonfact rows.
+ * - Climate change (GHG) only: A2, A4, C2, C3 and C4, from DEFRA 2026 factors (OGL v3.0).
+ * Use phase (B) and deconstruction (C1) are excluded on purpose and listed in every report.
+ * A stage subtotal is never labelled complete; the best verdict is "partial-boundary".
  */
 
 export type ProductCategory = 'footwear' | 'apparel';
@@ -63,15 +65,18 @@ export const FAMILY_STAGE: Readonly<Record<string, LifeCycleStage>> = {
   'use-phase': 'B',
 };
 
-/** Stages with no factor rows in the bundled open data, so they cannot be calculated here. */
-export const STAGES_WITHOUT_OPEN_FACTORS: readonly LifeCycleStage[] = ['A2', 'A4', 'C1', 'C2', 'C3', 'C4'];
+/** Stages whose values come from the EF 3.1 16-indicator rows. */
+export const EF_BOUNDARY_STAGES: readonly LifeCycleStage[] = ['A1', 'A3'];
+/** Stages whose values are climate change (GHG) only, from the DEFRA 2026 supplement. */
+export const GHG_BOUNDARY_STAGES: readonly LifeCycleStage[] = ['A2', 'A4', 'C2', 'C3', 'C4'];
+/** Declared boundary: cradle-to-grave without the consumer use phase. */
+export const DECLARED_BOUNDARY_STAGES: readonly LifeCycleStage[] = [...EF_BOUNDARY_STAGES, ...GHG_BOUNDARY_STAGES];
+export const EXCLUDED_BOUNDARY_STAGES: readonly LifeCycleStage[] = ['B', 'C1'];
 
-/**
- * The declared boundary is the cradle-to-gate manufacturing subtotal, A1 + A3. Stages outside it
- * are excluded on purpose, and the report says so; they are never filled in silently.
- */
-export const DECLARED_BOUNDARY_STAGES: readonly LifeCycleStage[] = ['A1', 'A3'];
-export const EXCLUDED_BOUNDARY_STAGES: readonly LifeCycleStage[] = ['A2', 'A4', 'B', 'C1', 'C2', 'C3', 'C4'];
+export const EXCLUDED_STAGE_REASON: Readonly<Record<'B' | 'C1', string>> = {
+  B: 'Use phase depends on consumer washing, drying, and wear. It is excluded from this boundary.',
+  C1: 'No separate deconstruction step is modelled. Disposal is covered by C3 and C4.',
+};
 
 /** Product-specific coverage rules: which stages must be covered, and by which process families. */
 export interface CoverageRule {
@@ -85,7 +90,7 @@ export const CATEGORY_COVERAGE_RULES: Record<ProductCategory, readonly CoverageR
     {
       stage: 'A1',
       acceptedFamilies: ['synthetic-pu-leather', 'natural-rubber'],
-      reason: 'Footwear raw materials must be covered by a PU leather or natural rubber row; textile fibre production is not in the bundled data.',
+      reason: 'Footwear raw materials must be covered by a PU leather or natural rubber row. Textile fibre production is not in the bundled data.',
     },
     {
       stage: 'A3',
@@ -97,7 +102,7 @@ export const CATEGORY_COVERAGE_RULES: Record<ProductCategory, readonly CoverageR
     {
       stage: 'A1',
       acceptedFamilies: [],
-      reason: 'Apparel raw materials (fibre production) have no rows in the bundled open data.',
+      reason: 'Apparel raw materials (fibre production) have no rows in the bundled open data, so A1 cannot be covered yet.',
     },
     {
       stage: 'A3',
@@ -119,7 +124,8 @@ export interface StructureIssue {
     | 'hierarchy-mass-mismatch'
     | 'assembly-mass-not-checked'
     | 'double-count-risk'
-    | 'overlapping-process-link';
+    | 'overlapping-process-link'
+    | 'scenario-input';
   message: string;
   inputIds: string[];
 }
@@ -137,11 +143,19 @@ export interface StageCoverageItem {
   inBoundary: boolean;
   covered: boolean;
   linkedProcessCount: number;
-  status: 'covered' | 'required-missing' | 'excluded' | 'no-open-factor';
+  /**
+   * covered: EF 3.1 row linked and accepted by the category rule.
+   * ghg-only: climate change only, from the DEFRA supplement.
+   * not-declared: in the boundary but no transport or end-of-life input given.
+   * required-missing: EF stage with no accepted row.
+   * no-open-factor: EF stage with no rows in the bundled data for this category.
+   * excluded: B or C1, excluded on purpose.
+   */
+  status: 'covered' | 'ghg-only' | 'not-declared' | 'required-missing' | 'no-open-factor' | 'excluded';
   note: string;
 }
 
-export type BoundaryVerdict = 'blocked' | 'stages-missing' | 'selected-stages-only';
+export type BoundaryVerdict = 'blocked' | 'stages-missing' | 'partial-boundary';
 
 export interface ProductBoundaryAssessment {
   functionalUnit: FunctionalUnitDefinition;
@@ -211,7 +225,7 @@ export function validateComponentStructure(
         issues.push({
           severity: 'error',
           code: 'parent-cycle',
-          message: `"${input.name}" is part of a parent loop; a component cannot contain itself.`,
+          message: `"${input.name}" is part of a parent loop. A component cannot contain itself.`,
           inputIds: [input.id],
         });
         break;
@@ -246,7 +260,11 @@ export function validateComponentStructure(
   }
 
   // Closure: each assembly's declared mass must equal the sum of its children (mass units only).
-  const linkedInputIds = new Set(processLinks.filter((link) => link.productInputId !== null && link.quantityBasis !== 'manual').map((link) => link.productInputId as string));
+  const linkedInputIds = new Set(
+    processLinks
+      .filter((link) => link.productInputId !== null && link.quantityBasis !== 'manual')
+      .map((link) => link.productInputId as string),
+  );
   for (const [parentId, childIds] of childrenOf) {
     const parent = byId.get(parentId);
     if (!parent) continue;
@@ -323,9 +341,15 @@ export function leafInputs(
   return inputs.filter((input) => !parentIds.has(input.id));
 }
 
+/**
+ * Stage coverage. EF stages (A1, A3) come from linked process rows and the category rule.
+ * GHG stages (A2, A4, C2, C3, C4) are covered only by the DEFRA supplement, which is passed in as
+ * the set of stages that have a computed value. C4 is reported together with C3 (one waste line).
+ */
 export function assessStageCoverage(
   category: ProductCategory,
   processLinks: readonly ProcessLinkForBoundary[],
+  ghgStages: ReadonlySet<LifeCycleStage> = new Set(),
 ): { stageCoverage: StageCoverageItem[]; missingRequiredStages: LifeCycleStage[] } {
   const locallyLinked = processLinks.filter((link) => link.productInputId !== null && link.quantityBasis !== 'manual');
   const countByStage = new Map<LifeCycleStage, number>();
@@ -342,48 +366,71 @@ export function assessStageCoverage(
   const missingRequiredStages: LifeCycleStage[] = [];
 
   const stageCoverage = allStages.map((stage): StageCoverageItem => {
-    const inBoundary = DECLARED_BOUNDARY_STAGES.includes(stage);
     const linkedProcessCount = countByStage.get(stage) ?? 0;
-    const rule = rules.get(stage);
-    const acceptedFamilies = rule?.acceptedFamilies ?? [];
-    // An empty accepted list means the bundled data has no qualifying row, so the stage cannot be covered.
-    const acceptedHit = acceptedFamilies.length > 0
-      && [...(familiesByStage.get(stage) ?? [])].some((family) => acceptedFamilies.includes(family));
 
-    if (!inBoundary) {
+    if (EXCLUDED_BOUNDARY_STAGES.includes(stage)) {
       return {
         stage,
         label: STAGE_LABEL[stage],
-        inBoundary,
-        covered: linkedProcessCount > 0,
+        inBoundary: false,
+        covered: false,
         linkedProcessCount,
         status: 'excluded',
-        note: STAGES_WITHOUT_OPEN_FACTORS.includes(stage)
-          ? 'Outside the declared boundary. No licensed factor rows for this stage are in the bundled data.'
-          : 'Outside the declared boundary (not calculated in this cradle-to-gate subtotal).',
+        note: EXCLUDED_STAGE_REASON[stage as 'B' | 'C1'],
       };
     }
+
+    if (GHG_BOUNDARY_STAGES.includes(stage)) {
+      const declared = ghgStages.has(stage);
+      return {
+        stage,
+        label: STAGE_LABEL[stage],
+        inBoundary: true,
+        covered: declared,
+        linkedProcessCount,
+        status: declared ? 'ghg-only' : 'not-declared',
+        note: declared
+          ? 'Climate change (GHG) only, from DEFRA 2026 factors. The other EF 3.1 indicators are not calculated for this stage.'
+          : 'Not declared. Enter this transport or end-of-life scenario to add a climate-change value.',
+      };
+    }
+
+    // A1 and A3: EF 3.1 rows, checked against the category rule.
+    const rule = rules.get(stage);
+    const acceptedFamilies = rule?.acceptedFamilies ?? [];
+    if (acceptedFamilies.length === 0) {
+      missingRequiredStages.push(stage);
+      return {
+        stage,
+        label: STAGE_LABEL[stage],
+        inBoundary: true,
+        covered: false,
+        linkedProcessCount,
+        status: 'no-open-factor',
+        note: rule?.reason ?? 'No licensed factor rows for this stage in the bundled data.',
+      };
+    }
+    const acceptedHit = [...(familiesByStage.get(stage) ?? [])].some((family) => acceptedFamilies.includes(family));
     if (acceptedHit) {
       return {
         stage,
         label: STAGE_LABEL[stage],
-        inBoundary,
+        inBoundary: true,
         covered: true,
         linkedProcessCount,
         status: 'covered',
-        note: 'Covered by a locally linked process row.',
+        note: 'Covered by a locally linked EF 3.1 process row.',
       };
     }
     missingRequiredStages.push(stage);
-    const noOpen = acceptedFamilies.length === 0;
     return {
       stage,
       label: STAGE_LABEL[stage],
-      inBoundary,
+      inBoundary: true,
       covered: false,
       linkedProcessCount,
-      status: noOpen ? 'no-open-factor' : 'required-missing',
-      note: rule?.reason ?? 'Required stage is not covered.',
+      status: 'required-missing',
+      note: rule?.reason ?? 'No accepted process row is linked to this stage.',
     };
   });
 
@@ -397,13 +444,15 @@ export interface ProductBoundaryInput {
   processLinks: readonly ProcessLinkForBoundary[];
   finishedProductMass: string;
   scopeConfirmed: boolean;
+  ghg?: GhgDeclarations;
 }
 
 export interface ProductBoundaryResult extends ProductBoundaryAssessment {
   massAssessment: BomMassAssessment;
+  ghg: GhgSupplementResult;
 }
 
-/** Full product-boundary assessment: functional unit, structure, mass closure, and stage coverage. */
+/** Full product-boundary assessment: functional unit, structure, mass closure, stage coverage, GHG layer. */
 export function assessProductBoundary(input: ProductBoundaryInput): ProductBoundaryResult {
   const functionalUnitIssues = validateFunctionalUnit(input.functionalUnit);
   const structureIssues = validateComponentStructure(input.inputs, input.parentIdByInput, input.processLinks);
@@ -417,19 +466,36 @@ export function assessProductBoundary(input: ProductBoundaryInput): ProductBound
     });
   }
   const massAssessment = assessFlatBomMass(leaves, input.finishedProductMass, input.scopeConfirmed);
-  const { stageCoverage, missingRequiredStages } = assessStageCoverage(input.functionalUnit.category, input.processLinks);
 
-  const blockingMass = massAssessment.status !== 'balanced';
+  const ghg = assessGhgSupplement({
+    declaredComponentMassKg: massAssessment.declaredInputMassKg,
+    finishedProductMassKg: massAssessment.finishedProductMassKg,
+    declarations: input.ghg ?? {},
+  });
+  for (const issue of ghg.issues) {
+    structureIssues.push({ severity: 'error', code: 'scenario-input', message: issue, inputIds: [] });
+  }
+
+  const ghgStages = new Set<LifeCycleStage>(ghg.declaredStages);
+  if (ghgStages.has('C3')) ghgStages.add('C4');
+
+  const { stageCoverage, missingRequiredStages } = assessStageCoverage(
+    input.functionalUnit.category,
+    input.processLinks,
+    ghgStages,
+  );
+
   const hasErrors = [...functionalUnitIssues, ...structureIssues].some((issue) => issue.severity === 'error');
-  const verdict: BoundaryVerdict = hasErrors || blockingMass
+  const verdict: BoundaryVerdict = hasErrors || massAssessment.status !== 'balanced'
     ? 'blocked'
-    : missingRequiredStages.length > 0 ? 'stages-missing' : 'selected-stages-only';
+    : missingRequiredStages.length > 0 ? 'stages-missing' : 'partial-boundary';
 
+  const undeclared = stageCoverage.filter((item) => item.status === 'not-declared').map((item) => item.stage);
   const verdictText = verdict === 'blocked'
-    ? 'Fix the structure and mass issues listed before any stage subtotal is shown.'
+    ? 'Fix the structure, mass, and scenario issues listed before any subtotal is shown.'
     : verdict === 'stages-missing'
-      ? `Required stages are not covered: ${missingRequiredStages.map((stage) => `${stage} ${STAGE_LABEL[stage]}`).join('; ')}. The subtotal is not a product total.`
-      : 'Declared stages A1 and A3 are covered by linked process rows. Transport (A2), distribution (A4), use (B), and end of life (C) are outside this boundary, so this is a partial cradle-to-gate subtotal, not a complete product footprint.';
+      ? `Required EF stages are not covered: ${missingRequiredStages.map((stage) => `${stage} ${STAGE_LABEL[stage]}`).join('; ')}. The subtotal is not a product total.`
+      : `Partial boundary. EF 3.1 covers A1 and A3 only. A2, A4, C2, C3 and C4 are climate change (GHG) only${undeclared.length ? `, and ${undeclared.join(', ')} are not declared` : ''}. B and C1 are excluded. This is not a complete product footprint.`;
 
   return {
     functionalUnit: input.functionalUnit,
@@ -440,7 +506,8 @@ export function assessProductBoundary(input: ProductBoundaryInput): ProductBound
     missingRequiredStages,
     verdict,
     verdictText,
-    subtotalLabel: 'Cradle-to-gate subtotal (A1 + A3, selected rows only)',
+    subtotalLabel: 'EF 3.1 subtotal (A1 + A3, selected rows) and separate GHG-only layer (A2, A4, C2–C4)',
     massAssessment,
+    ghg,
   };
 }

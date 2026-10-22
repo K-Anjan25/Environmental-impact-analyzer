@@ -92,24 +92,13 @@ export function BlogIndexPage() {
           <p className="page-lede">Read how the calculator works, how to read its indicators, and what its results do and do not cover.</p>
         </header>
         <BlogTabs current="all" />
-        {POST_TYPES.map((type) => {
-          const items = posts.filter((post) => post.type === type);
-          return (
-            <section key={type} className="blog-section" aria-labelledby={`blog-section-${type}`}>
-              <div className="blog-section-heading">
-                <h2 id={`blog-section-${type}`}>{POST_TYPE_PLURAL[type]}</h2>
-                <a href={routeHref({ name: 'blog-type', type })}>See all {POST_TYPE_PLURAL[type].toLowerCase()}</a>
-              </div>
-              {items.length ? (
-                <div className="post-grid">
-                  {items.slice(0, 3).map((post) => <PostCard key={post.id} post={post} />)}
-                </div>
-              ) : (
-                <p className="blog-empty">No {POST_TYPE_PLURAL[type].toLowerCase()} published yet.</p>
-              )}
-            </section>
-          );
-        })}
+        {posts.length ? (
+          <div className="post-grid" id="all-blogs-list">
+            {posts.map((post) => <PostCard key={post.id} post={post} />)}
+          </div>
+        ) : (
+          <p className="blog-empty">No blogs published yet.</p>
+        )}
       </div>
     </SiteLayout>
   );

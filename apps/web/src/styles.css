@@ -1173,12 +1173,12 @@ body { background: linear-gradient(rgba(247, 249, 225, 0.9), rgba(247, 249, 225,
   .depth-card { inset: 10px; }
 }
 
-/* Journey: binary slide change. One step is visible at a time; the outgoing step
-   fades out fully (450ms) before the incoming step starts to fade in (after 450ms). */
-.depth-card { opacity: 0; visibility: hidden; transition: opacity 450ms ease 0ms, visibility 0s linear 450ms; }
-.depth-card.is-active { opacity: 1; visibility: visible; transition: opacity 450ms ease 450ms, visibility 0s linear 0s; }
+/* Journey: one card frame stays on screen. Only its content fades: out, then in (sequential, never overlapping). */
+.depth-card { opacity: 1; visibility: visible; }
+.depth-content { transition: opacity 380ms ease; }
+.depth-content.is-fading { opacity: 0; }
 @media (prefers-reduced-motion: reduce) {
-  .depth-card, .depth-card.is-active { transition-duration: 1ms; transition-delay: 0ms; }
+  .depth-content { transition-duration: 1ms; }
 }
 
 /* No hover underlines on nav, footer, blog filters, or blog links. */

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /*
  * The EcoImpact journey: five full-size cards that stack over one another as you scroll.
@@ -50,77 +50,78 @@ const SLIDES: Slide[] = [
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
+/** Time for the current step's content to fade out, and again for the next step's content to fade in. */
+const FADE_MS = 380;
+
 /*
- * Binary, sequential transitions: exactly one step is active at a time.
- * The outgoing step fades out completely, then the next step fades in.
- * CSS delays the incoming fade, so two steps are never visible together.
- * Timing is in docs/landing-journey-storyboard.md.
+ * One card frame stays on screen the whole time. Only its content changes, in two sequential steps:
+ * the current text and image fade out completely, then the next text and image fade in.
+ * Because the steps are sequential, the two never overlap, and the frame never disappears.
  */
 export default function DepthScene() {
   const sectionRef = useRef<HTMLElement>(null);
-  const cardRefs = useRef<(HTMLElement | null)[]>([]);
+  const [shown, setShown] = useState(0);
+  const [target, setTarget] = useState(0);
+  const [fading, setFading] = useState(false);
 
+  // Scroll decides which step should be shown.
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return undefined;
-
-    let activeIndex = -1;
-
-    const activeFor = (progress: number) => Math.round(clamp(progress, 0, 1) * (SLIDES.length - 1));
-
-    const apply = (index: number) => {
-      if (index === activeIndex) return;
-      activeIndex = index;
-      cardRefs.current.forEach((card, i) => {
-        if (!card) return;
-        const isActive = i === index;
-        card.classList.toggle('is-active', isActive);
-        card.setAttribute('aria-hidden', isActive ? 'false' : 'true');
-      });
-    };
-
     const onScroll = () => {
       const rect = section.getBoundingClientRect();
       const total = section.offsetHeight - window.innerHeight;
       const progress = total > 0 ? clamp(-rect.top / total, 0, 1) : 0;
-      apply(activeFor(progress));
+      setTarget(Math.round(clamp(progress, 0, 1) * (SLIDES.length - 1)));
     };
-
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
     onScroll();
-
     return () => {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
     };
   }, []);
 
+  // Sequence: fade the current content out, swap it, then fade the new content in.
+  useEffect(() => {
+    if (target === shown) {
+      setFading(false);
+      return undefined;
+    }
+    setFading(true);
+    const timer = window.setTimeout(() => setShown(target), FADE_MS);
+    return () => window.clearTimeout(timer);
+  }, [target, shown]);
+
+  // Preload every step's image so the swap never waits on a download.
+  useEffect(() => {
+    SLIDES.forEach((slide) => {
+      const preload = new Image();
+      preload.src = slide.image;
+    });
+  }, []);
+
+  const slide = SLIDES[shown];
+  const contentClass = `depth-content${fading ? ' is-fading' : ''}`;
+
   return (
     <section ref={sectionRef} className="depth-scene" aria-label="Walk through one process, step by step">
       <div className="depth-stage">
-        {SLIDES.map((slide, index) => (
-          <article
-            key={slide.title}
-            className="depth-card"
-            ref={(element) => {
-              cardRefs.current[index] = element;
-            }}
-          >
-            <div className="depth-copy">
-              <h2>{slide.title}</h2>
-              <p>{slide.body}</p>
-              {slide.cta ? (
-                <a className="depth-cta" href={slide.cta.href}>
-                  {slide.cta.label}
-                </a>
-              ) : null}
-            </div>
-            <div className="depth-art">
-              <img src={slide.image} alt={slide.alt} loading="lazy" decoding="async" />
-            </div>
-          </article>
-        ))}
+        <article className="depth-card">
+          <div className={`depth-copy ${contentClass}`}>
+            <h2>{slide.title}</h2>
+            <p>{slide.body}</p>
+            {slide.cta ? (
+              <a className="depth-cta" href={slide.cta.href}>
+                {slide.cta.label}
+              </a>
+            ) : null}
+          </div>
+          <div className={`depth-art ${contentClass}`}>
+            <img src={slide.image} alt={slide.alt} decoding="async" />
+          </div>
+        </article>
       </div>
     </section>
   );

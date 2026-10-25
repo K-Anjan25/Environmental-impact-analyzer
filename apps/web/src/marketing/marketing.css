@@ -33,6 +33,15 @@
   --line: var(--border-subtle);
   --citrus: var(--accent-primary);
 
+  /* Refactoring UI system: an 8px spacing scale, tinted neutrals instead of grey text,
+     a jade shade for tinted fills, and two-part shadows that replace most 1px borders. */
+  --space-1: 8px; --space-2: 16px; --space-3: 24px; --space-4: 32px; --space-5: 48px; --space-6: 64px;
+  --paper-deep: #F3F0E8;      /* hero gradient end */
+  --jade-50: #E7F0EA;         /* tinted fill for the CTA band */
+  --ink-soft: #3C4640;        /* secondary text on ecru, tinted from the ink colour (about 9:1) */
+  --shadow-card: 0 1px 2px rgba(26, 32, 28, 0.06), 0 8px 24px rgba(26, 32, 28, 0.08);
+  --shadow-lift: 0 2px 4px rgba(26, 32, 28, 0.06), 0 16px 40px rgba(26, 32, 28, 0.12);
+
   background: var(--bg-primary);
   color: var(--text-main);
   min-height: 100vh;
@@ -59,6 +68,8 @@
   background: var(--bg-surface); margin-left: calc(50% - 50vw); margin-right: calc(50% - 50vw);
   padding-left: calc(50vw - 50%); padding-right: calc(50vw - 50%);
 }
+/* The CTA band gets its own tinted fill and a jade accent edge, so it reads as the closing action */
+.marketing .cta-band { background: var(--jade-50); border-top: 4px solid var(--accent-primary); padding-top: clamp(3rem, 6vw, 6rem); padding-bottom: clamp(3rem, 6vw, 6rem); }
 .marketing .section-eyebrow { margin: 0 0 10px; font-size: 12px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent-deep); }
 .marketing .section-title { margin: 0 0 14px; font-size: clamp(1.7rem, 3.2vw, 2.4rem); line-height: 1.12; letter-spacing: -0.035em; color: var(--ink); max-width: 22ch; }
 .marketing .section-title.small { font-size: 1.4rem; }
@@ -86,6 +97,7 @@
 .landing-button-primary:hover { background: var(--forest-dark); }
 .landing-button-ghost { border-color: var(--accent-primary); color: var(--accent-deep); background: transparent; }
 .landing-button-ghost:hover { background: rgba(47, 107, 63, 0.06); }
+.landing-button-primary { box-shadow: 0 1px 2px rgba(26, 32, 28, 0.12), 0 6px 14px rgba(10, 92, 54, 0.22); }
 .mkt-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px; }
 .marketing .MuiButton-root.landing-button { text-transform: none; }
 
@@ -103,7 +115,7 @@
 .marketing .mkt-lede { font-size: 1.1rem; line-height: 1.6; color: var(--muted); }
 .hero-trust { display: flex; flex-wrap: wrap; gap: 8px 18px; list-style: none; padding: 0; margin: 22px 0 0; font-size: 14px; color: var(--text-muted); }
 .hero-trust li::before { content: '✓'; margin-right: 6px; color: var(--forest); font-weight: 700; }
-.marketing .mkt-art { margin: 0; padding: clamp(16px, 2.5vw, 28px); border-radius: 20px; background: var(--bg-surface); border: 1px solid var(--border-subtle); box-shadow: 0 12px 32px rgba(26, 32, 28, 0.06); }
+.marketing .mkt-art { margin: 0; padding: clamp(16px, 2.5vw, 28px); border-radius: 20px; background: var(--bg-surface); box-shadow: var(--shadow-lift); }
 .mkt-botanical { display: block; width: 100%; height: auto; overflow: visible; }
 
 /* Botanical line art: shared line styles, drawn in with CSS */
@@ -145,9 +157,9 @@
 
 /* Stats */
 .stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: 32px 0 0; }
-.stat-card { margin: 0; padding: 22px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); }
-.stat-card dt { font-size: 14px; color: var(--muted); font-weight: 600; }
-.stat-value { margin: 6px 0 4px; font-size: clamp(2rem, 4vw, 2.8rem); font-weight: 800; letter-spacing: -0.04em; color: var(--forest-dark); font-variant-numeric: tabular-nums; }
+.stat-card { margin: 0; padding: var(--space-3); border-radius: 16px; background: var(--paper); box-shadow: var(--shadow-card); border-top: 4px solid var(--accent-primary); }
+.stat-card dt { font-size: 14px; color: var(--ink-soft); font-weight: 600; }
+.stat-value { margin: var(--space-1) 0; font-size: clamp(2.25rem, 4.4vw, 3rem); font-weight: 800; letter-spacing: -0.04em; color: var(--forest-dark); font-variant-numeric: tabular-nums; }
 .stat-note { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.45; }
 
 /* Feature rows: illustration and copy alternate sides; each collapses to one column on small screens */
@@ -197,7 +209,7 @@
 /* Latest posts: a plain list, no images */
 .latest-section { padding-top: 56px; }
 .latest-list { list-style: none; margin: 20px 0 0; padding: 0; display: grid; gap: 14px; }
-.latest-item { padding: 16px 0; border-bottom: 1px solid var(--line); }
+.latest-item { padding: 20px 24px; border-radius: 14px; background: var(--surface); border-left: 4px solid var(--accent-primary); }
 .latest-type { display: block; margin-bottom: 4px; font-size: 12px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
 .latest-item a { font-size: 1.15rem; font-weight: 700; color: var(--forest-dark); text-decoration: none; }
 .latest-item a:hover { text-decoration: underline; }
@@ -210,7 +222,7 @@
 .carousel { position: relative; margin-top: 28px; }
 .carousel-viewport { overflow: hidden; border-radius: 18px; }
 .carousel-track { display: flex; transition: transform 0.5s ease; }
-.carousel-slide { flex: 0 0 100%; box-sizing: border-box; padding: 40px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; }
+.carousel-slide { flex: 0 0 100%; box-sizing: border-box; padding: 40px; background: var(--paper); box-shadow: var(--shadow-card); border-radius: 18px; }
 .carousel-slide h3 { margin: 14px 0 8px; font-size: 1.35rem; letter-spacing: -0.02em; color: var(--ink); }
 .carousel-slide p { margin: 0; line-height: 1.6; color: var(--muted); max-width: 60ch; }
 .carousel-icon { display: inline-grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; background: var(--forest); color: #fff; }
@@ -234,7 +246,7 @@
 
 /* Method */
 .step-list { list-style: none; margin: 24px 0 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; counter-reset: none; }
-.step-item { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 22px; }
+.step-item { background: var(--paper); box-shadow: var(--shadow-card); border-radius: 16px; padding: 22px; }
 .step-item > div { height: 100%; }
 .step-number { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--forest); color: #fff; font-weight: 800; }
 .step-item h3 { margin: 14px 0 8px; font-size: 1.05rem; color: var(--ink); }
@@ -248,14 +260,14 @@
 
 /* FAQ */
 .faq-list { margin-top: 20px; }
-.faq-item.MuiAccordion-root { background: var(--surface); border: 1px solid var(--line); border-radius: 14px !important; margin-bottom: 10px; box-shadow: none; }
+.faq-item.MuiAccordion-root { background: var(--paper); border-radius: 14px !important; margin-bottom: 10px; box-shadow: var(--shadow-card); }
 .faq-item.MuiAccordion-root::before { display: none; }
 .faq-question.MuiTypography-root { font-size: 1.02rem; font-weight: 700; color: var(--ink); }
 .faq-answer.MuiTypography-root { color: var(--muted); line-height: 1.65; }
 
 /* Contact */
 .contact-layout { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 40px; align-items: start; }
-.contact-form { display: grid; gap: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 28px; }
+.contact-form { display: grid; gap: 14px; background: var(--paper); box-shadow: var(--shadow-card); border-radius: 18px; padding: 28px; }
 .mkt-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; }
 .form-wide { grid-column: 1 / -1; }
 .form-note { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.5; }
@@ -268,7 +280,7 @@
 .link-button { background: none; border: 0; padding: 0; font: inherit; color: inherit; text-align: left; text-decoration: underline; cursor: pointer; }
 .honeypot { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
 .contact-options { list-style: none; margin: 0 0 18px; padding: 0; display: grid; gap: 14px; }
-.contact-options li { display: grid; gap: 4px; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+.contact-options li { display: grid; gap: 4px; padding: 16px; border-radius: 14px; background: var(--paper); box-shadow: var(--shadow-card); }
 .contact-options strong { color: var(--ink); }
 .contact-options span { color: var(--muted); font-size: 14px; line-height: 1.5; }
 

@@ -1,7 +1,8 @@
 import { Typography } from '@mui/material';
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 import SiteLayout from './SiteLayout';
-import { BotanicalBoundary, BotanicalHero, BotanicalIndicators, BotanicalSelection } from './marketing/Botanical';
+import { BotanicalHero } from './marketing/Botanical';
+import { BoundaryVisual, ProcessQueueVisual, SelectionVisual } from './marketing/SideVisuals';
 import { BackToTop, CountUp, Reveal, StickyCta, UseCaseCarousel } from './marketing/widgets';
 import { FEATURES, HERO } from './marketing/content';
 import { useCatalogSummary, useDocumentMeta } from './marketing/site';
@@ -20,11 +21,11 @@ function latestPostOf(type: PostType): Post | undefined {
   return publishedPosts(type)[0];
 }
 
-/** Illustration for each feature row. Each one is decorative and aria-hidden. */
+/** Side visual for each feature row. Each one is decorative and aria-hidden. */
 const FEATURE_VISUALS = {
-  indicators: BotanicalIndicators,
-  selection: BotanicalSelection,
-  boundary: BotanicalBoundary,
+  indicators: ProcessQueueVisual,
+  selection: SelectionVisual,
+  boundary: BoundaryVisual,
 } as const;
 
 /** Renders the illustration chosen for a feature row. */

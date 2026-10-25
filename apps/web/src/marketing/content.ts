@@ -53,8 +53,7 @@ export const FEATURES = [
     body:
       'Each published process row shows all 16 EF 3.1 indicator values in the source unit. Nothing is collapsed into a single number before you read the detail.',
     bullets: ['Indicator code, name, and unit', 'Reference unit as published', 'Geography label from the source'],
-    image: '/images/textile-process-detail.jpg',
-    alt: 'A weaving machine with green and natural yarn running through it, with a worker guiding the fabric.',
+    visual: 'indicators' as const,
   },
   {
     eyebrow: 'Selected rows only',
@@ -62,8 +61,7 @@ export const FEATURES = [
     body:
       'Pick the rows that belong together. The subtotal adds them per indicator where units agree, and the EF 3.1 score is calculated for that selection only.',
     bullets: ['Per-indicator subtotal of selected rows', 'Normalised and weighted EF 3.1 score', 'Missing values stay missing, never zero'],
-    image: '/images/news-process-boundary.webp',
-    alt: 'An illustration of a leaf beside four stacked process stages linked by arrows inside a dashed boundary.',
+    visual: 'selection' as const,
   },
   {
     eyebrow: 'Private by design',
@@ -71,8 +69,7 @@ export const FEATURES = [
     body:
       'Input names, quantities, and units are held in page memory. Mapped calculations run in the browser, and the calculation API never receives them.',
     bullets: ['No account and no saved history', 'No analytics or advertising trackers', 'Calculation requests carry factor IDs and quantities only'],
-    image: '/images/recycling-globe.webp',
-    alt: 'An illustration of a globe wrapped in recycling arrows, hung from a clothes hanger, with small figures around it.',
+    visual: 'boundary' as const,
   },
 ];
 

@@ -1,13 +1,12 @@
-import { useRef } from 'react';
 import { Typography } from '@mui/material';
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
-import DepthScene from './DepthScene';
 import SiteLayout from './SiteLayout';
 import ParticleHero from './marketing/ParticleHero';
+import { AnimatedCanvas, drawBrowserBoundary, drawIndicatorBars, drawProcessChain, drawSelectionMerge, type Draw } from './marketing/AnimatedCanvas';
 import { BackToTop, CountUp, Reveal, StickyCta, UseCaseCarousel } from './marketing/widgets';
 import { FEATURES, HERO } from './marketing/content';
 import { useCatalogSummary, useDocumentMeta } from './marketing/site';
-import { useParallax, useRevealOnScroll } from './marketing/hooks';
+import { useRevealOnScroll } from './marketing/hooks';
 import { POST_TYPE_LABEL, POST_TYPE_SEGMENT, POST_TYPES, publishedPosts, type Post, type PostType } from './posts';
 import { postHref } from './router';
 
@@ -22,16 +21,11 @@ function latestPostOf(type: PostType): Post | undefined {
   return publishedPosts(type)[0];
 }
 
-/** A feature image that drifts slightly against the scroll direction. */
-function ParallaxImage({ src, alt }: { src: string; alt: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  useParallax(ref, 0.06);
-  return (
-    <div className="feature-media" ref={ref}>
-      <img src={src} alt={alt} loading="lazy" />
-    </div>
-  );
-}
+const FEATURE_VISUALS: Record<'indicators' | 'selection' | 'boundary', { draw: Draw; label: string }> = {
+  indicators: { draw: drawIndicatorBars, label: 'Animated bars, one per EF 3.1 indicator code. Decorative, not results.' },
+  selection: { draw: drawSelectionMerge, label: 'Animated rows being selected and summed into a subtotal. Decorative, not results.' },
+  boundary: { draw: drawBrowserBoundary, label: 'Animated particles held inside a dashed browser boundary. Decorative.' },
+};
 
 export default function LandingPage() {
   const catalog = useCatalogSummary();
@@ -67,14 +61,9 @@ export default function LandingPage() {
               ))}
             </ul>
           </div>
-          <figure className="mkt-art mkt-reveal" style={{ transitionDelay: '120ms' }}>
-            <img
-              className="hero-photo mkt-photo"
-              src="/images/hero-environment.webp"
-              alt="A restored river valley with a planted hillside under a clear sky."
-              fetchPriority="high"
-            />
-          </figure>
+          <div className="mkt-art reveal" style={{ transitionDelay: '120ms' }}>
+            <AnimatedCanvas draw={drawProcessChain} label="Animated process chain: rows flow from process to subtotal. Decorative, not results." className="mkt-hero-canvas" />
+          </div>
         </section>
 
         <section id="stats" className="section stats-section" aria-labelledby="stats-title">
@@ -133,12 +122,14 @@ export default function LandingPage() {
               </ul>
             </Reveal>
             <Reveal className="feature-visual" delay={120}>
-              <ParallaxImage src={feature.image} alt={feature.alt} />
+              <AnimatedCanvas
+                draw={FEATURE_VISUALS[feature.visual].draw}
+                label={FEATURE_VISUALS[feature.visual].label}
+                className="feature-canvas"
+              />
             </Reveal>
           </section>
         ))}
-
-        <DepthScene />
 
         <section className="section section-alt" aria-labelledby="use-cases-title">
           <Reveal>
@@ -150,35 +141,27 @@ export default function LandingPage() {
           </Reveal>
         </section>
 
-        <section className="visual-index" aria-labelledby="latest-heading">
-          <h2 id="latest-heading" className="section-title">Latest from the blogs</h2>
-          <div className="visual-index-grid">
-            {latest.map(({ type, post }) =>
-              post ? (
-                <a
-                  key={type}
-                  className="visual-index-card"
-                  href={postHref(post)}
-                  {...(post.externalUrl ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                >
-                  {post.image ? <img src={post.image} alt="" loading="lazy" /> : null}
-                  <span className="visual-index-shade" />
-                  <span className="visual-index-copy">
-                    <small>{POST_TYPE_LABEL[type].toUpperCase()}</small>
-                    <strong>{post.title}</strong>
-                  </span>
-                  <span className="visual-index-arrow" aria-hidden="true">↗</span>
-                </a>
-              ) : (
-                <a key={type} className="visual-index-card visual-index-empty" href={`#/blogs/${POST_TYPE_SEGMENT[type]}`}>
-                  <span className="visual-index-copy">
-                    <small>{POST_TYPE_LABEL[type].toUpperCase()}</small>
-                    <strong>No {POST_TYPE_LABEL[type].toLowerCase()} published yet</strong>
-                  </span>
-                </a>
-              ),
-            )}
-          </div>
+        <section className="section latest-section" aria-labelledby="latest-heading">
+          <Reveal>
+            <h2 id="latest-heading" className="section-title">Latest from the blogs</h2>
+          </Reveal>
+          <ul className="latest-list">
+            {latest.map(({ type, post }) => (
+              <li key={type} className="latest-item">
+                <Reveal>
+                  <span className="latest-type">{POST_TYPE_LABEL[type]}</span>
+                  {post ? (
+                    <a href={postHref(post)} {...(post.externalUrl ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
+                      {post.title}
+                      {post.externalUrl ? <span className="sr-only"> (opens in a new tab)</span> : null}
+                    </a>
+                  ) : (
+                    <a href={`#/blogs/${POST_TYPE_SEGMENT[type]}`}>No {POST_TYPE_LABEL[type].toLowerCase()} published yet</a>
+                  )}
+                </Reveal>
+              </li>
+            ))}
+          </ul>
         </section>
 
         <section className="cta-band" aria-labelledby="cta-title">

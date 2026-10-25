@@ -63,8 +63,19 @@
 .feature-row-reverse .feature-visual { order: 1; }
 .feature-list { margin: 16px 0 0; padding-left: 20px; color: var(--ink); line-height: 1.7; }
 .feature-visual { overflow: hidden; border-radius: 18px; }
-.feature-media { will-change: transform; }
-.feature-media img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 18px; background: var(--soft-green); }
+/* Animated canvas illustrations (replace the photographs) */
+.anim-canvas { display: block; width: 100%; height: 100%; }
+.mkt-hero-canvas { height: 340px; border-radius: 18px; }
+.mkt-art { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); }
+.feature-canvas { height: 300px; border-radius: 18px; background: #173d37; border: 1px solid rgba(127, 217, 160, 0.18); }
+
+/* Latest posts: a plain list, no images */
+.latest-section { padding-top: 56px; }
+.latest-list { list-style: none; margin: 20px 0 0; padding: 0; display: grid; gap: 14px; }
+.latest-item { padding: 16px 0; border-bottom: 1px solid var(--line); }
+.latest-type { display: block; margin-bottom: 4px; font-size: 12px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.latest-item a { font-size: 1.15rem; font-weight: 700; color: var(--forest-dark); text-decoration: none; }
+.latest-item a:hover { text-decoration: underline; }
 
 /* Reveal on scroll */
 .marketing .mkt-reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.7s var(--ease, ease), transform 0.7s var(--ease, ease); }
@@ -173,6 +184,8 @@
   .marketing .mkt-hero, .feature-row, .contact-layout { grid-template-columns: 1fr; }
   .marketing .mkt-hero { min-height: 0; }
   .feature-row-reverse .feature-copy, .feature-row-reverse .feature-visual { order: initial; }
+  .feature-canvas { height: 260px; }
+  .mkt-hero-canvas { height: 260px; }
   .mkt-form-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 560px) {
@@ -190,5 +203,4 @@
 @media (prefers-reduced-motion: reduce) {
   .marketing .mkt-reveal { opacity: 1; transform: none; transition: none; }
   .carousel-track, .sticky-cta, .to-top { transition: none; }
-  .feature-media { transform: none !important; }
 }

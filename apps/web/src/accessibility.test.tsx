@@ -205,7 +205,7 @@ describe('process estimator accessibility', () => {
 
     stubApi();
     const landing = render(<LandingPage />);
-    expect(landing.container.querySelector('canvas.mkt-hero-canvas')?.getAttribute('role')).toBe('img');
+    expect(landing.container.querySelector('canvas.mkt-hero-canvas')?.getAttribute('aria-hidden')).toBe('true');
     expect(landing.container.querySelector('img[src*="/images/"]')).toBeNull();
     expect(landing.container.querySelector('.site-brand img')?.getAttribute('alt')).toBe('');
     landing.unmount();

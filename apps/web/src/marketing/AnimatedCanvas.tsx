@@ -2,25 +2,22 @@ import { useEffect, useRef } from 'react';
 import { usePrefersReducedMotion } from './hooks';
 
 /*
- * Canvas illustrations for the landing page. They replace the photographs.
- * Each one is a small drawing function that receives the context, the time in seconds, and the
- * canvas size. The loop runs only while the canvas is on screen, and under reduced motion a single
- * still frame is drawn. The drawings are decorative: they show no measured values.
+ * Decorative 3D canvas scenes for the landing page.
+ *
+ * Every scene is pure motion: no text, no labels, no numbers. Each draw function receives the
+ * 2D context, the time in seconds and the canvas size. Shapes are projected from simple 3D
+ * coordinates with a small perspective camera and painted back to front, so they read as solid
+ * objects. The loop runs only while the canvas is on screen; under reduced motion a single still
+ * frame is drawn. The canvas is aria-hidden because the surrounding section text describes the
+ * product.
  */
 
 export type Draw = (ctx: CanvasRenderingContext2D, time: number, width: number, height: number) => void;
 
-const PALETTE = {
-  ink: '#e8f6ee',
-  dim: 'rgba(200, 232, 214, 0.42)',
-  lane: 'rgba(127, 217, 160, 0.35)',
-  accent: '#7fd9a0',
-  citrus: '#bfdc66',
-  panel: 'rgba(255, 255, 255, 0.05)',
-};
+type Vec = [number, number, number];
 
 /** Draws `draw` on a canvas sized to its box, at the device pixel ratio, and animates it while visible. */
-export function AnimatedCanvas({ draw, label, className = '' }: { draw: Draw; label: string; className?: string }) {
+export function AnimatedCanvas({ draw, className = '' }: { draw: Draw; className?: string }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const reduced = usePrefersReducedMotion();
 
@@ -80,206 +77,342 @@ export function AnimatedCanvas({ draw, label, className = '' }: { draw: Draw; la
     };
   }, [draw, reduced]);
 
-  return <canvas ref={ref} className={`anim-canvas ${className}`.trim()} role="img" aria-label={label} />;
+  return <canvas ref={ref} className={`anim-canvas ${className}`.trim()} aria-hidden="true" />;
 }
 
-/* ---------- Hero: a process chain with particles flowing through selected rows ---------- */
+/* ---------- 3D helpers: rotation, perspective projection, and back-to-front solid faces ---------- */
 
-export const drawProcessChain: Draw = (ctx, t, w, h) => {
-  const labels = ['Process', 'Input', 'Output', 'Subtotal'];
-  const nodes = labels.map((label, i) => {
-    const x = w * (0.16 + i * 0.22);
-    const y = h * (0.5 + Math.sin(i * 1.3) * 0.12);
-    return { label, x, y };
-  });
+const CAMERA_DISTANCE = 4.2;
 
-  // Lanes between the nodes, drawn as quadratic curves.
-  ctx.lineWidth = 1.5;
-  ctx.strokeStyle = PALETTE.lane;
-  for (let i = 0; i < nodes.length - 1; i += 1) {
-    const a = nodes[i];
-    const b = nodes[i + 1];
-    ctx.beginPath();
-    ctx.moveTo(a.x, a.y);
-    ctx.quadraticCurveTo((a.x + b.x) / 2, (a.y + b.y) / 2 - h * 0.18, b.x, b.y);
-    ctx.stroke();
-  }
+interface View {
+  cx: number;
+  cy: number;
+  unit: number;
+  rx: number; // tilt around the X axis
+  ry: number; // turn around the Y axis
+}
 
-  // Particles travel along each lane; their speed is slightly different so they do not bunch up.
-  for (let i = 0; i < nodes.length - 1; i += 1) {
-    const a = nodes[i];
-    const b = nodes[i + 1];
-    for (let k = 0; k < 3; k += 1) {
-      const progress = (t * (0.18 + i * 0.03) + k / 3) % 1;
-      const u = progress;
-      const x = (1 - u) * (1 - u) * a.x + 2 * (1 - u) * u * ((a.x + b.x) / 2) + u * u * b.x;
-      const y = (1 - u) * (1 - u) * a.y + 2 * (1 - u) * u * ((a.y + b.y) / 2 - h * 0.18) + u * u * b.y;
-      ctx.fillStyle = PALETTE.accent;
-      ctx.beginPath();
-      ctx.arc(x, y, 3.2, 0, Math.PI * 2);
-      ctx.fill();
+function rotate([x, y, z]: Vec, { rx, ry }: Pick<View, 'rx' | 'ry'>): Vec {
+  const x1 = x * Math.cos(ry) + z * Math.sin(ry);
+  const z1 = -x * Math.sin(ry) + z * Math.cos(ry);
+  const y2 = y * Math.cos(rx) - z1 * Math.sin(rx);
+  const z2 = y * Math.sin(rx) + z1 * Math.cos(rx);
+  return [x1, y2, z2];
+}
+
+/** Projects a world point to the screen. Larger z is further from the camera, which sits at z = -CAMERA_DISTANCE. */
+function project(p: Vec, view: View) {
+  const [x, y, z] = rotate(p, view);
+  const s = CAMERA_DISTANCE / (CAMERA_DISTANCE + z);
+  return { x: view.cx + x * s * view.unit, y: view.cy - y * s * view.unit, z, s };
+}
+
+interface Solid {
+  x0: number;
+  x1: number;
+  y0: number;
+  y1: number;
+  z0: number;
+  z1: number;
+  rgb: [number, number, number];
+  alpha: number;
+}
+
+/** Paints the visible faces of axis-aligned boxes, farthest faces first. Back-facing faces are skipped. */
+function drawSolids(ctx: CanvasRenderingContext2D, solids: Solid[], view: View) {
+  const light: Vec = [-0.35, 0.8, -0.5];
+  const faces: { pts: { x: number; y: number }[]; depth: number; shade: number; solid: Solid }[] = [];
+
+  for (const s of solids) {
+    const c = [
+      [s.x0, s.y0, s.z0],
+      [s.x1, s.y0, s.z0],
+      [s.x1, s.y1, s.z0],
+      [s.x0, s.y1, s.z0],
+      [s.x0, s.y0, s.z1],
+      [s.x1, s.y0, s.z1],
+      [s.x1, s.y1, s.z1],
+      [s.x0, s.y1, s.z1],
+    ] as Vec[];
+    const quads: { idx: number[]; normal: Vec }[] = [
+      { idx: [0, 1, 2, 3], normal: [0, 0, -1] },
+      { idx: [4, 5, 6, 7], normal: [0, 0, 1] },
+      { idx: [3, 2, 6, 7], normal: [0, 1, 0] },
+      { idx: [0, 1, 5, 4], normal: [0, -1, 0] },
+      { idx: [1, 2, 6, 5], normal: [1, 0, 0] },
+      { idx: [0, 3, 7, 4], normal: [-1, 0, 0] },
+    ];
+    for (const q of quads) {
+      const n = rotate(q.normal, view);
+      if (n[2] >= 0) continue; // faces away from the camera
+      const pts = q.idx.map((i) => project(c[i], view));
+      const depth = pts.reduce((sum, p) => sum + p.z, 0) / pts.length;
+      const shade = 0.4 + 0.6 * Math.max(0, n[0] * light[0] + n[1] * light[1] + n[2] * light[2]);
+      faces.push({ pts, depth, shade, solid: s });
     }
   }
 
-  // Nodes: rounded boxes that pulse in turn.
-  ctx.font = '600 13px system-ui, sans-serif';
-  ctx.textAlign = 'center';
-  nodes.forEach((node, i) => {
-    const pulse = 0.5 + 0.5 * Math.sin(t * 2 - i * 0.9);
-    const bw = Math.min(118, w * 0.2);
-    const bh = 46;
-    ctx.fillStyle = `rgba(127, 217, 160, ${0.12 + pulse * 0.1})`;
-    ctx.strokeStyle = `rgba(127, 217, 160, ${0.5 + pulse * 0.4})`;
-    ctx.lineWidth = 1.5;
-    roundRect(ctx, node.x - bw / 2, node.y - bh / 2, bw, bh, 12);
+  faces.sort((a, b) => b.depth - a.depth);
+  for (const f of faces) {
+    const [r, g, b] = f.solid.rgb;
+    ctx.beginPath();
+    f.pts.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
+    ctx.closePath();
+    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${(f.solid.alpha * f.shade).toFixed(3)})`;
     ctx.fill();
+    ctx.strokeStyle = `rgba(232, 246, 238, ${(0.12 * f.solid.alpha).toFixed(3)})`;
+    ctx.lineWidth = 1;
     ctx.stroke();
-    ctx.fillStyle = PALETTE.ink;
-    ctx.fillText(node.label, node.x, node.y + 5);
-  });
+  }
+}
 
-  // Caption: states what the drawing is.
-  ctx.fillStyle = PALETTE.dim;
-  ctx.font = '500 12px system-ui, sans-serif';
-  ctx.textAlign = 'left';
-  ctx.fillText('Illustration: flow only, not results', 16, h - 14);
+/** Points spread evenly over a sphere (Fibonacci lattice). Computed once. */
+function fibonacciSphere(n: number): Vec[] {
+  const golden = Math.PI * (3 - Math.sqrt(5));
+  return Array.from({ length: n }, (_, i) => {
+    const y = 1 - (2 * (i + 0.5)) / n;
+    const r = Math.sqrt(1 - y * y);
+    const theta = i * golden;
+    return [Math.cos(theta) * r, y, Math.sin(theta) * r] as Vec;
+  });
+}
+
+const SPHERE = fibonacciSphere(240);
+const ACCENT: [number, number, number] = [127, 217, 160];
+const CITRUS: [number, number, number] = [191, 220, 102];
+
+/* ---------- Hero: a rotating 3D particle globe with light travelling along an orbit ---------- */
+
+export const drawProcessChain: Draw = (ctx, t, w, h) => {
+  const view: View = { cx: w / 2, cy: h / 2, unit: Math.min(w, h) * 0.36, rx: 0.32, ry: t * 0.16 };
+
+  const points = SPHERE.map((p) => project([p[0] * 0.92, p[1] * 0.92, p[2] * 0.92], view));
+
+  // Links between neighbouring points. The lattice is ordered, so nearby indices are nearby in space.
+  for (let i = 0; i < points.length; i += 1) {
+    for (const step of [1, 9]) {
+      const j = i + step;
+      if (j >= points.length) continue;
+      const a = points[i];
+      const b = points[j];
+      const depth = (a.s + b.s) / 2;
+      ctx.strokeStyle = `rgba(${ACCENT.join(', ')}, ${(0.05 + (depth - 0.8) * 0.5).toFixed(3)})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+    }
+  }
+
+  // Points, drawn far to near so the near ones sit on top.
+  const sorted = [...points].sort((a, b) => b.z - a.z);
+  for (const p of sorted) {
+    const alpha = Math.min(1, 0.25 + (p.s - 0.8) * 1.6);
+    ctx.fillStyle = `rgba(${ACCENT.join(', ')}, ${alpha.toFixed(3)})`;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 1.8 * p.s, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // An orbit ring tilted through the globe, with bright particles travelling around it.
+  const ringView: View = { ...view, rx: view.rx + 0.5, ry: view.ry };
+  const ring = (theta: number): Vec => [1.42 * Math.cos(theta), 0.5 * Math.sin(theta), 1.42 * Math.sin(theta)];
+  ctx.strokeStyle = 'rgba(127, 217, 160, 0.22)';
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  for (let k = 0; k <= 96; k += 1) {
+    const p = project(ring((k / 96) * Math.PI * 2), ringView);
+    if (k === 0) ctx.moveTo(p.x, p.y);
+    else ctx.lineTo(p.x, p.y);
+  }
+  ctx.stroke();
+
+  for (let k = 0; k < 4; k += 1) {
+    const theta = (t * 0.9 + (k * Math.PI) / 2) % (Math.PI * 2);
+    const p = project(ring(theta), ringView);
+    ctx.fillStyle = `rgba(${CITRUS.join(', ')}, 0.95)`;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 3.4 * p.s, 0, Math.PI * 2);
+    ctx.fill();
+  }
 };
 
-/* ---------- Feature 1: sixteen indicator bars that breathe, one per EF 3.1 indicator ---------- */
+/* ---------- Feature 1: sixteen 3D bars that breathe, one per EF 3.1 indicator ---------- */
 
-const INDICATOR_CODES = ['ACD', 'ETF', 'FRU', 'FWE', 'GHG', 'HTC', 'HTN', 'IOR', 'LDU', 'MRU', 'OZD', 'PCO', 'PMA', 'SWE', 'TRE', 'WTU'];
+const BAR_COUNT = 16;
 
 export const drawIndicatorBars: Draw = (ctx, t, w, h) => {
-  const count = INDICATOR_CODES.length;
-  const padX = 22;
-  const baseY = h - 42;
-  const areaH = h - 90;
-  const gap = (w - padX * 2) / count;
-  const barW = Math.max(6, gap * 0.58);
+  const view: View = {
+    cx: w / 2,
+    cy: h * 0.62,
+    unit: Math.min(w * 0.8 / 2.6, h * 0.5),
+    rx: 0.5,
+    ry: -0.5 + 0.18 * Math.sin(t * 0.3),
+  };
 
-  ctx.font = '500 10px system-ui, sans-serif';
-  ctx.textAlign = 'center';
-  INDICATOR_CODES.forEach((code, i) => {
+  // Floor grid, drawn first so the bars sit on it.
+  ctx.strokeStyle = 'rgba(232, 246, 238, 0.12)';
+  ctx.lineWidth = 1;
+  for (let i = -4; i <= 4; i += 1) {
+    const a = project([i * 0.3, -0.62, -0.9], view);
+    const b = project([i * 0.3, -0.62, 0.9], view);
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+    ctx.stroke();
+    const c = project([-1.3, -0.62, i * 0.3], view);
+    const d = project([1.3, -0.62, i * 0.3], view);
+    ctx.beginPath();
+    ctx.moveTo(c.x, c.y);
+    ctx.lineTo(d.x, d.y);
+    ctx.stroke();
+  }
+
+  const solids: Solid[] = Array.from({ length: BAR_COUNT }, (_, i) => {
     // Each bar has its own phase, so the bars rise and fall out of step.
     const wave = 0.5 + 0.5 * Math.sin(t * 1.4 + i * 0.7) * Math.cos(t * 0.45 + i * 0.31);
-    const bh = areaH * (0.25 + wave * 0.7);
-    const x = padX + i * gap + (gap - barW) / 2;
-    // All bars share one colour, so no indicator is emphasised.
-    ctx.fillStyle = `rgba(127, 217, 160, ${0.35 + wave * 0.4})`;
-    roundRect(ctx, x, baseY - bh, barW, bh, 4);
-    ctx.fill();
-    ctx.fillStyle = PALETTE.dim;
-    ctx.fillText(code, x + barW / 2, h - 20);
+    const x = (i - (BAR_COUNT - 1) / 2) * 0.155;
+    const height = 0.2 + wave * 0.9;
+    return {
+      x0: x - 0.055,
+      x1: x + 0.055,
+      y0: -0.62,
+      y1: -0.62 + height,
+      z0: -0.055,
+      z1: 0.055,
+      rgb: ACCENT,
+      alpha: 0.55 + wave * 0.35,
+    };
   });
-
-  ctx.strokeStyle = 'rgba(232, 246, 238, 0.25)';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(padX, baseY + 0.5);
-  ctx.lineTo(w - padX, baseY + 0.5);
-  ctx.stroke();
+  drawSolids(ctx, solids, view);
 };
 
-/* ---------- Feature 2: rows are selected, and their values merge into one subtotal bar ---------- */
+/* ---------- Feature 2: rows lift forward as they are selected, and a 3D column fills with their sum ---------- */
 
 export const drawSelectionMerge: Draw = (ctx, t, w, h) => {
   const rows = 6;
-  const left = 24;
-  const rowW = w * 0.5;
-  const rowH = Math.min(30, (h - 60) / rows - 8);
-  const top = 28;
-  const cycle = 7; // seconds per cycle
-  const phase = (t % cycle) / cycle;
+  const cycle = 8; // seconds per full selection cycle
+  // Continuous count of selected rows, moving smoothly between 1 and 5.
+  const count = 3 + 2 * Math.sin((t / cycle) * Math.PI * 2);
+  const view: View = {
+    cx: w / 2,
+    cy: h / 2,
+    unit: Math.min(w * 0.8 / 1.6, h * 0.42),
+    rx: -0.2,
+    ry: -0.55 + 0.1 * Math.sin(t * 0.25),
+  };
 
-  // Selection moves from row to row, so the subtotal changes over time.
-  const selectedCount = phase < 0.5 ? Math.round(1 + phase * 2 * 3) : Math.round(4 - (phase - 0.5) * 2 * 3);
-  ctx.font = '500 11px system-ui, sans-serif';
+  const solids: Solid[] = [];
   for (let i = 0; i < rows; i += 1) {
-    const y = top + i * (rowH + 8);
-    const selected = i < selectedCount;
-    ctx.fillStyle = selected ? 'rgba(127, 217, 160, 0.22)' : PALETTE.panel;
-    ctx.strokeStyle = selected ? PALETTE.accent : 'rgba(232, 246, 238, 0.16)';
-    ctx.lineWidth = 1.2;
-    roundRect(ctx, left, y, rowW, rowH, 8);
-    ctx.fill();
-    ctx.stroke();
-    ctx.fillStyle = selected ? PALETTE.ink : PALETTE.dim;
-    ctx.textAlign = 'left';
-    ctx.fillText(`Row ${i + 1}`, left + 12, y + rowH / 2 + 4);
+    // How far this row has been selected, from 0 to 1. Selected rows lift toward the viewer.
+    const lift = Math.min(1, Math.max(0, count - i));
+    const top = 0.62 - i * 0.2;
+    solids.push({
+      x0: -0.78,
+      x1: -0.05,
+      y0: top - 0.13,
+      y1: top,
+      z0: -0.06 - lift * 0.28,
+      z1: -0.02 - lift * 0.28,
+      rgb: lift > 0.02 ? CITRUS : ACCENT,
+      alpha: 0.22 + lift * 0.6,
+    });
   }
 
-  // Subtotal bar on the right grows with the selected count.
-  const barX = left + rowW + 36;
-  const barW = Math.max(40, w - barX - 24);
-  const fill = selectedCount / rows;
-  ctx.fillStyle = PALETTE.panel;
-  roundRect(ctx, barX, top, barW, rows * (rowH + 8) - 8, 12);
-  ctx.fill();
-  ctx.fillStyle = `rgba(191, 220, 102, ${0.5 + fill * 0.4})`;
-  const fillH = (rows * (rowH + 8) - 8) * fill;
-  roundRect(ctx, barX, top + (rows * (rowH + 8) - 8) - fillH, barW, fillH, 12);
-  ctx.fill();
-  ctx.fillStyle = PALETTE.ink;
-  ctx.textAlign = 'center';
-  ctx.font = '600 12px system-ui, sans-serif';
-  ctx.fillText('Selected', barX + barW / 2, top + rows * (rowH + 8) + 6);
+  // Subtotal column on the right grows with the selected count.
+  const fill = Math.max(0, count) / rows;
+  solids.push({
+    x0: 0.18,
+    x1: 0.52,
+    y0: -0.6,
+    y1: -0.6 + fill * 1.22,
+    z0: -0.1,
+    z1: 0.04,
+    rgb: CITRUS,
+    alpha: 0.5 + fill * 0.4,
+  });
+  solids.push({
+    x0: 0.18,
+    x1: 0.52,
+    y0: -0.6,
+    y1: 0.62,
+    z0: -0.12,
+    z1: -0.1,
+    rgb: ACCENT,
+    alpha: 0.18,
+  });
+
+  drawSolids(ctx, solids, view);
 };
 
-/* ---------- Feature 3: product inputs stay inside the browser boundary; nothing crosses it ---------- */
+/* ---------- Feature 3: particles turn inside a rotating 3D boundary; the arrow stops at its face ---------- */
+
+const CUBE_EDGES: [number, number][] = [
+  [0, 1], [1, 2], [2, 3], [3, 0],
+  [4, 5], [5, 6], [6, 7], [7, 4],
+  [0, 4], [1, 5], [2, 6], [3, 7],
+];
 
 export const drawBrowserBoundary: Draw = (ctx, t, w, h) => {
-  const x = 22;
-  const y = 22;
-  const bw = w - 44;
-  const bh = h - 44;
+  const view: View = {
+    cx: w / 2,
+    cy: h / 2,
+    unit: Math.min(w, h) * 0.3,
+    rx: 0.45 + 0.1 * Math.sin(t * 0.4),
+    ry: t * 0.22,
+  };
+  const s = 0.9;
+  const corners: Vec[] = [
+    [-s, -s, -s], [s, -s, -s], [s, s, -s], [-s, s, -s],
+    [-s, -s, s], [s, -s, s], [s, s, s], [-s, s, s],
+  ];
+
+  // Translucent faces of the boundary, then its edges.
+  const boundary = { x0: -s, x1: s, y0: -s, y1: s, z0: -s, z1: s };
+  drawSolids(ctx, [{ ...boundary, rgb: ACCENT, alpha: 0.05 }], view);
 
   ctx.setLineDash([8, 6]);
-  ctx.strokeStyle = 'rgba(127, 217, 160, 0.7)';
-  ctx.lineWidth = 1.5;
-  roundRect(ctx, x, y, bw, bh, 18);
-  ctx.stroke();
+  ctx.strokeStyle = 'rgba(127, 217, 160, 0.55)';
+  ctx.lineWidth = 1.3;
+  for (const [a, b] of CUBE_EDGES) {
+    const pa = project(corners[a], view);
+    const pb = project(corners[b], view);
+    ctx.beginPath();
+    ctx.moveTo(pa.x, pa.y);
+    ctx.lineTo(pb.x, pb.y);
+    ctx.stroke();
+  }
   ctx.setLineDash([]);
 
-  // Particles bounce inside the boundary. Each one has a fixed seed, so the motion is repeatable.
-  for (let i = 0; i < 14; i += 1) {
-    const sx = (Math.sin(i * 12.9898) * 43758.5453) % 1;
-    const sy = (Math.sin(i * 78.233) * 43758.5453) % 1;
-    const px = x + 16 + (Math.abs(sx) * 0.5 + 0.5 * Math.abs(Math.sin(t * (0.4 + i * 0.05) + i))) * (bw - 32);
-    const py = y + 16 + (Math.abs(sy) * 0.5 + 0.5 * Math.abs(Math.cos(t * (0.35 + i * 0.04) + i * 2))) * (bh - 32);
-    ctx.fillStyle = i % 3 === 0 ? PALETTE.citrus : PALETTE.accent;
+  // Particles move inside the boundary on fixed, repeatable paths. Their inner margin keeps them off the faces.
+  const inner = s - 0.12;
+  const particles = Array.from({ length: 16 }, (_, i) => {
+    const px = inner * Math.sin(t * (0.42 + i * 0.03) + i * 1.7);
+    const py = inner * Math.sin(t * (0.37 + i * 0.05) + i * 2.9);
+    const pz = inner * Math.sin(t * (0.31 + i * 0.04) + i * 0.6);
+    const p = project([px, py, pz], view);
+    return { p, citrus: i % 4 === 0 };
+  }).sort((a, b) => b.p.z - a.p.z);
+  for (const { p, citrus } of particles) {
+    const color = citrus ? CITRUS : ACCENT;
+    ctx.fillStyle = `rgba(${color.join(', ')}, 0.95)`;
     ctx.beginPath();
-    ctx.arc(Math.min(px, x + bw - 10), Math.min(py, y + bh - 10), 3, 0, Math.PI * 2);
+    ctx.arc(p.x, p.y, 3 * p.s, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  // A dashed arrow tries to leave the boundary and stops at the edge.
-  const reach = (Math.sin(t * 1.1) * 0.5 + 0.5) * 0.35;
-  const startX = x + bw * 0.6;
-  const endX = startX + bw * reach + bw * 0.25;
+  // A dashed arrow pushes toward the +X face. Its tip stops at the face and never crosses it.
+  const reach = 0.25 + 0.75 * (0.5 + 0.5 * Math.sin(t * 1.1));
+  const tip = Math.min(reach, s); // the face is at s, so the tip stops there
+  const start = project([0, 0, 0], view);
+  const end = project([tip, 0, 0], view);
   ctx.setLineDash([4, 5]);
-  ctx.strokeStyle = 'rgba(232, 246, 238, 0.45)';
+  ctx.strokeStyle = 'rgba(232, 246, 238, 0.5)';
+  ctx.lineWidth = 1.5;
   ctx.beginPath();
-  ctx.moveTo(startX, y + bh / 2);
-  ctx.lineTo(Math.min(endX, x + bw), y + bh / 2);
+  ctx.moveTo(start.x, start.y);
+  ctx.lineTo(end.x, end.y);
   ctx.stroke();
   ctx.setLineDash([]);
-
-  ctx.fillStyle = PALETTE.ink;
-  ctx.font = '600 13px system-ui, sans-serif';
-  ctx.textAlign = 'left';
-  ctx.fillText('Your browser', x + 18, y + 26);
-  ctx.fillStyle = PALETTE.dim;
-  ctx.font = '500 12px system-ui, sans-serif';
-  ctx.fillText('Product inputs stay here', x + 18, y + bh - 16);
 };
-
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
-  const radius = Math.min(r, w / 2, h / 2);
-  ctx.beginPath();
-  ctx.moveTo(x + radius, y);
-  ctx.arcTo(x + w, y, x + w, y + h, radius);
-  ctx.arcTo(x + w, y + h, x, y + h, radius);
-  ctx.arcTo(x, y + h, x, y, radius);
-  ctx.arcTo(x, y, x + w, y, radius);
-  ctx.closePath();
-}

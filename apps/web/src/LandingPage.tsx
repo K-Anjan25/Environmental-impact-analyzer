@@ -21,10 +21,10 @@ function latestPostOf(type: PostType): Post | undefined {
   return publishedPosts(type)[0];
 }
 
-const FEATURE_VISUALS: Record<'indicators' | 'selection' | 'boundary', { draw: Draw; label: string }> = {
-  indicators: { draw: drawIndicatorBars, label: 'Animated bars, one per EF 3.1 indicator code. Decorative, not results.' },
-  selection: { draw: drawSelectionMerge, label: 'Animated rows being selected and summed into a subtotal. Decorative, not results.' },
-  boundary: { draw: drawBrowserBoundary, label: 'Animated particles held inside a dashed browser boundary. Decorative.' },
+const FEATURE_VISUALS: Record<'indicators' | 'selection' | 'boundary', { draw: Draw }> = {
+  indicators: { draw: drawIndicatorBars },
+  selection: { draw: drawSelectionMerge },
+  boundary: { draw: drawBrowserBoundary },
 };
 
 export default function LandingPage() {
@@ -62,7 +62,7 @@ export default function LandingPage() {
             </ul>
           </div>
           <div className="mkt-art reveal" style={{ transitionDelay: '120ms' }}>
-            <AnimatedCanvas draw={drawProcessChain} label="Animated process chain: rows flow from process to subtotal. Decorative, not results." className="mkt-hero-canvas" />
+            <AnimatedCanvas draw={drawProcessChain} className="mkt-hero-canvas" />
           </div>
         </section>
 
@@ -124,7 +124,6 @@ export default function LandingPage() {
             <Reveal className="feature-visual" delay={120}>
               <AnimatedCanvas
                 draw={FEATURE_VISUALS[feature.visual].draw}
-                label={FEATURE_VISUALS[feature.visual].label}
                 className="feature-canvas"
               />
             </Reveal>

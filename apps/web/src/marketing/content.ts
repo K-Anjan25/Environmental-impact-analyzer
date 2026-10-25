@@ -57,7 +57,7 @@ export const FEATURES = [
   },
   {
     eyebrow: 'Selected rows only',
-    title: 'Subtotal the rows you choose',
+    title: 'Total only the rows you choose',
     body:
       'Pick the rows that belong together. The subtotal adds them per indicator where units agree, and the EF 3.1 score is calculated for that selection only.',
     bullets: ['Per-indicator subtotal of selected rows', 'Normalised and weighted EF 3.1 score', 'Missing values stay missing, never zero'],
@@ -78,7 +78,7 @@ export const METHOD_STEPS = [
   { title: 'Confirm geography and unit', body: 'Each factor shows its source geography and reference unit before you enter a quantity.' },
   { title: 'Enter a quantity in that unit', body: 'Quantities are entered in the factor’s own reference unit. Unit conversion is explicit and rejected when dimensions differ.' },
   { title: 'Read all 16 indicators per row', body: 'Every selected process shows its full indicator set with source values and units.' },
-  { title: 'Subtotal the selected rows', body: 'The subtotal and EF 3.1 score cover only the rows you selected, and the result says so.' },
+  { title: 'Total only the selected rows', body: 'The subtotal and EF 3.1 score cover only the rows you selected, and the result says so.' },
 ];
 
 export type ScopeRow = { item: string; covered: string; notCovered: string };
@@ -136,7 +136,7 @@ export const USE_CASES = [
   },
   {
     title: 'Product engineering',
-    body: 'Subtotal the process rows for one component, then see which indicators carry most of the selected total.',
+    body: 'Total the process rows for one component, then see which indicators carry most of the selected total.',
     icon: 'build' as const,
   },
   {

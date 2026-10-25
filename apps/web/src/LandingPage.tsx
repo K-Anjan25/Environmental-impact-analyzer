@@ -1,8 +1,7 @@
 import { Typography } from '@mui/material';
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 import SiteLayout from './SiteLayout';
-import ParticleHero from './marketing/ParticleHero';
-import { AnimatedCanvas, drawBrowserBoundary, drawIndicatorBars, drawProcessChain, drawSelectionMerge, type Draw } from './marketing/AnimatedCanvas';
+import { BotanicalBoundary, BotanicalHero, BotanicalIndicators, BotanicalSelection } from './marketing/Botanical';
 import { BackToTop, CountUp, Reveal, StickyCta, UseCaseCarousel } from './marketing/widgets';
 import { FEATURES, HERO } from './marketing/content';
 import { useCatalogSummary, useDocumentMeta } from './marketing/site';
@@ -13,19 +12,26 @@ import { postHref } from './router';
 /*
  * Home page of the public site. It is the production landing page, and it links to the calculator
  * dashboard at #/calculator. Sections, top to bottom:
- *   hero (canvas background, live counts), alternating feature rows (parallax images),
- *   the scroll-driven journey, use-case carousel, latest blog posts, and a call to action.
+ *   hero (botanical line art and the headline), live catalog counts, alternating feature rows with
+ *   botanical illustrations, the use-case carousel, latest blog posts, and a call to action.
  */
 
 function latestPostOf(type: PostType): Post | undefined {
   return publishedPosts(type)[0];
 }
 
-const FEATURE_VISUALS: Record<'indicators' | 'selection' | 'boundary', { draw: Draw }> = {
-  indicators: { draw: drawIndicatorBars },
-  selection: { draw: drawSelectionMerge },
-  boundary: { draw: drawBrowserBoundary },
-};
+/** Illustration for each feature row. Each one is decorative and aria-hidden. */
+const FEATURE_VISUALS = {
+  indicators: BotanicalIndicators,
+  selection: BotanicalSelection,
+  boundary: BotanicalBoundary,
+} as const;
+
+/** Renders the illustration chosen for a feature row. */
+function FeatureIllustration({ kind }: { kind: keyof typeof FEATURE_VISUALS }) {
+  const Visual = FEATURE_VISUALS[kind];
+  return <Visual />;
+}
 
 export default function LandingPage() {
   const catalog = useCatalogSummary();
@@ -40,7 +46,6 @@ export default function LandingPage() {
     <SiteLayout current="home" variant="landing" sourceVersion={catalog.sourceVersion} totalRecords={catalog.totalRecords}>
       <div className="marketing">
         <section className="mkt-hero" aria-labelledby="hero-title">
-          <ParticleHero />
           <div className="mkt-copy mkt-reveal">
             <p className="mkt-eyebrow">{HERO.eyebrow}</p>
             <Typography id="hero-title" component="h1" className="mkt-title">
@@ -62,7 +67,7 @@ export default function LandingPage() {
             </ul>
           </div>
           <div className="mkt-art reveal" style={{ transitionDelay: '120ms' }}>
-            <AnimatedCanvas draw={drawProcessChain} className="mkt-hero-canvas" />
+            <BotanicalHero />
           </div>
         </section>
 
@@ -122,10 +127,7 @@ export default function LandingPage() {
               </ul>
             </Reveal>
             <Reveal className="feature-visual" delay={120}>
-              <AnimatedCanvas
-                draw={FEATURE_VISUALS[feature.visual].draw}
-                className="feature-canvas"
-              />
+              <FeatureIllustration kind={feature.visual} />
             </Reveal>
           </section>
         ))}

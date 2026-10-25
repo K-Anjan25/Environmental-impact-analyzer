@@ -7,6 +7,9 @@ import CalculateOutlinedIcon from '@mui/icons-material/CalculateOutlined';
 import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 import GavelOutlinedIcon from '@mui/icons-material/GavelOutlined';
 import PrivacyTipOutlinedIcon from '@mui/icons-material/PrivacyTipOutlined';
+import ScienceOutlinedIcon from '@mui/icons-material/ScienceOutlined';
+import SellOutlinedIcon from '@mui/icons-material/SellOutlined';
+import MailOutlineRoundedIcon from '@mui/icons-material/MailOutlineRounded';
 
 type SiteMenuProps = {
   sourceVersion?: string;
@@ -17,7 +20,10 @@ type SiteMenuProps = {
 const MENU_ITEMS = [
   { href: '#/', label: 'Home', icon: <HomeOutlinedIcon fontSize="small" /> },
   { href: '#/calculator', label: 'Calculator', icon: <CalculateOutlinedIcon fontSize="small" /> },
+  { href: '#/method', label: 'Method and scope', icon: <ScienceOutlinedIcon fontSize="small" /> },
+  { href: '#/pricing', label: 'Plans', icon: <SellOutlinedIcon fontSize="small" /> },
   { href: '#/blogs', label: 'Blogs', icon: <ArticleOutlinedIcon fontSize="small" /> },
+  { href: '#/contact', label: 'Contact', icon: <MailOutlineRoundedIcon fontSize="small" /> },
 ];
 
 export default function SiteMenu({ sourceVersion = '1.1.0', totalRecords = '302' }: SiteMenuProps) {

@@ -4,11 +4,13 @@ import { CssBaseline, ThemeProvider } from '@mui/material';
 import App from './App';
 import AdminBlogsPage from './AdminBlogsPage';
 import LandingPage from './LandingPage';
+import { ContactPage, MethodPage, PricingPage } from './marketing/MarketingPages';
 import { BlogIndexPage, BlogPostPage, BlogTypePage } from './BlogPages';
 import SiteLayout from './SiteLayout';
 import { parseRoute, routeHref, type Route } from './router';
 import theme from './theme';
 import './styles.css';
+import './marketing/marketing.css';
 
 function currentHash(): string {
   return window.location.hash;
@@ -18,6 +20,12 @@ function RouteView({ route }: { route: Route }) {
   switch (route.name) {
     case 'home':
       return <LandingPage />;
+    case 'method':
+      return <MethodPage />;
+    case 'pricing':
+      return <PricingPage />;
+    case 'contact':
+      return <ContactPage />;
     case 'calculator':
       return <App />;
     case 'blog-index':

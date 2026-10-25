@@ -3,6 +3,9 @@ import { POST_TYPE_SEGMENT, postTypeFromSegment, type PostType } from './posts';
 export type Route =
   | { name: 'home' }
   | { name: 'calculator' }
+  | { name: 'method' }
+  | { name: 'pricing' }
+  | { name: 'contact' }
   | { name: 'blog-index' }
   | { name: 'blog-type'; type: PostType }
   | { name: 'blog-post'; type: PostType; slug: string }
@@ -33,6 +36,9 @@ export function parseRoute(hash: string): Route {
 
   if (parts.length === 0) return { name: 'home' };
   if (parts[0] === 'calculator' && parts.length === 1) return { name: 'calculator' };
+  if (parts.length === 1 && parts[0] === 'method') return { name: 'method' };
+  if (parts.length === 1 && parts[0] === 'pricing') return { name: 'pricing' };
+  if (parts.length === 1 && parts[0] === 'contact') return { name: 'contact' };
 
   if (parts[0] === 'blogs') {
     if (parts.length === 1) return { name: 'blog-index' };
@@ -60,6 +66,12 @@ export function routeHref(route: Route): string {
       return '#/';
     case 'calculator':
       return '#/calculator';
+    case 'method':
+      return '#/method';
+    case 'pricing':
+      return '#/pricing';
+    case 'contact':
+      return '#/contact';
     case 'blog-index':
       return '#/blogs';
     case 'blog-type':

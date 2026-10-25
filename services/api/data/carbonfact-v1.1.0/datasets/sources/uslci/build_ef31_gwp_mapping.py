@@ -6,7 +6,10 @@ Values:
   - N2O 273: IPCC AR6 Table 7.15 GWP100 (with feedbacks), the basis of EF3.1 climate change.
 Out of scope: all other 15 EF 3.1 categories; resource-side flows; CO2 land-use-change flows.
 """
-import glob, json, os
+
+import glob
+import json
+import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 RULES = [
@@ -21,7 +24,8 @@ rule_map = {(c, n): (cf, lbl) for c, n, cf, lbl in RULES}
 
 out = []
 for path in sorted(glob.glob(os.path.join(HERE, "flows", "*.json"))):
-    f = json.load(open(path))
+    with open(path, encoding="utf-8") as fh:
+        f = json.load(fh)
     if f.get("flowType") != "ELEMENTARY_FLOW":
         continue
     cat = f.get("category", "")
@@ -30,8 +34,16 @@ for path in sorted(glob.glob(os.path.join(HERE, "flows", "*.json"))):
     key = (f.get("cas"), f.get("name"))
     if key in rule_map:
         cf, lbl = rule_map[key]
-        out.append({"flowId": f["@id"], "name": f["name"], "cas": f["cas"], "category": cat,
-                    "cf_kgCO2eq_per_kg": cf, "basis": lbl})
+        out.append(
+            {
+                "flowId": f["@id"],
+                "name": f["name"],
+                "cas": f["cas"],
+                "category": cat,
+                "cf_kgCO2eq_per_kg": cf,
+                "basis": lbl,
+            }
+        )
 
 out.sort(key=lambda r: (r["basis"], r["flowId"]))
 doc = {
@@ -42,5 +54,6 @@ doc = {
     "mapped_flows": len(out),
     "flows": out,
 }
-json.dump(doc, open(os.path.join(HERE, "ef31-climate-change-ghg-mapping.json"), "w"), indent=1)
+with open(os.path.join(HERE, "ef31-climate-change-ghg-mapping.json"), "w", encoding="utf-8") as fh:
+    json.dump(doc, fh, indent=1)
 print("mapped", len(out))

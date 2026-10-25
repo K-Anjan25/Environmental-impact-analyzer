@@ -1,0 +1,2130 @@
+<!doctype html>
+<!--
+  EcoImpact Lab: marketing site (single file).
+
+  Structure
+  - Four pages in one document, routed by the URL hash: #/ (home), #/method, #/pricing, #/contact.
+  - React 18 and JSX are loaded from pinned CDN builds; JSX is compiled in the browser by Babel standalone.
+    For high-traffic production, precompile the script with the Babel CLI and drop the Babel tag.
+  - All visual settings are CSS custom properties in :root.
+
+  Content that must be checked before launch
+  - Pricing amounts, the contact email, the social profile URLs, and the office address are placeholders.
+  - The testimonials are sample quotes and must be replaced with approved customer quotes.
+  - The contact and newsletter forms only deliver when CONFIG.formEndpoint is set (see the CONFIG block).
+-->
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <script>document.documentElement.classList.replace('no-js', 'js');</script>
+
+  <!-- SEO -->
+  <title>EcoImpact Lab | Environmental Impact Analyzer for apparel and footwear</title>
+  <meta name="description" content="EcoImpact Lab estimates the environmental impact of apparel and footwear processes. Keep all 16 EF 3.1 indicators per process, subtotal selected rows, and see the single score for those rows." />
+  <meta name="keywords" content="environmental impact analyzer, EF 3.1, product environmental footprint, apparel LCA, footwear LCA, life cycle assessment, carbon footprint calculator" />
+  <meta name="author" content="EcoImpact Lab" />
+  <meta name="robots" content="index, follow, max-image-preview:large" />
+  <link rel="canonical" href="https://www.ecoimpact-lab.example/" />
+  <meta name="theme-color" content="#164535" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="EcoImpact Lab" />
+  <meta property="og:title" content="EcoImpact Lab | Environmental Impact Analyzer" />
+  <meta property="og:description" content="Measure the impact behind every apparel and footwear process, with all 16 EF 3.1 indicators kept per row." />
+  <meta property="og:url" content="https://www.ecoimpact-lab.example/" />
+  <meta property="og:image" content="https://picsum.photos/seed/ecoimpact-valley/1200/630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="EcoImpact Lab | Environmental Impact Analyzer" />
+  <meta name="twitter:description" content="All 16 EF 3.1 indicators per process, with honest scope notes." />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "name": "EcoImpact Lab",
+        "url": "https://www.ecoimpact-lab.example/",
+        "logo": "https://www.ecoimpact-lab.example/logo.png",
+        "address": { "@type": "PostalAddress", "addressLocality": "Hyderabad", "addressRegion": "Telangana", "addressCountry": "IN" }
+      },
+      {
+        "@type": "SoftwareApplication",
+        "name": "EcoImpact Lab Environmental Impact Analyzer",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Any modern web browser",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "INR" },
+        "description": "Browser-based estimator for apparel and footwear process factors, with 16 EF 3.1 indicators per process row."
+      }
+    ]
+  }
+  </script>
+
+  <!-- Fonts and icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <style>
+    /* ------------------------------------------------------------------
+       1. Design tokens
+       ------------------------------------------------------------------ */
+    :root {
+      --ink: #13231f;
+      --ink-soft: #3b4f49;
+      --paper: #fbfaf5;
+      --mist: #eef4ef;
+      --line: #d7e2da;
+      --forest: #164535;
+      --forest-2: #1f5c48;
+      --forest-ink: #e9f5ee;
+      --forest-muted: #bfd8c9;
+      --leaf: #6fcf97;
+      --leaf-soft: #cbf2d9;
+      --focus: #0b6bcb;
+      --danger: #b42318;
+
+      --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+      --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+      --space-7: 48px;
+      --section-y: clamp(64px, 9vw, 112px);
+      --container: 1180px;
+      --gutter: clamp(20px, 4vw, 40px);
+
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      --shadow-sm: 0 2px 8px rgba(19, 35, 31, 0.08);
+      --shadow-md: 0 14px 34px rgba(19, 35, 31, 0.12);
+      --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+      --speed: 380ms;
+      --header-h: 68px;
+    }
+
+    /* ------------------------------------------------------------------
+       2. Base and reset
+       ------------------------------------------------------------------ */
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      font-size: 17px;
+      line-height: 1.6;
+      color: var(--ink);
+      background: var(--paper);
+      overflow-x: hidden;
+    }
+    img, svg, canvas { display: block; max-width: 100%; }
+    h1, h2, h3 { font-family: var(--font-display); line-height: 1.12; letter-spacing: -0.01em; margin: 0 0 var(--space-4); }
+    h1 { font-size: clamp(2.3rem, 5.4vw, 4.1rem); font-weight: 700; }
+    h2 { font-size: clamp(1.8rem, 3.6vw, 2.8rem); font-weight: 700; }
+    h3 { font-size: 1.25rem; font-weight: 600; }
+    p { margin: 0 0 var(--space-4); }
+    a { color: var(--forest-2); text-underline-offset: 3px; }
+    a:hover { color: var(--forest); }
+    :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+    .container { width: min(100% - (var(--gutter) * 2), var(--container)); margin-inline: auto; }
+    .section { padding-block: var(--section-y); position: relative; overflow: hidden; }
+    .section-alt { background: var(--mist); }
+    .section-dark { background: var(--forest); color: var(--forest-ink); }
+    .section-dark h2, .section-dark h3 { color: #ffffff; }
+    .section-dark p { color: var(--forest-muted); }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      font-size: 0.8rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--forest-2); margin-bottom: var(--space-4);
+    }
+    .section-dark .eyebrow { color: var(--leaf-soft); }
+    .lede { font-size: 1.18rem; color: var(--ink-soft); max-width: 60ch; }
+    .section-dark .lede { color: var(--forest-muted); }
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+    }
+    .skip-link {
+      position: absolute; left: var(--space-4); top: -60px; z-index: 100;
+      background: var(--forest); color: #fff; padding: var(--space-2) var(--space-4); border-radius: var(--radius-sm);
+      transition: top var(--speed) var(--ease);
+    }
+    .skip-link:focus { top: var(--space-4); }
+
+    /* ------------------------------------------------------------------
+       3. Buttons and links
+       ------------------------------------------------------------------ */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+      min-height: 48px; padding: 0 var(--space-5); border-radius: 999px;
+      border: 1px solid transparent; font: inherit; font-weight: 600; font-size: 1rem;
+      text-decoration: none; cursor: pointer;
+      transition: background var(--speed) var(--ease), color var(--speed) var(--ease), transform var(--speed) var(--ease), box-shadow var(--speed) var(--ease);
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn:active { transform: translateY(0); }
+    .btn-primary { background: var(--forest); color: #fff; box-shadow: var(--shadow-sm); }
+    .btn-primary:hover { background: var(--forest-2); color: #fff; box-shadow: var(--shadow-md); }
+    .btn-leaf { background: var(--leaf); color: var(--ink); }
+    .btn-leaf:hover { background: var(--leaf-soft); color: var(--ink); }
+    .btn-outline { background: transparent; color: var(--forest); border-color: var(--forest); }
+    .btn-outline:hover { background: var(--forest); color: #fff; }
+    .btn-ghost-light { background: transparent; color: #fff; border-color: rgba(255, 255, 255, 0.5); }
+    .btn-ghost-light:hover { background: #fff; color: var(--forest); }
+    .btn[disabled] { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .link-arrow { display: inline-flex; align-items: center; gap: var(--space-2); font-weight: 600; text-decoration: none; }
+    .link-arrow i { transition: transform var(--speed) var(--ease); }
+    .link-arrow:hover i { transform: translateX(4px); }
+
+    /* ------------------------------------------------------------------
+       4. Header and hamburger menu (the only navigation control)
+       ------------------------------------------------------------------ */
+    .site-header {
+      position: fixed; inset: 0 0 auto 0; z-index: 50; height: var(--header-h);
+      background: rgba(251, 250, 245, 0.86); backdrop-filter: saturate(160%) blur(12px);
+      -webkit-backdrop-filter: saturate(160%) blur(12px);
+      border-bottom: 1px solid transparent;
+      transition: border-color var(--speed) var(--ease), background var(--speed) var(--ease);
+    }
+    .site-header.is-scrolled { border-bottom-color: var(--line); background: rgba(251, 250, 245, 0.96); }
+    .site-header .container { height: 100%; display: flex; align-items: center; justify-content: space-between; }
+    .brand { display: inline-flex; align-items: center; gap: var(--space-3); color: var(--ink); text-decoration: none; font-weight: 700; }
+    .brand:hover { color: var(--ink); }
+    .brand-mark {
+      width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px;
+      background: linear-gradient(135deg, var(--forest-2), var(--leaf)); color: #fff; font-size: 1.05rem;
+      transition: transform var(--speed) var(--ease);
+    }
+    .brand:hover .brand-mark { transform: rotate(-8deg) scale(1.05); }
+    .brand-text { display: flex; flex-direction: column; line-height: 1.15; }
+    .brand-text strong { font-size: 1.05rem; font-family: var(--font-display); }
+    .brand-text span { font-size: 0.72rem; font-weight: 500; color: var(--ink-soft); letter-spacing: 0.02em; }
+
+    .menu-button {
+      width: 48px; height: 48px; display: grid; place-items: center; gap: 0;
+      border: 1px solid var(--line); border-radius: 14px; background: #fff; color: var(--ink);
+      cursor: pointer; font-size: 1.1rem; transition: border-color var(--speed) var(--ease), transform var(--speed) var(--ease);
+    }
+    .menu-button:hover { border-color: var(--forest-2); transform: translateY(-1px); }
+    .menu-button .fa-solid { transition: transform var(--speed) var(--ease); }
+    .menu-button[aria-expanded="true"] .fa-solid { transform: rotate(90deg); }
+
+    /* Full-screen menu overlay */
+    .menu {
+      position: fixed; inset: 0; z-index: 60; background: var(--forest); color: var(--forest-ink);
+      display: flex; flex-direction: column; justify-content: center;
+      opacity: 0; visibility: hidden; transition: opacity var(--speed) var(--ease), visibility var(--speed) var(--ease);
+    }
+    .menu.is-open { opacity: 1; visibility: visible; }
+    .menu-inner { width: min(100% - 40px, 760px); margin-inline: auto; display: grid; grid-template-columns: 1fr; gap: var(--space-6); }
+    .menu-close {
+      position: absolute; top: 16px; right: 20px; width: 48px; height: 48px; display: grid; place-items: center;
+      border-radius: 14px; background: transparent; border: 1px solid rgba(255, 255, 255, 0.3); color: #fff; font-size: 1.1rem; cursor: pointer;
+    }
+    .menu-close:hover { background: rgba(255, 255, 255, 0.12); }
+    .menu-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
+    .menu-list a {
+      display: flex; align-items: baseline; gap: var(--space-4); padding: var(--space-3) 0;
+      color: #fff; text-decoration: none; font-family: var(--font-display); font-size: clamp(1.9rem, 5vw, 2.8rem); font-weight: 600;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+      transform: translateY(12px); opacity: 0; transition: transform 500ms var(--ease), opacity 500ms var(--ease), color var(--speed) var(--ease), padding var(--speed) var(--ease);
+    }
+    .menu.is-open .menu-list a { transform: none; opacity: 1; }
+    .menu.is-open .menu-list li:nth-child(2) a { transition-delay: 60ms; }
+    .menu.is-open .menu-list li:nth-child(3) a { transition-delay: 120ms; }
+    .menu.is-open .menu-list li:nth-child(4) a { transition-delay: 180ms; }
+    .menu.is-open .menu-list li:nth-child(5) a { transition-delay: 240ms; }
+    .menu-list a:hover, .menu-list a[aria-current="page"] { color: var(--leaf-soft); padding-left: var(--space-3); }
+    .menu-list small { font-family: var(--font-body); font-size: 0.85rem; color: var(--forest-muted); font-weight: 500; }
+    .menu-foot { display: flex; flex-wrap: wrap; gap: var(--space-4); align-items: center; justify-content: space-between; }
+    .menu-social { display: flex; gap: var(--space-3); }
+    .menu-social a { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.3); color: #fff; }
+    .menu-social a:hover { background: #fff; color: var(--forest); }
+
+    /* ------------------------------------------------------------------
+       5. Hero (canvas particles, layered parallax)
+       ------------------------------------------------------------------ */
+    .hero {
+      min-height: 100svh; padding-top: calc(var(--header-h) + 40px); padding-bottom: 72px;
+      display: flex; align-items: center; background: #0f2a21; color: var(--forest-ink);
+      isolation: isolate;
+    }
+    .hero-layer { position: absolute; inset: 0; pointer-events: none; }
+    .hero-photo { position: absolute; inset: -8% 0; width: 100%; height: 116%; object-fit: cover; opacity: 0.38; filter: saturate(0.85); }
+    .hero-glow {
+      background:
+        radial-gradient(60% 50% at 80% 20%, rgba(111, 207, 151, 0.28), transparent 70%),
+        radial-gradient(50% 45% at 10% 90%, rgba(31, 92, 72, 0.6), transparent 70%),
+        linear-gradient(180deg, rgba(15, 42, 33, 0.35), rgba(15, 42, 33, 0.92));
+    }
+    .hero-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .hero .container { position: relative; z-index: 2; }
+    .hero-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: var(--space-7); align-items: center; }
+    .hero h1 { color: #fff; }
+    .hero h1 em { font-style: normal; color: var(--leaf); }
+    .hero .lede { color: var(--forest-muted); }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-6); }
+    .hero-proof { display: flex; flex-wrap: wrap; gap: var(--space-5); margin-top: var(--space-6); font-size: 0.92rem; color: var(--forest-muted); }
+    .hero-proof span { display: inline-flex; align-items: center; gap: var(--space-2); }
+    .hero-proof i { color: var(--leaf); }
+    .hero-card {
+      background: rgba(251, 250, 245, 0.08); border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: var(--radius-lg); padding: var(--space-5); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+    }
+    .hero-card-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--space-4); color: #fff; }
+    .hero-card-head strong { font-family: var(--font-display); font-size: 1.1rem; }
+    .hero-card-head span { font-size: 0.8rem; color: var(--forest-muted); }
+    .indicator-row { display: grid; grid-template-columns: 1fr auto; gap: var(--space-3); padding: 9px 0; border-top: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.93rem; color: var(--forest-ink); }
+    .indicator-row b { font-variant-numeric: tabular-nums; color: #fff; }
+    .indicator-bar { grid-column: 1 / -1; height: 6px; border-radius: 6px; background: rgba(255, 255, 255, 0.12); overflow: hidden; }
+    .indicator-bar span { display: block; height: 100%; width: var(--w); background: linear-gradient(90deg, var(--forest-2), var(--leaf)); border-radius: 6px; transition: width 1.2s var(--ease); }
+    .js .hero-card .indicator-bar span { width: 0; }
+    .js .is-visible .indicator-bar span, .no-js .indicator-bar span { width: var(--w); }
+    .hero-card-foot { margin-top: var(--space-4); font-size: 0.8rem; color: var(--forest-muted); }
+    .scroll-cue {
+      position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 2;
+      display: grid; justify-items: center; gap: 4px; color: #cfe9dc; font: inherit; font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; text-decoration: none;
+      background: none; border: 0; padding: 4px 8px; cursor: pointer;
+    }
+    .scroll-cue i { animation: bob 2.2s var(--ease) infinite; }
+    @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
+
+    /* Layered parallax frames (depth set by data-depth, applied in JS) */
+    .parallax-frame { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+    .parallax-frame img { position: absolute; left: 0; top: -10%; width: 100%; height: 120%; object-fit: cover; will-change: transform; }
+
+    /* ------------------------------------------------------------------
+       6. Scroll reveal (only when JavaScript runs)
+       ------------------------------------------------------------------ */
+    .js .reveal { opacity: 0; transform: translateY(26px); transition: opacity 700ms var(--ease), transform 700ms var(--ease); transition-delay: var(--delay, 0ms); }
+    .js .reveal.is-visible { opacity: 1; transform: none; }
+
+    /* ------------------------------------------------------------------
+       7. Stats
+       ------------------------------------------------------------------ */
+    .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-5); margin: 0; }
+    .stat { background: #fff; border: 1px solid var(--line); border-radius: var(--radius-md); padding: var(--space-5); box-shadow: var(--shadow-sm); }
+    .stat dt { order: 2; color: var(--ink-soft); font-size: 0.95rem; margin-top: var(--space-2); }
+    .stat dd { margin: 0; order: 1; }
+    .stat { display: flex; flex-direction: column; }
+    .stat-value { font-family: var(--font-display); font-size: clamp(2.2rem, 4vw, 3rem); font-weight: 700; color: var(--forest); font-variant-numeric: tabular-nums; line-height: 1; }
+
+    /* ------------------------------------------------------------------
+       8. Alternating feature rows (left/right)
+       ------------------------------------------------------------------ */
+    .feature { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(32px, 6vw, 80px); align-items: center; }
+    .feature + .feature { margin-top: var(--section-y); }
+    .feature.is-reversed .feature-media { order: 2; }
+    .feature-media { position: relative; border-radius: var(--radius-lg); overflow: hidden; aspect-ratio: 4 / 3; box-shadow: var(--shadow-md); background: var(--mist); }
+    .feature-media img { width: 100%; height: 100%; object-fit: cover; transition: transform 900ms var(--ease); }
+    .feature-media:hover img { transform: scale(1.04); }
+    .feature-copy .lede { margin-bottom: var(--space-5); }
+    .checklist { list-style: none; padding: 0; margin: 0 0 var(--space-5); display: grid; gap: var(--space-3); }
+    .checklist li { display: grid; grid-template-columns: 24px 1fr; gap: var(--space-3); color: var(--ink-soft); }
+    .checklist i { color: var(--forest-2); margin-top: 5px; }
+
+    /* ------------------------------------------------------------------
+       9. Testimonial carousel
+       ------------------------------------------------------------------ */
+    .carousel { position: relative; max-width: 860px; margin-inline: auto; }
+    .carousel-viewport { overflow: hidden; border-radius: var(--radius-lg); }
+    .carousel-track { display: flex; transition: transform 650ms var(--ease); }
+    .carousel-slide { flex: 0 0 100%; padding: clamp(28px, 5vw, 56px); background: #fff; border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
+    .quote-mark { font-size: 2rem; color: var(--leaf); margin-bottom: var(--space-3); }
+    .quote-text { font-family: var(--font-display); font-size: clamp(1.25rem, 2.4vw, 1.6rem); line-height: 1.4; color: var(--ink); margin-bottom: var(--space-5); }
+    .quote-person { display: flex; align-items: center; gap: var(--space-3); }
+    .quote-person img { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; }
+    .quote-person strong { display: block; }
+    .quote-person span { color: var(--ink-soft); font-size: 0.92rem; }
+    .carousel-controls { display: flex; align-items: center; justify-content: center; gap: var(--space-4); margin-top: var(--space-5); }
+    .carousel-btn {
+      width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--line); background: #fff; color: var(--forest);
+      display: grid; place-items: center; cursor: pointer; transition: background var(--speed) var(--ease), color var(--speed) var(--ease), border-color var(--speed) var(--ease);
+    }
+    .carousel-btn:hover { background: var(--forest); color: #fff; border-color: var(--forest); }
+    .carousel-dots { display: flex; gap: var(--space-2); }
+    .carousel-dot { width: 12px; height: 12px; border-radius: 999px; border: 0; padding: 0; background: #b9cabf; cursor: pointer; transition: width var(--speed) var(--ease), background var(--speed) var(--ease); }
+    .carousel-dot[aria-selected="true"] { width: 32px; background: var(--forest-2); }
+    .carousel-dot { min-width: 12px; min-height: 12px; }
+
+    /* ------------------------------------------------------------------
+       10. Page hero (inner pages)
+       ------------------------------------------------------------------ */
+    .page-hero { padding-top: calc(var(--header-h) + 64px); padding-bottom: 64px; background: linear-gradient(180deg, var(--mist), var(--paper)); position: relative; overflow: hidden; }
+    .page-hero .container { position: relative; z-index: 2; }
+    .page-hero .lede { max-width: 56ch; }
+    .page-hero-orb { position: absolute; width: 520px; height: 520px; border-radius: 50%; background: radial-gradient(circle, rgba(111, 207, 151, 0.35), transparent 65%); right: -140px; top: -120px; }
+
+    /* Journey steps for the method page */
+    .steps { display: grid; gap: var(--section-y); }
+    .step-number { font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; color: var(--forest-2); letter-spacing: 0.08em; margin-bottom: var(--space-2); }
+
+    /* Scope table */
+    .table-wrap { overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--line); background: #fff; }
+    table { width: 100%; border-collapse: collapse; min-width: 640px; }
+    th, td { text-align: left; padding: 14px 18px; border-bottom: 1px solid var(--line); vertical-align: top; font-size: 0.95rem; }
+    th { background: var(--mist); color: var(--forest); font-weight: 700; }
+    tr:last-child td { border-bottom: 0; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; white-space: nowrap; }
+    .badge-ef { background: #d8f5e4; color: #0d5b35; }
+    .badge-ghg { background: #e3ecfb; color: #1d4c8f; }
+    .badge-out { background: #eceef0; color: #3f4a52; }
+
+    /* ------------------------------------------------------------------
+       11. Pricing
+       ------------------------------------------------------------------ */
+    .pricing-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-5); align-items: stretch; }
+    .price-card {
+      display: flex; flex-direction: column; background: #fff; border: 1px solid var(--line); border-radius: var(--radius-lg);
+      padding: var(--space-6); box-shadow: var(--shadow-sm); transition: transform var(--speed) var(--ease), box-shadow var(--speed) var(--ease);
+    }
+    .price-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-md); }
+    .price-card.is-featured { border-color: var(--forest-2); box-shadow: var(--shadow-md); position: relative; }
+    .price-badge { position: absolute; top: -13px; left: var(--space-6); background: var(--leaf); color: var(--ink); font-size: 0.78rem; font-weight: 700; padding: 4px 12px; border-radius: 999px; }
+    .price { font-family: var(--font-display); font-size: 2.6rem; font-weight: 700; color: var(--forest); line-height: 1.1; margin: var(--space-3) 0 var(--space-1); }
+    .price small { font-family: var(--font-body); font-size: 0.95rem; color: var(--ink-soft); font-weight: 500; }
+    .price-card .muted { color: var(--ink-soft); font-size: 0.95rem; }
+    .price-card ul { list-style: none; padding: 0; margin: var(--space-5) 0 var(--space-6); display: grid; gap: var(--space-3); flex: 1; }
+    .price-card li { display: grid; grid-template-columns: 22px 1fr; gap: var(--space-2); font-size: 0.95rem; }
+    .price-card li i { color: var(--forest-2); margin-top: 4px; }
+    .price-card .btn { width: 100%; }
+
+    /* ------------------------------------------------------------------
+       12. FAQ accordion
+       ------------------------------------------------------------------ */
+    .faq { max-width: 820px; margin-inline: auto; display: grid; gap: var(--space-3); }
+    .faq-item { background: #fff; border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; transition: box-shadow var(--speed) var(--ease); }
+    .faq-item.is-open { box-shadow: var(--shadow-sm); }
+    .faq-question {
+      width: 100%; display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
+      padding: 18px 22px; background: none; border: 0; text-align: left; font: inherit; font-weight: 600; font-size: 1.02rem; color: var(--ink); cursor: pointer;
+    }
+    .faq-question:hover { color: var(--forest-2); }
+    .faq-icon { flex: none; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--mist); color: var(--forest); transition: transform var(--speed) var(--ease), background var(--speed) var(--ease); }
+    .faq-item.is-open .faq-icon { transform: rotate(45deg); background: var(--forest); color: #fff; }
+    .faq-panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows var(--speed) var(--ease); }
+    .faq-item.is-open .faq-panel { grid-template-rows: 1fr; }
+    .faq-panel > div { overflow: hidden; }
+    .faq-panel p { padding: 0 22px 20px; margin: 0; color: var(--ink-soft); }
+
+    /* ------------------------------------------------------------------
+       13. Forms
+       ------------------------------------------------------------------ */
+    .contact-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: clamp(32px, 6vw, 72px); align-items: start; }
+    .form-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius-lg); padding: clamp(24px, 4vw, 40px); box-shadow: var(--shadow-sm); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4) var(--space-5); }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field.full { grid-column: 1 / -1; }
+    .field label { font-weight: 600; font-size: 0.95rem; }
+    .field .hint { font-size: 0.85rem; color: var(--ink-soft); }
+    .field input, .field select, .field textarea {
+      font: inherit; font-size: 1rem; color: var(--ink); background: #fff;
+      border: 1.5px solid #b8c9bd; border-radius: var(--radius-sm); padding: 12px 14px; min-height: 48px; width: 100%;
+      transition: border-color var(--speed) var(--ease), box-shadow var(--speed) var(--ease);
+    }
+    .field textarea { min-height: 150px; resize: vertical; }
+    .field input:hover, .field select:hover, .field textarea:hover { border-color: var(--forest-2); }
+    .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--focus); box-shadow: 0 0 0 4px rgba(11, 107, 203, 0.18); }
+    .field input[aria-invalid="true"], .field textarea[aria-invalid="true"], .field select[aria-invalid="true"] { border-color: var(--danger); }
+    .field-error { color: var(--danger); font-size: 0.88rem; font-weight: 500; display: flex; gap: 6px; align-items: center; }
+    .counter { font-size: 0.82rem; color: var(--ink-soft); text-align: right; }
+    .checkbox-row { display: grid; grid-template-columns: 22px 1fr; gap: var(--space-3); align-items: start; font-size: 0.93rem; color: var(--ink-soft); }
+    .checkbox-row input { width: 20px; height: 20px; margin-top: 3px; accent-color: var(--forest); }
+    .honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+    .form-status { margin-top: var(--space-4); padding: var(--space-4); border-radius: var(--radius-sm); font-size: 0.95rem; }
+    .form-status.is-ok { background: #e4f6ec; color: #0d5b35; }
+    .form-status.is-warn { background: #fff4e0; color: #7a4a00; }
+    .form-status.is-error { background: #fdecea; color: #8a1c13; }
+    .error-summary { border: 1.5px solid var(--danger); background: #fdf1f0; color: #8a1c13; border-radius: var(--radius-sm); padding: var(--space-4); margin-bottom: var(--space-5); }
+    .error-summary ul { margin: var(--space-2) 0 0; padding-left: 20px; }
+    .link-button { background: none; border: 0; padding: 0; font: inherit; color: inherit; text-align: left; text-decoration: underline; cursor: pointer; }
+    .info-card { background: var(--mist); border-radius: var(--radius-lg); padding: var(--space-6); }
+    .info-list { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-5); }
+    .info-list li { display: grid; grid-template-columns: 44px 1fr; gap: var(--space-4); align-items: start; }
+    .info-icon { width: 44px; height: 44px; border-radius: 14px; background: #fff; color: var(--forest-2); display: grid; place-items: center; box-shadow: var(--shadow-sm); }
+    .info-list strong { display: block; }
+    .info-list span, .info-list a { color: var(--ink-soft); }
+
+    /* ------------------------------------------------------------------
+       14. Footer (fat footer)
+       ------------------------------------------------------------------ */
+    .site-footer { background: #0f2a21; color: var(--forest-muted); padding-top: var(--section-y); padding-bottom: var(--space-6); }
+    .site-footer h2 { font-size: 1.6rem; color: #fff; }
+    .site-footer h3 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.12em; color: #fff; font-family: var(--font-body); font-weight: 700; margin-bottom: var(--space-4); }
+    .footer-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1.3fr; gap: var(--space-7); }
+    .footer-brand p { color: var(--forest-muted); max-width: 36ch; }
+    .footer-brand .brand { color: #fff; }
+    .footer-brand .brand:hover { color: #fff; }
+    .footer-brand .brand-text span { color: var(--forest-muted); }
+    .footer-links { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-3); }
+    .footer-links a { color: var(--forest-muted); text-decoration: none; transition: color var(--speed) var(--ease), padding var(--speed) var(--ease); }
+    .footer-links a:hover { color: #fff; padding-left: 4px; }
+    .newsletter { margin-top: var(--space-6); }
+    .newsletter-row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+    .newsletter input[type="email"] {
+      flex: 1 1 220px; min-height: 48px; border-radius: 999px; border: 1.5px solid rgba(255, 255, 255, 0.3); background: rgba(255, 255, 255, 0.06);
+      color: #fff; padding: 0 18px; font: inherit;
+    }
+    .newsletter input[type="email"]::placeholder { color: #9fc2b0; }
+    .newsletter input[type="email"]:focus { outline: none; border-color: var(--leaf); box-shadow: 0 0 0 4px rgba(111, 207, 151, 0.25); }
+    .newsletter .btn { min-height: 48px; }
+    .newsletter .checkbox-row { color: var(--forest-muted); margin-top: var(--space-3); font-size: 0.85rem; }
+    .newsletter .checkbox-row input { accent-color: var(--leaf); }
+    .newsletter .field-error { color: #ffb4a8; }
+    .newsletter .form-status { background: rgba(255, 255, 255, 0.08); color: #fff; }
+    .map-frame { border-radius: var(--radius-md); overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.12); height: 210px; background: #173a2d; }
+    .map-frame iframe { width: 100%; height: 100%; border: 0; filter: grayscale(0.3) contrast(1.05); }
+    .map-caption { font-size: 0.85rem; margin-top: var(--space-3); color: var(--forest-muted); }
+    .social { display: flex; gap: var(--space-3); flex-wrap: wrap; margin-top: var(--space-5); }
+    .social a {
+      width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.25); text-decoration: none; transition: background var(--speed) var(--ease), transform var(--speed) var(--ease), color var(--speed) var(--ease);
+    }
+    .social a:hover { background: var(--leaf); color: var(--ink); transform: translateY(-3px); }
+    .footer-bottom { margin-top: var(--section-y); padding-top: var(--space-5); border-top: 1px solid rgba(255, 255, 255, 0.12); display: flex; flex-wrap: wrap; gap: var(--space-4); justify-content: space-between; font-size: 0.9rem; }
+    .footer-bottom nav { display: flex; gap: var(--space-5); flex-wrap: wrap; }
+    .footer-bottom a { color: var(--forest-muted); }
+    .footer-bottom a:hover { color: #fff; }
+
+    /* ------------------------------------------------------------------
+       15. Floating controls: sticky CTA and back to top
+       ------------------------------------------------------------------ */
+    .sticky-cta {
+      position: fixed; right: 20px; bottom: 20px; z-index: 40;
+      display: inline-flex; align-items: center; gap: var(--space-2); padding: 14px 20px; border-radius: 999px;
+      background: var(--leaf); color: var(--ink); font-weight: 700; text-decoration: none; box-shadow: var(--shadow-md);
+      transform: translateY(140%); opacity: 0; visibility: hidden;
+      transition: transform var(--speed) var(--ease), opacity var(--speed) var(--ease), visibility var(--speed) var(--ease), box-shadow var(--speed) var(--ease);
+    }
+    .sticky-cta.is-visible { transform: none; opacity: 1; visibility: visible; }
+    .sticky-cta:hover { color: var(--ink); box-shadow: 0 18px 40px rgba(19, 35, 31, 0.2); transform: translateY(-2px); }
+    .to-top {
+      position: fixed; left: 20px; bottom: 20px; z-index: 40; width: 50px; height: 50px; border-radius: 50%;
+      border: 0; background: var(--forest); color: #fff; cursor: pointer; box-shadow: var(--shadow-md);
+      display: grid; place-items: center; font-size: 1rem;
+      transform: translateY(140%); opacity: 0; visibility: hidden;
+      transition: transform var(--speed) var(--ease), opacity var(--speed) var(--ease), visibility var(--speed) var(--ease), background var(--speed) var(--ease);
+    }
+    .to-top.is-visible { transform: none; opacity: 1; visibility: visible; }
+    .to-top:hover { background: var(--forest-2); }
+
+    /* ------------------------------------------------------------------
+       16. Responsive layout
+       ------------------------------------------------------------------ */
+    @media (max-width: 1024px) {
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .pricing-grid { grid-template-columns: 1fr; max-width: 520px; margin-inline: auto; }
+      .footer-grid { grid-template-columns: 1fr 1fr; gap: var(--space-6); }
+    }
+    @media (max-width: 880px) {
+      .hero-grid, .feature, .contact-grid { grid-template-columns: 1fr; }
+      .feature.is-reversed .feature-media { order: 0; }
+      .feature-media { aspect-ratio: 16 / 11; }
+      .hero { min-height: auto; padding-bottom: 96px; }
+    }
+    @media (max-width: 600px) {
+      body { font-size: 16px; }
+      .stats { grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+      .stat { padding: var(--space-4); }
+      .form-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .brand-text span { display: none; }
+      .sticky-cta { right: 14px; bottom: 14px; padding: 12px 16px; }
+      .to-top { left: 14px; bottom: 14px; width: 46px; height: 46px; }
+      .carousel-slide { padding: 26px; }
+      .menu-list a { font-size: 2rem; }
+    }
+    @media (max-width: 380px) {
+      .stats { grid-template-columns: 1fr; }
+    }
+
+    /* ------------------------------------------------------------------
+       17. Reduced motion: keep layout, drop movement
+       ------------------------------------------------------------------ */
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+      .js .reveal { opacity: 1; transform: none; }
+      .hero-photo, .parallax-frame img { transform: none !important; }
+      .scroll-cue i { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <div id="root"></div>
+
+  <!-- Noscript fallback: the page stays readable without JavaScript. -->
+  <noscript>
+    <div style="max-width:720px;margin:120px auto;padding:24px;font-family:system-ui">
+      <h1>EcoImpact Lab</h1>
+      <p>This site needs JavaScript for its pages and forms. To use the calculator, open the app directly, or email hello@ecoimpact-lab.example.</p>
+    </div>
+  </noscript>
+
+  <!-- React 18 and Babel standalone, pinned. Scripts run in order: React, ReactDOM, Babel, then the app. -->
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.26.0/babel.min.js" crossorigin="anonymous"></script>
+
+  <script type="text/babel" data-presets="react">
+  /* ====================================================================
+     EcoImpact Lab: application code (React JSX)
+     ==================================================================== */
+  const { useState, useEffect, useRef, useCallback } = React;
+
+  /* ----------------------------------------------------------------
+     CONFIG: change these values before launch.
+     ---------------------------------------------------------------- */
+  const CONFIG = {
+    /** Where the estimator app runs. The "Open the calculator" buttons link here. */
+    calculatorUrl: 'https://environmentalimpactanalyzer-29ygtfujf.vercel.app/#/calculator',
+    /** Legal pages of the estimator app, linked from the footer. */
+    termsUrl: 'https://environmentalimpactanalyzer-29ygtfujf.vercel.app/legal/terms.html',
+    privacyUrl: 'https://environmentalimpactanalyzer-29ygtfujf.vercel.app/legal/privacy.html',
+    /** Public contact address (placeholder). */
+    contactEmail: 'hello@ecoimpact-lab.example',
+    /**
+     * JSON endpoint that receives contact and newsletter submissions (POST, application/json).
+     * Empty means "not connected": the forms validate, then show a mailto fallback.
+     */
+    formEndpoint: '',
+  };
+
+  const REDUCED_MOTION = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+  /* ----------------------------------------------------------------
+     Content
+     ---------------------------------------------------------------- */
+  const PAGES = [
+    { id: 'home', path: '/', label: 'Home', hint: 'Overview' },
+    { id: 'method', path: '/method', label: 'Method', hint: 'How it works' },
+    { id: 'pricing', path: '/pricing', label: 'Pricing', hint: 'Plans and FAQ' },
+    { id: 'contact', path: '/contact', label: 'Contact', hint: 'Talk to the team' },
+  ];
+
+  const PAGE_META = {
+    home: {
+      title: 'EcoImpact Lab | Environmental Impact Analyzer for apparel and footwear',
+      description: 'Estimate apparel and footwear process impacts with all 16 EF 3.1 indicators kept per row, selected-row subtotals, and an honest scope.',
+    },
+    method: {
+      title: 'Method | EcoImpact Lab',
+      description: 'How EcoImpact Lab builds an estimate: the five-step process, the life-cycle stage boundary, and what each stage covers.',
+    },
+    pricing: {
+      title: 'Pricing and FAQ | EcoImpact Lab',
+      description: 'Plans for teams that estimate apparel and footwear processes, with answers to common questions about data, scope, and limits.',
+    },
+    contact: {
+      title: 'Contact | EcoImpact Lab',
+      description: 'Ask about the estimator, the data sources, or a partnership. Our team replies within two working days.',
+    },
+  };
+
+  const STATS = [
+    { to: 302, label: 'published process factors in the bundled catalog' },
+    { to: 16, label: 'EF 3.1 indicators kept on every process row' },
+    { to: 12, label: 'process families across apparel and footwear' },
+    { to: 2, label: 'open data sources, DEFRA 2026 and USLCI', suffix: '' },
+  ];
+
+  const FEATURES = [
+    {
+      eyebrow: 'Per-row indicators',
+      title: 'Every indicator stays on its own line',
+      body: 'Each process you add keeps its full set of 16 EF 3.1 indicator values, with the unit beside each one. Nothing is collapsed into a single number before you can inspect it.',
+      points: ['16 indicators on every process row', 'Source unit and reference quantity shown together', 'Factors kept separate for each row you add'],
+      image: 'https://picsum.photos/seed/ecoimpact-indicators/900/675',
+      alt: 'Abstract dashboard lines and gauges in green and teal',
+      icon: 'fa-solid fa-chart-column',
+    },
+    {
+      eyebrow: 'Selected-row subtotals',
+      title: 'Subtotals say exactly what they cover',
+      body: 'Choose the rows you want to combine and get a subtotal by indicator. The result is labelled as a selected-row subtotal, never as a complete product footprint.',
+      points: ['Subtotal by indicator for the rows you select', 'Clear label when coverage is partial', 'Export the rows and the subtotal together'],
+      image: 'https://picsum.photos/seed/ecoimpact-subtotal/900/675',
+      alt: 'Stacked fabric swatches in soft green and cream',
+      icon: 'fa-solid fa-layer-group',
+      reversed: true,
+    },
+    {
+      eyebrow: 'EF 3.1 single score',
+      title: 'A single score for the rows you selected',
+      body: 'The estimator applies EF 3.1 normalisation and weighting to the selected rows and reports one single score. It covers only the rows selected, so it can be compared across options built the same way.',
+      points: ['Normalised and weighted for the selected rows', 'Same method for every option you compare', 'Shown beside the per-indicator results'],
+      image: 'https://picsum.photos/seed/ecoimpact-score/900/675',
+      alt: 'A calm lake reflecting a green hillside at dusk',
+      icon: 'fa-solid fa-gauge-high',
+    },
+    {
+      eyebrow: 'Bill of materials check',
+      title: 'Component masses are checked against the product',
+      body: 'Declare the components of one functional unit and their masses. The check compares them with the finished-product mass and flags missing parents, duplicate lines, and mass that does not close.',
+      points: ['Functional unit declared up front', 'Component hierarchy and duplicates flagged', 'Mass closure reported in kilograms'],
+      image: 'https://picsum.photos/seed/ecoimpact-bom/900/675',
+      alt: 'Neatly arranged textile samples and a folded shoe on a table',
+      icon: 'fa-solid fa-diagram-project',
+      reversed: true,
+    },
+    {
+      eyebrow: 'Transport and end of life',
+      title: 'Climate change for transport and waste, with the scope stated',
+      body: 'Freight and waste-treatment steps use DEFRA 2026 factors for climate change only. The estimator shows these as their own layer, so they are never mixed into the EF 3.1 subtotal.',
+      points: ['Climate change (kg CO2e) only for A2, A4, C2 to C4', 'Separate from the EF 3.1 subtotal', 'Source and version shown with every factor'],
+      image: 'https://picsum.photos/seed/ecoimpact-freight/900/675',
+      alt: 'Shipping containers stacked at a port under a clear sky',
+      icon: 'fa-solid fa-truck-fast',
+    },
+  ];
+
+  const JOURNEY = [
+    {
+      title: 'Follow one process',
+      body: 'Start from a single process, such as knitting a cotton jersey or assembling a sneaker upper. The estimator shows its activity, its source geography, and its reference unit.',
+      image: 'https://picsum.photos/seed/ecoimpact-step1/900/675',
+      alt: 'A wind turbine on a green ridge',
+    },
+    {
+      title: 'Choose a process',
+      body: 'Search the published apparel and footwear factors by process family and source geography. Each option names its source, so you know where the numbers come from.',
+      image: 'https://picsum.photos/seed/ecoimpact-step2/900/675',
+      alt: 'A globe lit with green points',
+    },
+    {
+      title: 'Enter quantities',
+      body: 'Enter the quantity in the reference unit of the factor, or in a unit the estimator converts for you. Every conversion is shown before anything is calculated.',
+      image: 'https://picsum.photos/seed/ecoimpact-step3/900/675',
+      alt: 'A digital scale with stacked boxes',
+    },
+    {
+      title: 'Read the indicators',
+      body: 'Read all 16 EF 3.1 indicators on their own lines, each with its unit. Select the rows you want to combine to see a subtotal and the single score for those rows.',
+      image: 'https://picsum.photos/seed/ecoimpact-step4/900/675',
+      alt: 'Gauges with teal and lime dials',
+    },
+    {
+      title: 'Start an estimate',
+      body: 'Open the calculator and build your own estimate from the processes and quantities you have. Save the rows and export them with their scope notes.',
+      image: 'https://picsum.photos/seed/ecoimpact-step5/900/675',
+      alt: 'A seedling growing from soil',
+    },
+  ];
+
+  const SCOPE_ROWS = [
+    { stage: 'A1', name: 'Raw materials', coverage: 'ef', note: 'EF 3.1 when a PU leather or natural rubber process row is linked. Textile fibre production is not in the bundled data yet.' },
+    { stage: 'A2', name: 'Transport to factory', coverage: 'ghg', note: 'Climate change only, from DEFRA 2026 freight factors, entered by distance and mode.' },
+    { stage: 'A3', name: 'Manufacturing', coverage: 'ef', note: 'EF 3.1 when a shoe-assembly process row for the same product type is linked.' },
+    { stage: 'A4', name: 'Distribution to customer', coverage: 'ghg', note: 'Climate change only, from DEFRA 2026 freight factors.' },
+    { stage: 'B', name: 'Use phase', coverage: 'out', note: 'Excluded. Use depends on consumer washing, drying, and wear.' },
+    { stage: 'C1', name: 'Deconstruction', coverage: 'out', note: 'Excluded. No separate deconstruction step is modelled.' },
+    { stage: 'C2', name: 'Transport to waste treatment', coverage: 'ghg', note: 'Climate change only, from DEFRA 2026 freight factors.' },
+    { stage: 'C3', name: 'Waste treatment', coverage: 'ghg', note: 'Climate change only, from DEFRA 2026 waste factors, by end-of-life route.' },
+    { stage: 'C4', name: 'Disposal', coverage: 'ghg', note: 'Climate change only, from DEFRA 2026 waste factors, by end-of-life route.' },
+  ];
+  const COVERAGE_BADGE = {
+    ef: { className: 'badge badge-ef', label: 'EF 3.1 (16 indicators)' },
+    ghg: { className: 'badge badge-ghg', label: 'Climate change only' },
+    out: { className: 'badge badge-out', label: 'Excluded' },
+  };
+
+  /* Sample quotes. Replace with approved customer quotes before launch. */
+  const TESTIMONIALS = [
+    {
+      quote: 'We could finally see which material row drove our footwear result. Keeping all 16 indicators per process changed how our design team discusses trade-offs.',
+      name: 'Priya Raman',
+      role: 'Sustainability lead, footwear brand',
+      image: 'https://picsum.photos/seed/ecoimpact-person1/120/120',
+    },
+    {
+      quote: 'The scope notes are the reason we trust it. The subtotal is labelled as selected rows, so nobody presents it as a complete footprint by mistake.',
+      name: 'Daniel Okafor',
+      role: 'Product compliance manager, apparel',
+      image: 'https://picsum.photos/seed/ecoimpact-person2/120/120',
+    },
+    {
+      quote: 'Our supplier data is messy. The bill-of-materials check caught a missing parent line on the first run and told us exactly which mass did not close.',
+      name: 'Meera Krishnan',
+      role: 'Operations analyst, textile manufacturer',
+      image: 'https://picsum.photos/seed/ecoimpact-person3/120/120',
+    },
+  ];
+
+  const PRICING = [
+    {
+      name: 'Explorer',
+      price: 'Free',
+      period: '',
+      blurb: 'For analysts who want to test a process before they commit.',
+      features: ['Browser estimator with 25 process rows per estimate', 'All 16 EF 3.1 indicators per row', 'Selected-row subtotals and CSV export', 'Community support'],
+      cta: 'Open the calculator',
+      href: CONFIG.calculatorUrl,
+      external: true,
+    },
+    {
+      name: 'Team',
+      price: '₹4,999',
+      period: '/ month',
+      blurb: 'For product teams that compare options every sprint.',
+      features: ['Everything in Explorer', 'Saved estimates and shared comparisons', 'Bill-of-materials check for multi-component products', 'Email support within two working days'],
+      cta: 'Start with Team',
+      href: '#/contact',
+      featured: true,
+    },
+    {
+      name: 'Enterprise',
+      price: 'Custom',
+      period: '',
+      blurb: 'For brands and suppliers that need controls, data agreements, and onboarding.',
+      features: ['Everything in Team', 'Data and supplier onboarding support', 'Custom process families and source reviews', 'Service level agreement and named contact'],
+      cta: 'Talk to sales',
+      href: '#/contact',
+    },
+  ];
+
+  const FAQS = [
+    {
+      q: 'Does the estimate give a complete product footprint?',
+      a: 'No. The estimator reports the rows you select. It does not add up a whole product unless every required life-cycle stage is covered. Each result is labelled with the stages it covers and the stages it leaves out.',
+    },
+    {
+      q: 'Which data sources does it use?',
+      a: 'The bundled factors come from two open sources: the UK government DEFRA 2026 GHG conversion factors, under the Open Government Licence v3.0, and the USLCI life-cycle inventory, under the MIT licence. Each factor shows its source and version.',
+    },
+    {
+      q: 'Why are transport and waste steps climate change only?',
+      a: 'The open factors we bundle for freight and waste treatment are for greenhouse gas emissions. They do not give the other 15 EF 3.1 indicators, so those steps are reported as a separate climate change layer.',
+    },
+    {
+      q: 'Is use-phase impact included?',
+      a: 'No. Use-phase impact depends on consumer washing, drying, and wear, so it is excluded from this boundary and labelled as excluded in every result.',
+    },
+    {
+      q: 'Can I compare two options?',
+      a: 'Yes. Build each option from its own rows and compare the per-indicator subtotals and the single score for the selected rows. Compare only options built with the same functional unit and the same stages.',
+    },
+    {
+      q: 'How often are the factors updated?',
+      a: 'When a source publishes a new version, we review it and pin the new version in the catalog. The version and the date it was pinned appear on every factor, so you can see which release a result came from.',
+    },
+  ];
+
+  const SOCIAL = [
+    { label: 'LinkedIn', href: 'https://www.linkedin.com/company/ecoimpact-lab', icon: 'fa-brands fa-linkedin-in' },
+    { label: 'X (Twitter)', href: 'https://x.com/ecoimpactlab', icon: 'fa-brands fa-x-twitter' },
+    { label: 'GitHub', href: 'https://github.com/K-Anjan25/Environmental-impact-analyzer', icon: 'fa-brands fa-github' },
+    { label: 'YouTube', href: 'https://www.youtube.com/@ecoimpactlab', icon: 'fa-brands fa-youtube' },
+    { label: 'Instagram', href: 'https://www.instagram.com/ecoimpactlab', icon: 'fa-brands fa-instagram' },
+  ];
+
+  /* ----------------------------------------------------------------
+     Routing: the URL hash picks the page. Unknown hashes show home.
+     ---------------------------------------------------------------- */
+  function pageFromHash() {
+    const path = window.location.hash.replace(/^#/, '') || '/';
+    const match = PAGES.find((page) => page.path === path);
+    return match ? match.id : 'home';
+  }
+
+  function useRoute() {
+    const [page, setPage] = useState(pageFromHash);
+    useEffect(() => {
+      const onChange = () => setPage(pageFromHash());
+      window.addEventListener('hashchange', onChange);
+      return () => window.removeEventListener('hashchange', onChange);
+    }, []);
+    return page;
+  }
+
+  /** Scrolls smoothly to an element (or the top), honouring reduced motion. */
+  function scrollToTarget(target) {
+    const behavior = REDUCED_MOTION ? 'auto' : 'smooth';
+    if (target === 'top') {
+      window.scrollTo({ top: 0, behavior });
+      return;
+    }
+    const element = typeof target === 'string' ? document.getElementById(target) : target;
+    if (element) element.scrollIntoView({ behavior, block: 'start' });
+  }
+
+  /* ----------------------------------------------------------------
+     Hooks: scroll reveal, parallax layers, scroll state, metadata
+     ---------------------------------------------------------------- */
+
+  /** Adds .is-visible to .reveal elements as they enter the viewport. */
+  function useReveal(deps) {
+    useEffect(() => {
+      const elements = document.querySelectorAll('.reveal:not(.is-visible)');
+      if (REDUCED_MOTION || !('IntersectionObserver' in window)) {
+        elements.forEach((el) => el.classList.add('is-visible'));
+        return undefined;
+      }
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-visible');
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.15, rootMargin: '0px 0px -40px 0px' },
+      );
+      elements.forEach((el) => observer.observe(el));
+      return () => observer.disconnect();
+    }, deps);
+  }
+
+  /**
+   * Parallax layers: every element with data-depth moves by (distance from viewport centre x depth).
+   * The image sits in an overflow-hidden frame, and the offset is clamped so no gap shows.
+   */
+  function useParallax(deps) {
+    useEffect(() => {
+      if (REDUCED_MOTION) return undefined;
+      let frame = 0;
+      const update = () => {
+        frame = 0;
+        const viewport = window.innerHeight;
+        document.querySelectorAll('[data-depth]').forEach((el) => {
+          const box = el.parentElement.getBoundingClientRect();
+          if (box.bottom < -200 || box.top > viewport + 200) return;
+          const centre = box.top + box.height / 2 - viewport / 2;
+          const depth = parseFloat(el.dataset.depth);
+          const offset = Math.max(-40, Math.min(40, -centre * depth));
+          el.style.transform = `translate3d(0, ${offset.toFixed(1)}px, 0)`;
+        });
+      };
+      const onScroll = () => {
+        if (!frame) frame = requestAnimationFrame(update);
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll);
+      update();
+      return () => {
+        window.removeEventListener('scroll', onScroll);
+        window.removeEventListener('resize', onScroll);
+        if (frame) cancelAnimationFrame(frame);
+      };
+    }, deps);
+  }
+
+  /** Tracks scroll position as a boolean threshold, for the header and floating buttons. */
+  function useScrolledPast(threshold) {
+    const [past, setPast] = useState(false);
+    useEffect(() => {
+      let frame = 0;
+      const update = () => {
+        frame = 0;
+        setPast(window.scrollY > threshold);
+      };
+      const onScroll = () => {
+        if (!frame) frame = requestAnimationFrame(update);
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      update();
+      return () => {
+        window.removeEventListener('scroll', onScroll);
+        if (frame) cancelAnimationFrame(frame);
+      };
+    }, [threshold]);
+    return past;
+  }
+
+  /** Sets the document title and description for the current page. */
+  function usePageMeta(page) {
+    useEffect(() => {
+      const meta = PAGE_META[page];
+      document.title = meta.title;
+      const tag = document.querySelector('meta[name="description"]');
+      if (tag) tag.setAttribute('content', meta.description);
+      const og = document.querySelector('meta[property="og:title"]');
+      if (og) og.setAttribute('content', meta.title);
+    }, [page]);
+  }
+
+  /* ----------------------------------------------------------------
+     Canvas hero: particle network that reacts to the pointer.
+     Pauses when offscreen; draws one still frame under reduced motion.
+     ---------------------------------------------------------------- */
+  function ParticleCanvas() {
+    const canvasRef = useRef(null);
+
+    useEffect(() => {
+      const canvas = canvasRef.current;
+      if (!canvas) return undefined;
+      const ctx = canvas.getContext('2d');
+      const parent = canvas.parentElement;
+      let width = 0;
+      let height = 0;
+      let particles = [];
+      let frame = 0;
+      let visible = true;
+      const pointer = { x: -9999, y: -9999 };
+
+      const resize = () => {
+        const box = parent.getBoundingClientRect();
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        width = box.width;
+        height = box.height;
+        canvas.width = Math.round(width * dpr);
+        canvas.height = Math.round(height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        const count = Math.min(80, Math.floor((width * height) / 18000));
+        particles = Array.from({ length: count }, () => ({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          vx: (Math.random() - 0.5) * 0.3,
+          vy: (Math.random() - 0.5) * 0.3,
+          r: 1 + Math.random() * 1.6,
+        }));
+        draw(false);
+      };
+
+      /** Draws one frame. Moves particles only when animating. */
+      const draw = (animate) => {
+        ctx.clearRect(0, 0, width, height);
+        particles.forEach((p) => {
+          if (animate) {
+            p.x += p.vx;
+            p.y += p.vy;
+            if (p.x < 0 || p.x > width) p.vx *= -1;
+            if (p.y < 0 || p.y > height) p.vy *= -1;
+            const dx = p.x - pointer.x;
+            const dy = p.y - pointer.y;
+            const distance = Math.hypot(dx, dy);
+            if (distance < 110) {
+              p.x += (dx / distance) * 1.4;
+              p.y += (dy / distance) * 1.4;
+            }
+          }
+        });
+        for (let i = 0; i < particles.length; i += 1) {
+          for (let j = i + 1; j < particles.length; j += 1) {
+            const a = particles[i];
+            const b = particles[j];
+            const distance = Math.hypot(a.x - b.x, a.y - b.y);
+            if (distance < 120) {
+              ctx.strokeStyle = `rgba(111, 207, 151, ${((1 - distance / 120) * 0.32).toFixed(3)})`;
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(b.x, b.y);
+              ctx.stroke();
+            }
+          }
+        }
+        ctx.fillStyle = 'rgba(203, 242, 217, 0.85)';
+        particles.forEach((p) => {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      };
+
+      const loop = () => {
+        if (!visible) {
+          frame = 0;
+          return;
+        }
+        draw(true);
+        frame = requestAnimationFrame(loop);
+      };
+
+      const onPointer = (event) => {
+        const box = canvas.getBoundingClientRect();
+        pointer.x = event.clientX - box.left;
+        pointer.y = event.clientY - box.top;
+      };
+      const onLeave = () => {
+        pointer.x = -9999;
+        pointer.y = -9999;
+      };
+
+      let resizeTimer = 0;
+      const onResize = () => {
+        window.clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(resize, 120);
+      };
+
+      resize();
+      if (!REDUCED_MOTION) {
+        frame = requestAnimationFrame(loop);
+        parent.addEventListener('pointermove', onPointer);
+        parent.addEventListener('pointerleave', onLeave);
+      }
+      window.addEventListener('resize', onResize);
+
+      const observer = new IntersectionObserver(([entry]) => {
+        visible = entry.isIntersecting;
+        if (visible && !REDUCED_MOTION && !frame) frame = requestAnimationFrame(loop);
+      });
+      observer.observe(canvas);
+
+      return () => {
+        cancelAnimationFrame(frame);
+        window.clearTimeout(resizeTimer);
+        window.removeEventListener('resize', onResize);
+        parent.removeEventListener('pointermove', onPointer);
+        parent.removeEventListener('pointerleave', onLeave);
+        observer.disconnect();
+      };
+    }, []);
+
+    return <canvas ref={canvasRef} className="hero-canvas" aria-hidden="true" />;
+  }
+
+  /* ----------------------------------------------------------------
+     Small components
+     ---------------------------------------------------------------- */
+
+  /** Animated number that counts up once when it scrolls into view. */
+  function Counter({ to, suffix = '', label }) {
+    const ref = useRef(null);
+    const [value, setValue] = useState(REDUCED_MOTION ? to : 0);
+
+    useEffect(() => {
+      if (REDUCED_MOTION) return undefined;
+      const element = ref.current;
+      let started = false;
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry.isIntersecting || started) return;
+          started = true;
+          observer.disconnect();
+          const start = performance.now();
+          const duration = 1600;
+          const tick = (now) => {
+            const t = Math.min(1, (now - start) / duration);
+            const eased = 1 - Math.pow(1 - t, 3);
+            setValue(Math.round(to * eased));
+            if (t < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        },
+        { threshold: 0.5 },
+      );
+      observer.observe(element);
+      return () => observer.disconnect();
+    }, [to]);
+
+    return (
+      <div className="stat reveal" ref={ref}>
+        <dt>{label}</dt>
+        <dd>
+          <span className="stat-value">{value.toLocaleString('en-IN')}{suffix}</span>
+        </dd>
+      </div>
+    );
+  }
+
+  /** Testimonial slider: buttons, dots, arrow keys, and autoplay that pauses on hover or focus. */
+  function Testimonials() {
+    const [index, setIndex] = useState(0);
+    const [paused, setPaused] = useState(false);
+    const count = TESTIMONIALS.length;
+
+    const go = useCallback((next) => setIndex(((next % count) + count) % count), [count]);
+
+    useEffect(() => {
+      if (REDUCED_MOTION || paused) return undefined;
+      const timer = window.setInterval(() => setIndex((current) => (current + 1) % count), 6500);
+      return () => window.clearInterval(timer);
+    }, [paused, count]);
+
+    const onKeyDown = (event) => {
+      if (event.key === 'ArrowRight') go(index + 1);
+      if (event.key === 'ArrowLeft') go(index - 1);
+    };
+
+    return (
+      <div
+        className="carousel"
+        role="region"
+        aria-roledescription="carousel"
+        aria-label="Customer quotes"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        onFocus={() => setPaused(true)}
+        onBlur={() => setPaused(false)}
+        onKeyDown={onKeyDown}
+      >
+        <div className="carousel-viewport">
+          <div className="carousel-track" style={{ transform: `translateX(-${index * 100}%)` }}>
+            {TESTIMONIALS.map((item, i) => (
+              <figure
+                key={item.name}
+                className="carousel-slide"
+                role="group"
+                aria-roledescription="slide"
+                aria-label={`${i + 1} of ${count}`}
+                aria-hidden={i !== index}
+                style={{ margin: 0 }}
+              >
+                <div className="quote-mark" aria-hidden="true"><i className="fa-solid fa-quote-left" /></div>
+                <blockquote className="quote-text" style={{ margin: 0 }}>{item.quote}</blockquote>
+                <figcaption className="quote-person">
+                  <img src={item.image} alt="" width="52" height="52" loading="lazy" />
+                  <span>
+                    <strong>{item.name}</strong>
+                    <span>{item.role}</span>
+                  </span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+        <div className="carousel-controls">
+          <button type="button" className="carousel-btn" onClick={() => go(index - 1)} aria-label="Previous quote">
+            <i className="fa-solid fa-chevron-left" aria-hidden="true" />
+          </button>
+          <div className="carousel-dots" role="tablist" aria-label="Choose a quote">
+            {TESTIMONIALS.map((item, i) => (
+              <button
+                key={item.name}
+                type="button"
+                role="tab"
+                className="carousel-dot"
+                aria-selected={i === index}
+                aria-label={`Quote ${i + 1}: ${item.name}`}
+                onClick={() => go(i)}
+              />
+            ))}
+          </div>
+          <button type="button" className="carousel-btn" onClick={() => go(index + 1)} aria-label="Next quote">
+            <i className="fa-solid fa-chevron-right" aria-hidden="true" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  /** Accessible accordion. One item open at a time; each button controls its own panel. */
+  function FaqAccordion({ items }) {
+    const [openIndex, setOpenIndex] = useState(0);
+    return (
+      <div className="faq">
+        {items.map((item, i) => {
+          const open = openIndex === i;
+          const buttonId = `faq-button-${i}`;
+          const panelId = `faq-panel-${i}`;
+          return (
+            <div key={item.q} className={`faq-item reveal${open ? ' is-open' : ''}`}>
+              <h3 style={{ margin: 0, fontSize: 'inherit' }}>
+                <button
+                  id={buttonId}
+                  type="button"
+                  className="faq-question"
+                  aria-expanded={open}
+                  aria-controls={panelId}
+                  onClick={() => setOpenIndex(open ? -1 : i)}
+                >
+                  <span>{item.q}</span>
+                  <span className="faq-icon" aria-hidden="true"><i className="fa-solid fa-plus" /></span>
+                </button>
+              </h3>
+              <div id={panelId} role="region" aria-labelledby={buttonId} className="faq-panel">
+                <div>
+                  <p>{item.a}</p>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  /**
+   * Validation rules, kept as plain data so they can be tested.
+   * Returns an object of field -> message. An empty object means valid.
+   */
+  function validateContact(values) {
+    const errors = {};
+    const name = values.name.trim();
+    if (name.length < 2) errors.name = 'Enter your name (at least 2 characters).';
+    if (!EMAIL_PATTERN.test(values.email.trim())) errors.email = 'Enter an email address such as name@company.com.';
+    if (values.company.trim().length > 100) errors.company = 'Keep the company name under 100 characters.';
+    if (!values.topic) errors.topic = 'Choose the topic closest to your question.';
+    const message = values.message.trim();
+    if (message.length < 20) errors.message = `Add a little more detail (${20 - message.length} more characters).`;
+    if (message.length > 1000) errors.message = 'Keep the message under 1,000 characters.';
+    return errors;
+  }
+
+  /** Sends JSON when an endpoint is configured. Resolves with 'sent' or 'unavailable'. */
+  async function submitJson(payload) {
+    if (!CONFIG.formEndpoint) return 'unavailable';
+    const response = await fetch(CONFIG.formEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) throw new Error(`Request failed with status ${response.status}`);
+    return 'sent';
+  }
+
+  function FieldError({ id, message }) {
+    if (!message) return null;
+    return (
+      <p id={id} className="field-error" role="alert">
+        <i className="fa-solid fa-circle-exclamation" aria-hidden="true" />
+        <span>{message}</span>
+      </p>
+    );
+  }
+
+  /** Contact form with live validation after the first submit, an error summary, and a honeypot. */
+  function ContactForm() {
+    const [values, setValues] = useState({ name: '', email: '', company: '', topic: '', message: '', website: '' });
+    const [errors, setErrors] = useState({});
+    const [submitted, setSubmitted] = useState(false);
+    const [status, setStatus] = useState({ state: 'idle', text: '' });
+    const summaryRef = useRef(null);
+
+    const update = (field) => (event) => {
+      const next = { ...values, [field]: event.target.value };
+      setValues(next);
+      if (submitted) setErrors(validateContact(next));
+    };
+
+    const onSubmit = async (event) => {
+      event.preventDefault();
+      setSubmitted(true);
+      // The honeypot field is hidden from people. A filled value means a bot, so we report success and send nothing.
+      if (values.website) {
+        setStatus({ state: 'ok', text: 'Thanks. Your message is with the team.' });
+        return;
+      }
+      const found = validateContact(values);
+      setErrors(found);
+      if (Object.keys(found).length > 0) {
+        window.setTimeout(() => summaryRef.current && summaryRef.current.focus(), 0);
+        return;
+      }
+      setStatus({ state: 'sending', text: 'Sending your message…' });
+      try {
+        const result = await submitJson({
+          name: values.name.trim(),
+          email: values.email.trim(),
+          company: values.company.trim(),
+          topic: values.topic,
+          message: values.message.trim(),
+          source: 'contact',
+        });
+        if (result === 'sent') {
+          setStatus({ state: 'ok', text: 'Thanks. We have your message and will reply within two working days.' });
+          setValues({ name: '', email: '', company: '', topic: '', message: '', website: '' });
+          setSubmitted(false);
+          setErrors({});
+        } else {
+          setStatus({
+            state: 'warn',
+            text: 'Online delivery is not connected yet. Please email us at',
+          });
+        }
+      } catch {
+        setStatus({ state: 'error', text: 'We could not send your message. Please try again, or email us directly.' });
+      }
+    };
+
+    const errorList = Object.entries(errors);
+    const subject = encodeURIComponent(`EcoImpact Lab enquiry: ${values.topic || 'general'}`);
+
+    return (
+      <form className="form-card" onSubmit={onSubmit} noValidate aria-labelledby="contact-form-title">
+        <h2 id="contact-form-title" style={{ fontSize: '1.6rem' }}>Send us a message</h2>
+        <p className="muted" style={{ color: 'var(--ink-soft)', marginBottom: 'var(--space-5)' }}>Fields marked with an asterisk are required.</p>
+
+        {submitted && errorList.length > 0 && (
+          <div className="error-summary" role="alert" tabIndex={-1} ref={summaryRef}>
+            <strong>Please fix {errorList.length} {errorList.length === 1 ? 'field' : 'fields'}:</strong>
+            <ul>
+              {errorList.map(([field, message]) => (
+                <li key={field}>
+                  {/* Buttons move focus to the field; hash links would change the route. */}
+                  <button type="button" className="link-button" onClick={() => {
+                    const input = document.getElementById(`contact-${field}`);
+                    if (input) input.focus();
+                  }}>{message}</button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <div className="form-grid">
+          <div className="field">
+            <label htmlFor="contact-name">Full name *</label>
+            <input id="contact-name" name="name" autoComplete="name" value={values.name} onChange={update('name')}
+              aria-invalid={Boolean(errors.name)} aria-describedby={errors.name ? 'contact-name-error' : undefined} required />
+            <FieldError id="contact-name-error" message={errors.name} />
+          </div>
+          <div className="field">
+            <label htmlFor="contact-email">Work email *</label>
+            <input id="contact-email" name="email" type="email" autoComplete="email" value={values.email} onChange={update('email')}
+              aria-invalid={Boolean(errors.email)} aria-describedby={errors.email ? 'contact-email-error' : undefined} required />
+            <FieldError id="contact-email-error" message={errors.email} />
+          </div>
+          <div className="field">
+            <label htmlFor="contact-company">Company</label>
+            <input id="contact-company" name="company" autoComplete="organization" value={values.company} onChange={update('company')}
+              aria-invalid={Boolean(errors.company)} aria-describedby={errors.company ? 'contact-company-error' : undefined} />
+            <FieldError id="contact-company-error" message={errors.company} />
+          </div>
+          <div className="field">
+            <label htmlFor="contact-topic">Topic *</label>
+            <select id="contact-topic" name="topic" value={values.topic} onChange={update('topic')}
+              aria-invalid={Boolean(errors.topic)} aria-describedby={errors.topic ? 'contact-topic-error' : undefined} required>
+              <option value="">Choose a topic</option>
+              <option>Using the calculator</option>
+              <option>Data sources and factors</option>
+              <option>Pricing and plans</option>
+              <option>Partnership or supplier data</option>
+              <option>Something else</option>
+            </select>
+            <FieldError id="contact-topic-error" message={errors.topic} />
+          </div>
+          <div className="field full">
+            <label htmlFor="contact-message">Message *</label>
+            <span className="hint" id="contact-message-hint">Tell us the process, the product, or the question. Do not include personal data or supplier secrets.</span>
+            <textarea id="contact-message" name="message" value={values.message} onChange={update('message')} maxLength={1000}
+              aria-describedby={errors.message ? 'contact-message-error contact-message-hint' : 'contact-message-hint'}
+              aria-invalid={Boolean(errors.message)} required />
+            <div className="counter" aria-live="off">{values.message.length} / 1,000</div>
+            <FieldError id="contact-message-error" message={errors.message} />
+          </div>
+          <div className="honeypot" aria-hidden="true">
+            <label htmlFor="contact-website">Website (leave empty)</label>
+            <input id="contact-website" name="website" tabIndex={-1} autoComplete="off" value={values.website} onChange={update('website')} />
+          </div>
+        </div>
+
+        <div style={{ marginTop: 'var(--space-6)', display: 'flex', flexWrap: 'wrap', gap: 'var(--space-4)', alignItems: 'center' }}>
+          <button type="submit" className="btn btn-primary" disabled={status.state === 'sending'}>
+            {status.state === 'sending' ? 'Sending…' : 'Send message'} <i className="fa-solid fa-paper-plane" aria-hidden="true" />
+          </button>
+          <span style={{ fontSize: '0.9rem', color: 'var(--ink-soft)' }}>We reply within two working days.</span>
+        </div>
+
+        <div role="status" aria-live="polite">
+          {status.state !== 'idle' && status.state !== 'sending' && (
+            <div className={`form-status is-${status.state === 'ok' ? 'ok' : status.state === 'warn' ? 'warn' : 'error'}`}>
+              {status.text}
+              {status.state === 'warn' && (
+                <> <a href={`mailto:${CONFIG.contactEmail}?subject=${subject}`}>{CONFIG.contactEmail}</a>.</>
+              )}
+            </div>
+          )}
+        </div>
+      </form>
+    );
+  }
+
+  /** Newsletter subscription used in the footer. */
+  function NewsletterForm() {
+    const [email, setEmail] = useState('');
+    const [consent, setConsent] = useState(false);
+    const [error, setError] = useState('');
+    const [status, setStatus] = useState({ state: 'idle', text: '' });
+
+    const onSubmit = async (event) => {
+      event.preventDefault();
+      if (!EMAIL_PATTERN.test(email.trim())) {
+        setError('Enter an email address such as name@company.com.');
+        return;
+      }
+      if (!consent) {
+        setError('Tick the box so we know you agree to receive updates.');
+        return;
+      }
+      setError('');
+      setStatus({ state: 'sending', text: 'Subscribing…' });
+      try {
+        const result = await submitJson({ email: email.trim(), consent: true, source: 'newsletter' });
+        if (result === 'sent') {
+          setStatus({ state: 'ok', text: 'You are subscribed. Check your inbox to confirm.' });
+          setEmail('');
+          setConsent(false);
+        } else {
+          setStatus({ state: 'warn', text: 'Sign-up is not connected yet. Email us to subscribe.' });
+        }
+      } catch {
+        setStatus({ state: 'error', text: 'We could not subscribe you. Please try again.' });
+      }
+    };
+
+    return (
+      <form className="newsletter" onSubmit={onSubmit} noValidate aria-labelledby="newsletter-title">
+        <h2 id="newsletter-title">Method updates, once a month</h2>
+        <p style={{ color: 'var(--forest-muted)', fontSize: '0.95rem' }}>New factor versions, method notes, and scope changes. Nothing else.</p>
+        <label htmlFor="newsletter-email" className="sr-only">Email address</label>
+        <div className="newsletter-row">
+          <input
+            id="newsletter-email"
+            type="email"
+            name="email"
+            autoComplete="email"
+            placeholder="you@company.com"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            aria-invalid={Boolean(error && !EMAIL_PATTERN.test(email.trim()))}
+            aria-describedby={error ? 'newsletter-error' : undefined}
+          />
+          <button type="submit" className="btn btn-leaf" disabled={status.state === 'sending'}>Subscribe</button>
+        </div>
+        <label className="checkbox-row">
+          <input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} />
+          <span>I agree to receive method updates. I can unsubscribe at any time.</span>
+        </label>
+        <FieldError id="newsletter-error" message={error} />
+        <div role="status" aria-live="polite">
+          {status.state !== 'idle' && status.state !== 'sending' && (
+            <div className={`form-status is-${status.state === 'ok' ? 'ok' : status.state === 'warn' ? 'warn' : 'error'}`}>{status.text}</div>
+          )}
+        </div>
+      </form>
+    );
+  }
+
+  /* ----------------------------------------------------------------
+     Layout: header, menu, floating controls, footer
+     ---------------------------------------------------------------- */
+
+  function SiteHeader({ page, onOpenMenu, menuOpen }) {
+    const scrolled = useScrolledPast(8);
+    return (
+      <header className={`site-header${scrolled ? ' is-scrolled' : ''}`}>
+        <div className="container">
+          <a className="brand" href="#/" aria-label="EcoImpact Lab home">
+            <span className="brand-mark" aria-hidden="true"><i className="fa-solid fa-leaf" /></span>
+            <span className="brand-text">
+              <strong>EcoImpact Lab</strong>
+              <span>Environmental Impact Analyzer</span>
+            </span>
+          </a>
+          <button
+            type="button"
+            className="menu-button"
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={menuOpen}
+            aria-controls="site-menu"
+            onClick={onOpenMenu}
+          >
+            <i className={menuOpen ? 'fa-solid fa-xmark' : 'fa-solid fa-bars'} aria-hidden="true" />
+          </button>
+        </div>
+      </header>
+    );
+  }
+
+  /** Full-screen menu. Focus moves into it on open, Escape closes it, and focus returns to the toggle. */
+  function MenuOverlay({ open, page, onClose }) {
+    const firstLinkRef = useRef(null);
+
+    useEffect(() => {
+      if (!open) return undefined;
+      const previous = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      // The menu fades in, and an element cannot take focus while it is hidden.
+      // Retry briefly until the first link accepts focus.
+      let attempts = 0;
+      let focusTimer = null;
+      const tryFocus = () => {
+        const link = firstLinkRef.current;
+        if (link) link.focus();
+        attempts += 1;
+        if ((!link || document.activeElement !== link) && attempts < 100) {
+          focusTimer = window.setTimeout(tryFocus, 50);
+        }
+      };
+      focusTimer = window.setTimeout(tryFocus, 80);
+      const onKey = (event) => {
+        if (event.key === 'Escape') onClose();
+        if (event.key === 'Tab') {
+          // Keep focus inside the menu while it is open.
+          const focusable = Array.from(document.querySelectorAll('#site-menu a, #site-menu button'));
+          if (focusable.length === 0) return;
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+          if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+          }
+        }
+      };
+      document.addEventListener('keydown', onKey);
+      return () => {
+        window.clearTimeout(focusTimer);
+        document.removeEventListener('keydown', onKey);
+        document.body.style.overflow = previous;
+      };
+    }, [open, onClose]);
+
+    return (
+      <div id="site-menu" className={`menu${open ? ' is-open' : ''}`} role="dialog" aria-modal="true" aria-label="Site menu" aria-hidden={!open}>
+        <button type="button" className="menu-close" onClick={onClose} aria-label="Close menu">
+          <i className="fa-solid fa-xmark" aria-hidden="true" />
+        </button>
+        <div className="menu-inner">
+          <nav aria-label="Primary">
+            <ul className="menu-list">
+              {PAGES.map((item, i) => (
+                <li key={item.id}>
+                  <a
+                    href={`#${item.path}`}
+                    ref={i === 0 ? firstLinkRef : undefined}
+                    aria-current={page === item.id ? 'page' : undefined}
+                    onClick={onClose}
+                  >
+                    <small aria-hidden="true">0{i + 1}</small>
+                    {item.label}
+                    <small className="sr-only">, {item.hint}</small>
+                  </a>
+                </li>
+              ))}
+              <li>
+                <a href={CONFIG.calculatorUrl} target="_blank" rel="noopener noreferrer" onClick={onClose}>
+                  <small aria-hidden="true">05</small>
+                  Calculator
+                  <small className="sr-only">, opens in a new tab</small>
+                </a>
+              </li>
+            </ul>
+          </nav>
+          <div className="menu-foot">
+            <div className="menu-social">
+              {SOCIAL.map((item) => (
+                <a key={item.label} href={item.href} target="_blank" rel="noopener noreferrer" aria-label={item.label}>
+                  <i className={item.icon} aria-hidden="true" />
+                </a>
+              ))}
+            </div>
+            <a href={`mailto:${CONFIG.contactEmail}`} style={{ color: 'var(--forest-muted)' }}>{CONFIG.contactEmail}</a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /** Sticky call to action. It appears after the first screen and hides near the footer. */
+  function StickyCta({ page }) {
+    const scrolled = useScrolledPast(520);
+    const [nearEnd, setNearEnd] = useState(false);
+    useEffect(() => {
+      const onScroll = () => {
+        const remaining = document.documentElement.scrollHeight - window.innerHeight - window.scrollY;
+        setNearEnd(remaining < 320);
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+      return () => window.removeEventListener('scroll', onScroll);
+    }, []);
+    const visible = scrolled && !nearEnd && page !== 'contact';
+    return (
+      <a className={`sticky-cta${visible ? ' is-visible' : ''}`} href={CONFIG.calculatorUrl} target="_blank" rel="noopener noreferrer" aria-hidden={!visible} tabIndex={visible ? 0 : -1}>
+        <i className="fa-solid fa-calculator" aria-hidden="true" />
+        Start an estimate
+      </a>
+    );
+  }
+
+  function BackToTop() {
+    const visible = useScrolledPast(640);
+    return (
+      <button type="button" className={`to-top${visible ? ' is-visible' : ''}`} onClick={() => scrollToTarget('top')} aria-label="Back to top" tabIndex={visible ? 0 : -1} aria-hidden={!visible}>
+        <i className="fa-solid fa-arrow-up" aria-hidden="true" />
+      </button>
+    );
+  }
+
+  /** Fat footer: brand and newsletter, link columns, office map, and social links. */
+  function SiteFooter() {
+    return (
+      <footer className="site-footer" aria-labelledby="footer-title">
+        <h2 id="footer-title" className="sr-only">Site footer</h2>
+        <div className="container">
+          <div className="footer-grid">
+            <div className="footer-brand">
+              <a className="brand" href="#/" aria-label="EcoImpact Lab home">
+                <span className="brand-mark" aria-hidden="true"><i className="fa-solid fa-leaf" /></span>
+                <span className="brand-text">
+                  <strong>EcoImpact Lab</strong>
+                  <span>Environmental Impact Analyzer</span>
+                </span>
+              </a>
+              <p style={{ marginTop: 'var(--space-4)' }}>
+                A browser-first estimator for apparel and footwear processes. It keeps every indicator visible and states what each result covers.
+              </p>
+              <div className="social" aria-label="Social media">
+                {SOCIAL.map((item) => (
+                  <a key={item.label} href={item.href} target="_blank" rel="noopener noreferrer" aria-label={`${item.label} (opens in a new tab)`} title={item.label}>
+                    <i className={item.icon} aria-hidden="true" />
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            <nav aria-label="Product links">
+              <h3>Product</h3>
+              <ul className="footer-links">
+                <li><a href={CONFIG.calculatorUrl} target="_blank" rel="noopener noreferrer">Calculator</a></li>
+                <li><a href="#/method">Method and scope</a></li>
+                <li><a href="#/pricing">Pricing</a></li>
+                <li><a href="#/pricing">FAQ</a></li>
+              </ul>
+            </nav>
+
+            <nav aria-label="Company links">
+              <h3>Company</h3>
+              <ul className="footer-links">
+                <li><a href="#/contact">Contact</a></li>
+                <li><a href="#/contact">Partnerships</a></li>
+                <li><a href="https://github.com/K-Anjan25/Environmental-impact-analyzer" target="_blank" rel="noopener noreferrer">Source code</a></li>
+                <li><a href={`mailto:${CONFIG.contactEmail}`}>{CONFIG.contactEmail}</a></li>
+              </ul>
+            </nav>
+
+            <div>
+              <h3>Newsletter</h3>
+              <NewsletterForm />
+              <div style={{ marginTop: 'var(--space-6)' }}>
+                <h3>Office</h3>
+                <div className="map-frame">
+                  <iframe
+                    title="Map showing Hyderabad, Telangana, India"
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    src="https://www.openstreetmap.org/export/embed.html?bbox=78.42%2C17.36%2C78.55%2C17.42&layer=mapnik&marker=17.3850%2C78.4867"
+                  />
+                </div>
+                <p className="map-caption">Hyderabad, Telangana, India. Street address on request.</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="footer-bottom">
+            <span>© {new Date().getFullYear()} EcoImpact Lab. All rights reserved.</span>
+            <nav aria-label="Legal">
+              <a href={CONFIG.termsUrl} target="_blank" rel="noopener noreferrer">Terms of use</a>
+              <a href={CONFIG.privacyUrl} target="_blank" rel="noopener noreferrer">Privacy policy</a>
+              <a href="#/contact">Accessibility feedback</a>
+            </nav>
+          </div>
+        </div>
+      </footer>
+    );
+  }
+
+  /* ----------------------------------------------------------------
+     Pages
+     ---------------------------------------------------------------- */
+
+  function HomePage() {
+    return (
+      <main id="main" tabIndex={-1}>
+        <section className="hero" aria-labelledby="hero-title">
+          <div className="hero-layer" aria-hidden="true">
+            <div className="parallax-frame">
+              <img data-depth="0.09" src="https://picsum.photos/seed/ecoimpact-hero/1600/1000" alt="" />
+            </div>
+            <div className="hero-layer hero-glow" />
+            <ParticleCanvas />
+          </div>
+          <div className="container">
+            <div className="hero-grid">
+              <div>
+                <p className="eyebrow reveal" style={{ color: 'var(--leaf-soft)' }}>
+                  <i className="fa-solid fa-seedling" aria-hidden="true" /> Environmental Impact Analyzer
+                </p>
+                <h1 id="hero-title" className="reveal" style={{ transitionDelay: '80ms' }}>
+                  Measure the impact behind <em>every apparel and footwear process</em>
+                </h1>
+                <p className="lede reveal" style={{ transitionDelay: '160ms' }}>
+                  EcoImpact Lab estimates process impacts with all 16 EF 3.1 indicators kept on every row. Combine the rows you choose and read a subtotal that says exactly what it covers.
+                </p>
+                <div className="hero-actions reveal" style={{ transitionDelay: '240ms' }}>
+                  <a className="btn btn-leaf" href={CONFIG.calculatorUrl} target="_blank" rel="noopener noreferrer">
+                    Start an estimate <i className="fa-solid fa-arrow-right" aria-hidden="true" />
+                  </a>
+                  <a className="btn btn-ghost-light" href="#/method">How the method works</a>
+                </div>
+                <div className="hero-proof reveal" style={{ transitionDelay: '320ms' }}>
+                  <span><i className="fa-solid fa-circle-check" aria-hidden="true" /> Open data sources</span>
+                  <span><i className="fa-solid fa-circle-check" aria-hidden="true" /> Scope stated on every result</span>
+                  <span><i className="fa-solid fa-circle-check" aria-hidden="true" /> Works in any browser</span>
+                </div>
+              </div>
+
+              <div className="hero-card reveal" style={{ transitionDelay: '200ms' }} role="group" aria-label="Example indicator breakdown">
+                <div className="hero-card-head">
+                  <strong>Selected-row subtotal</strong>
+                  <span>3 rows, example</span>
+                </div>
+                {[
+                  ['Global warming', '4.82 kg CO2 eq', 86],
+                  ['Water scarcity', '0.31 m³ eq', 48],
+                  ['Acidification', '0.012 mol H+ eq', 34],
+                  ['Ozone depletion', '2.1 µg CFC-11 eq', 22],
+                ].map(([label, value, width]) => (
+                  <div className="indicator-row" key={label}>
+                    <span>{label}</span>
+                    <b>{value}</b>
+                    <div className="indicator-bar" aria-hidden="true"><span style={{ '--w': `${width}%` }} /></div>
+                  </div>
+                ))}
+                <p className="hero-card-foot">Illustrative values. Real results come from your own rows and show their scope.</p>
+              </div>
+            </div>
+          </div>
+          {/* A button, not a hash link: hash links would change the route. */}
+          <button type="button" className="scroll-cue" onClick={() => scrollToTarget('stats')} aria-label="Scroll to statistics">
+            <span aria-hidden="true">Scroll</span>
+            <i className="fa-solid fa-chevron-down" aria-hidden="true" />
+          </button>
+        </section>
+
+        <section id="stats" className="section" aria-labelledby="stats-title">
+          <div className="container">
+            <div className="reveal" style={{ maxWidth: '62ch', marginBottom: 'var(--space-6)' }}>
+              <p className="eyebrow">By the numbers</p>
+              <h2 id="stats-title">What the bundled catalog holds</h2>
+            </div>
+            <dl className="stats">
+              {STATS.map((item) => (
+                <Counter key={item.label} to={item.to} suffix={item.suffix} label={item.label} />
+              ))}
+            </dl>
+          </div>
+        </section>
+
+        <section id="features" className="section section-alt" aria-labelledby="features-title">
+          <div className="container">
+            <div className="reveal" style={{ maxWidth: '64ch', marginBottom: 'var(--section-y)' }}>
+              <p className="eyebrow">What you can do</p>
+              <h2 id="features-title">Each result shows its rows, its indicators, and its scope</h2>
+              <p className="lede">The estimator is built so you never have to guess what a number includes.</p>
+            </div>
+            {FEATURES.map((feature) => (
+              <article key={feature.title} className={`feature${feature.reversed ? ' is-reversed' : ''}`}>
+                <div className="feature-copy reveal">
+                  <p className="eyebrow"><i className={feature.icon} aria-hidden="true" /> {feature.eyebrow}</p>
+                  <h3 style={{ fontSize: 'clamp(1.6rem, 3vw, 2.2rem)' }}>{feature.title}</h3>
+                  <p className="lede">{feature.body}</p>
+                  <ul className="checklist">
+                    {feature.points.map((point) => (
+                      <li key={point}><i className="fa-solid fa-check" aria-hidden="true" /><span>{point}</span></li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="feature-media reveal" style={{ transitionDelay: '120ms' }}>
+                  <img src={feature.image} alt={feature.alt} width="900" height="675" loading="lazy" />
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="section section-dark" aria-labelledby="quotes-title">
+          <div className="parallax-frame" aria-hidden="true" style={{ opacity: 0.18 }}>
+            <img data-depth="-0.07" src="https://picsum.photos/seed/ecoimpact-quotes/1600/900" alt="" loading="lazy" />
+          </div>
+          <div className="container" style={{ position: 'relative', zIndex: 2 }}>
+            <div className="reveal" style={{ textAlign: 'center', maxWidth: '60ch', margin: '0 auto var(--space-6)' }}>
+              <p className="eyebrow" style={{ justifyContent: 'center' }}>Teams using EcoImpact Lab</p>
+              <h2 id="quotes-title">Trusted for the parts that matter</h2>
+            </div>
+            <div className="reveal">
+              <Testimonials />
+            </div>
+          </div>
+        </section>
+
+        <section className="section" aria-labelledby="cta-title">
+          <div className="container">
+            <div className="reveal info-card" style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 'var(--space-6)', alignItems: 'center', padding: 'clamp(28px, 5vw, 56px)' }}>
+              <div>
+                <h2 id="cta-title" style={{ fontSize: 'clamp(1.6rem, 3vw, 2.3rem)' }}>Build your first estimate in a few minutes</h2>
+                <p className="lede" style={{ marginBottom: 0 }}>Start with one process, add the rest as you go, and keep every indicator on the page.</p>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                <a className="btn btn-primary" href={CONFIG.calculatorUrl} target="_blank" rel="noopener noreferrer">Open the calculator</a>
+                <a className="btn btn-outline" href="#/pricing">See plans</a>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  function MethodPage() {
+    return (
+      <main id="main" tabIndex={-1}>
+        <section className="page-hero" aria-labelledby="method-title">
+          <div className="page-hero-orb" aria-hidden="true" />
+          <div className="container">
+            <p className="eyebrow reveal">Method</p>
+            <h1 id="method-title" className="reveal">From one process to a stated result</h1>
+            <p className="lede reveal">Five steps take you from a single process to an estimate. Each step shows what it uses, and the last step shows what the result covers.</p>
+          </div>
+        </section>
+
+        <section className="section" aria-labelledby="journey-title">
+          <div className="container">
+            <h2 id="journey-title" className="sr-only">The five steps</h2>
+            <div className="steps">
+              {JOURNEY.map((step, i) => (
+                <article key={step.title} className={`feature${i % 2 === 1 ? ' is-reversed' : ''}`}>
+                  <div className="feature-copy reveal">
+                    <p className="step-number">STEP 0{i + 1} OF 05</p>
+                    <h3 style={{ fontSize: 'clamp(1.6rem, 3vw, 2.2rem)' }}>{step.title}</h3>
+                    <p className="lede">{step.body}</p>
+                  </div>
+                  <div className="feature-media reveal" style={{ transitionDelay: '120ms' }}>
+                    <div className="parallax-frame">
+                      <img data-depth="0.07" src={step.image} alt={step.alt} loading="lazy" />
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="section section-alt" aria-labelledby="scope-title">
+          <div className="container">
+            <div className="reveal" style={{ maxWidth: '64ch', marginBottom: 'var(--space-6)' }}>
+              <p className="eyebrow">Life-cycle boundary</p>
+              <h2 id="scope-title">What each stage covers</h2>
+              <p className="lede">A result is never presented as a complete footprint. These are the stages the estimator covers, and the ones it leaves out.</p>
+            </div>
+            <div className="table-wrap reveal">
+              <table>
+                <caption className="sr-only">Life-cycle stages, what each covers, and the source</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Stage</th>
+                    <th scope="col">Activity</th>
+                    <th scope="col">Coverage</th>
+                    <th scope="col">Note</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {SCOPE_ROWS.map((row) => (
+                    <tr key={row.stage}>
+                      <th scope="row">{row.stage}</th>
+                      <td>{row.name}</td>
+                      <td><span className={COVERAGE_BADGE[row.coverage].className}>{COVERAGE_BADGE[row.coverage].label}</span></td>
+                      <td>{row.note}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section className="section" aria-labelledby="method-cta-title">
+          <div className="container">
+            <div className="reveal info-card" style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 'var(--space-6)', alignItems: 'center', padding: 'clamp(28px, 5vw, 48px)' }}>
+              <div>
+                <h2 id="method-cta-title" style={{ fontSize: 'clamp(1.5rem, 2.6vw, 2rem)' }}>Read the full scope before you publish a number</h2>
+                <p className="lede" style={{ marginBottom: 0 }}>The scope notes travel with every export, so the boundary goes wherever the number goes.</p>
+              </div>
+              <a className="btn btn-primary" href={CONFIG.calculatorUrl} target="_blank" rel="noopener noreferrer">Start an estimate</a>
+            </div>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  function PricingPage() {
+    return (
+      <main id="main" tabIndex={-1}>
+        <section className="page-hero" aria-labelledby="pricing-title">
+          <div className="page-hero-orb" aria-hidden="true" />
+          <div className="container">
+            <p className="eyebrow reveal">Pricing</p>
+            <h1 id="pricing-title" className="reveal">Plans that match how you estimate</h1>
+            <p className="lede reveal">Start free in the browser. Move to Team when you compare options every week, or to Enterprise when you need data agreements.</p>
+          </div>
+        </section>
+
+        <section className="section" aria-labelledby="plans-title">
+          <div className="container">
+            <h2 id="plans-title" className="sr-only">Plans</h2>
+            <div className="pricing-grid">
+              {PRICING.map((plan, i) => (
+                <article key={plan.name} className={`price-card reveal${plan.featured ? ' is-featured' : ''}`} style={{ transitionDelay: `${i * 90}ms` }} aria-labelledby={`plan-${i}`}>
+                  {plan.featured && <span className="price-badge">Most teams start here</span>}
+                  <h3 id={`plan-${i}`} style={{ marginBottom: 'var(--space-2)' }}>{plan.name}</h3>
+                  <p className="muted" style={{ marginBottom: 0 }}>{plan.blurb}</p>
+                  <p className="price">{plan.price}{plan.period && <small> {plan.period}</small>}</p>
+                  <ul>
+                    {plan.features.map((feature) => (
+                      <li key={feature}><i className="fa-solid fa-check" aria-hidden="true" /><span>{feature}</span></li>
+                    ))}
+                  </ul>
+                  <a
+                    className={`btn ${plan.featured ? 'btn-primary' : 'btn-outline'}`}
+                    href={plan.href}
+                    {...(plan.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                  >
+                    {plan.cta}
+                  </a>
+                </article>
+              ))}
+            </div>
+            <p className="reveal" style={{ textAlign: 'center', marginTop: 'var(--space-6)', color: 'var(--ink-soft)', fontSize: '0.92rem' }}>
+              Prices exclude applicable taxes. Team pricing is billed monthly in Indian rupees.
+            </p>
+          </div>
+        </section>
+
+        <section className="section section-alt" aria-labelledby="faq-title">
+          <div className="container">
+            <div className="reveal" style={{ textAlign: 'center', maxWidth: '60ch', margin: '0 auto var(--space-6)' }}>
+              <p className="eyebrow" style={{ justifyContent: 'center' }}>FAQ</p>
+              <h2 id="faq-title">Questions about data, scope, and limits</h2>
+            </div>
+            <FaqAccordion items={FAQS} />
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  function ContactPage() {
+    return (
+      <main id="main" tabIndex={-1}>
+        <section className="page-hero" aria-labelledby="contact-title">
+          <div className="page-hero-orb" aria-hidden="true" />
+          <div className="container">
+            <p className="eyebrow reveal">Contact</p>
+            <h1 id="contact-title" className="reveal">Talk to the team</h1>
+            <p className="lede reveal">Ask about the calculator, the data sources, or a partnership. We reply within two working days.</p>
+          </div>
+        </section>
+
+        <section className="section" aria-labelledby="contact-form-title">
+          <div className="container">
+            <div className="contact-grid">
+              <div className="reveal">
+                <ContactForm />
+              </div>
+              <aside className="reveal" style={{ transitionDelay: '120ms' }} aria-labelledby="info-title">
+                <div className="info-card">
+                  <h2 id="info-title" style={{ fontSize: '1.5rem' }}>Other ways to reach us</h2>
+                  <ul className="info-list">
+                    <li>
+                      <span className="info-icon"><i className="fa-solid fa-envelope" aria-hidden="true" /></span>
+                      <div>
+                        <strong>Email</strong>
+                        <a href={`mailto:${CONFIG.contactEmail}`}>{CONFIG.contactEmail}</a>
+                      </div>
+                    </li>
+                    <li>
+                      <span className="info-icon"><i className="fa-solid fa-location-dot" aria-hidden="true" /></span>
+                      <div>
+                        <strong>Office</strong>
+                        <span>Hyderabad, Telangana, India</span>
+                      </div>
+                    </li>
+                    <li>
+                      <span className="info-icon"><i className="fa-solid fa-clock" aria-hidden="true" /></span>
+                      <div>
+                        <strong>Hours</strong>
+                        <span>Monday to Friday, 10:00 to 18:00 IST</span>
+                      </div>
+                    </li>
+                    <li>
+                      <span className="info-icon"><i className="fa-solid fa-book-open" aria-hidden="true" /></span>
+                      <div>
+                        <strong>Before you write</strong>
+                        <span>The <a href="#/pricing">FAQ</a> answers most questions about data and scope.</span>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  /* ----------------------------------------------------------------
+     App: wires the route, the menu, and the page-level effects.
+     ---------------------------------------------------------------- */
+  function App() {
+    const page = useRoute();
+    const [menuOpen, setMenuOpen] = useState(false);
+    const closeMenu = useCallback(() => setMenuOpen(false), []);
+    const toggleMenu = useCallback(() => setMenuOpen((open) => !open), []);
+    const previousPage = useRef(page);
+
+    usePageMeta(page);
+    useReveal([page]);
+    useParallax([page]);
+
+    // On a page change: close the menu, scroll to the top, and move focus to the page heading.
+    useEffect(() => {
+      setMenuOpen(false);
+      if (previousPage.current !== page) {
+        scrollToTarget('top');
+        const main = document.getElementById('main');
+        if (main) main.focus({ preventScroll: true });
+      }
+      previousPage.current = page;
+    }, [page]);
+
+    // Closing the menu returns focus to its toggle, so keyboard users stay in place.
+    const firstRender = useRef(true);
+    useEffect(() => {
+      if (firstRender.current) {
+        firstRender.current = false;
+        return;
+      }
+      if (!menuOpen) {
+        const toggle = document.querySelector('.menu-button');
+        if (toggle && document.activeElement && document.getElementById('site-menu')?.contains(document.activeElement)) toggle.focus();
+      }
+    }, [menuOpen]);
+
+    let content;
+    if (page === 'method') content = <MethodPage />;
+    else if (page === 'pricing') content = <PricingPage />;
+    else if (page === 'contact') content = <ContactPage />;
+    else content = <HomePage />;
+
+    return (
+      <>
+        <SiteHeader page={page} menuOpen={menuOpen} onOpenMenu={toggleMenu} />
+        <MenuOverlay open={menuOpen} page={page} onClose={closeMenu} />
+        {content}
+        <SiteFooter />
+        <StickyCta page={page} />
+        <BackToTop />
+      </>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

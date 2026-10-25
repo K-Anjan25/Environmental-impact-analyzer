@@ -8,23 +8,33 @@
  */
 
 .site-layout-landing {
-  --paper: #fbf8f2;
-  --paper-deep: #f3efe5;
-  --ink: #2a2622;
-  --charcoal: #3a3530;
-  --muted: #5f5a52;
-  --line: #e4ddcf;
-  --surface: #ffffff;
-  --forest: #2f6b3f; /* primary call-to-action green */
-  --forest-dark: #22512e;
-  --sage: #8ea58a;
-  --sage-soft: #eef2ea;
-  --terracotta: #b9623c;
-  --terracotta-soft: #f6e6dc;
-  --terracotta-text: #a4522b; /* text-safe terracotta: 5.2:1 on paper */
-  --citrus: #b9623c; /* focus ring colour on the light palette */
-  background: var(--paper);
-  color: var(--ink);
+  /* Earthy Scientific palette (brief). Landing pages only: the calculator keeps the shared :root theme. */
+  --bg-primary: #F9F8F6;   /* Warm Alabaster */
+  --bg-surface: #F0ECE1;   /* Soft Sand / Ecru */
+  --text-main: #1A201C;    /* Deep Obsidian: 15.6:1 on bg-primary */
+  --text-muted: #4A4F48;   /* secondary text: 7.9:1 on bg-primary, 7.1:1 on bg-surface (AAA) */
+  --accent-primary: #0A5C36; /* Verdant Jade: buttons, active states, eyebrows (7.6:1 on bg-primary) */
+  --accent-warm: #C85A32;  /* Terracotta Clay: highlights and focal marks only, never body text */
+  --border-subtle: #D8D2C4;
+  --sage: #7F9A86;         /* structural strokes, blended from jade and ecru */
+
+  /* Aliases used by the rules below, so one palette drives the whole landing layout. */
+  --paper: var(--bg-primary);
+  --surface: var(--bg-surface);
+  --ink: var(--text-main);
+  --charcoal: var(--text-main);
+  --muted: var(--text-muted);
+  --forest: var(--accent-primary);
+  --forest-dark: #084A2B;
+  --accent-deep: #084A2B;  /* text-safe jade on the ecru surface: 8.8:1 */
+  --sage-soft: var(--bg-surface);
+  --terracotta: var(--accent-warm);
+  --terracotta-soft: #F4E3D9; /* pale clay fill for highlight shapes */
+  --line: var(--border-subtle);
+  --citrus: var(--accent-primary);
+
+  background: var(--bg-primary);
+  color: var(--text-main);
   min-height: 100vh;
 }
 
@@ -38,23 +48,34 @@
   background: var(--forest); color: #fff; font-weight: 700; font-size: 14px; text-decoration: none;
 }
 .site-cta:hover { background: var(--forest-dark); }
-.site-cta:focus-visible, .landing-button:focus-visible, .sticky-cta:focus-visible, .to-top:focus-visible,
-.carousel-dot:focus-visible, .link-button:focus-visible, .landing-footer a:focus-visible, .marketing a:focus-visible {
-  outline: 3px solid var(--terracotta); outline-offset: 3px;
+.site-layout-landing :is(a, button, input, select, textarea, [tabindex], summary):focus-visible {
+  outline: 2px solid var(--accent-primary); outline-offset: 2px;
 }
+.site-layout-landing .landing-footer :is(a, button):focus-visible { outline-color: #F9F8F6; }
 
 .marketing { max-width: 1180px; margin: 0 auto; padding: 0 24px; color: var(--ink); }
-.marketing .section { padding: 72px 0; }
+.marketing .section { padding: clamp(3rem, 6vw, 6rem) 0; }
 .marketing .section-alt, .marketing .cta-band {
-  background: var(--sage-soft); margin-left: calc(50% - 50vw); margin-right: calc(50% - 50vw);
+  background: var(--bg-surface); margin-left: calc(50% - 50vw); margin-right: calc(50% - 50vw);
   padding-left: calc(50vw - 50%); padding-right: calc(50vw - 50%);
 }
-.marketing .section-eyebrow { margin: 0 0 10px; font-size: 12px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--terracotta-text); }
+.marketing .section-eyebrow { margin: 0 0 10px; font-size: 12px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent-deep); }
 .marketing .section-title { margin: 0 0 14px; font-size: clamp(1.7rem, 3.2vw, 2.4rem); line-height: 1.12; letter-spacing: -0.035em; color: var(--ink); max-width: 22ch; }
 .marketing .section-title.small { font-size: 1.4rem; }
 .marketing .section-body { margin: 0 0 16px; font-size: 1.05rem; line-height: 1.6; color: var(--muted); max-width: 60ch; }
 .marketing .mkt-page-title { margin: 0 0 14px; font-size: clamp(2rem, 4.2vw, 3.2rem); line-height: 1.05; letter-spacing: -0.045em; color: var(--ink); }
-.marketing .page-hero { padding: 64px 0 24px; }
+.marketing .page-hero { padding: clamp(2.5rem, 5vw, 4rem) 0 clamp(1.25rem, 2.5vw, 1.5rem); }
+
+/* Form fields: the Material UI wrapper carries the 2px jade ring, because the global stylesheet
+   removes the native outline from the inner input. */
+.site-layout-landing .marketing .MuiOutlinedInput-root.Mui-focused { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+.site-layout-landing .marketing .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline { border-color: var(--accent-primary) !important; border-width: 1px; }
+
+/* Form labels and helper text: AAA on both paper and ecru */
+/* Overrides the global form-label rule (styles.css) for landing forms only. */
+.site-layout-landing .marketing .MuiFormLabel-root, .site-layout-landing .marketing .MuiInputLabel-root { color: var(--text-muted) !important; }
+.site-layout-landing .marketing .MuiFormLabel-root.Mui-focused { color: var(--accent-deep) !important; }
+.marketing .MuiFormHelperText-root { color: var(--text-muted); font-size: 0.8125rem; }
 
 /* Buttons */
 .landing-button {
@@ -63,7 +84,7 @@
 }
 .landing-button-primary { background: var(--forest); color: #fff; }
 .landing-button-primary:hover { background: var(--forest-dark); }
-.landing-button-ghost { border-color: var(--forest); color: var(--forest); background: transparent; }
+.landing-button-ghost { border-color: var(--accent-primary); color: var(--accent-deep); background: transparent; }
 .landing-button-ghost:hover { background: rgba(47, 107, 63, 0.06); }
 .mkt-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px; }
 .marketing .MuiButton-root.landing-button { text-transform: none; }
@@ -71,18 +92,18 @@
 /* Hero: paper background, copy on the left, botanical line art on the right */
 .marketing .mkt-hero {
   position: relative; overflow: hidden; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 40px; align-items: center;
-  min-height: min(86vh, 760px); padding: 72px 0;
+  min-height: min(86vh, 760px); padding: clamp(3rem, 6vw, 6rem) 0;
   margin-left: calc(50% - 50vw); margin-right: calc(50% - 50vw); padding-left: calc(50vw - 50%); padding-right: calc(50vw - 50%);
   background: linear-gradient(180deg, var(--paper) 0%, var(--paper-deep) 100%); color: var(--ink);
 }
 .marketing .mkt-hero > * { position: relative; }
 .marketing .mkt-copy { max-width: 620px; }
-.marketing .mkt-eyebrow { margin: 0 0 14px; font-size: 13px; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--terracotta-text); }
+.marketing .mkt-eyebrow { margin: 0 0 14px; font-size: 13px; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent-primary); }
 .marketing .mkt-title { margin: 0 0 18px; font-size: clamp(2.3rem, 5vw, 3.8rem); line-height: 1.04; letter-spacing: -0.045em; font-weight: 800; color: var(--ink); }
 .marketing .mkt-lede { font-size: 1.1rem; line-height: 1.6; color: var(--muted); }
-.hero-trust { display: flex; flex-wrap: wrap; gap: 8px 18px; list-style: none; padding: 0; margin: 22px 0 0; font-size: 14px; color: var(--charcoal); }
+.hero-trust { display: flex; flex-wrap: wrap; gap: 8px 18px; list-style: none; padding: 0; margin: 22px 0 0; font-size: 14px; color: var(--text-muted); }
 .hero-trust li::before { content: '✓'; margin-right: 6px; color: var(--forest); font-weight: 700; }
-.marketing .mkt-art { margin: 0; }
+.marketing .mkt-art { margin: 0; padding: clamp(16px, 2.5vw, 28px); border-radius: 20px; background: var(--bg-surface); border: 1px solid var(--border-subtle); box-shadow: 0 12px 32px rgba(26, 32, 28, 0.06); }
 .mkt-botanical { display: block; width: 100%; height: auto; overflow: visible; }
 
 /* Botanical line art: shared line styles, drawn in with CSS */
@@ -134,7 +155,7 @@
 .feature-row-reverse .feature-copy { order: 2; }
 .feature-row-reverse .feature-visual { order: 1; }
 .feature-list { margin: 16px 0 0; padding-left: 20px; color: var(--ink); line-height: 1.7; }
-.feature-visual { border-radius: 18px; padding: 28px; background: var(--surface); border: 1px solid var(--line); }
+.feature-visual { border-radius: 20px; padding: clamp(16px, 2.5vw, 28px); background: var(--bg-surface); border: 1px solid var(--border-subtle); box-shadow: 0 12px 32px rgba(26, 32, 28, 0.06); }
 
 /* Latest posts: a plain list, no images */
 .latest-section { padding-top: 56px; }
@@ -159,7 +180,7 @@
 .carousel-controls { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 16px; }
 .carousel-dots { display: flex; gap: 10px; }
 .carousel-dot { width: 12px; height: 12px; border-radius: 50%; border: 0; padding: 0; background: #c9c2b4; cursor: pointer; min-width: 24px; min-height: 24px; background-clip: content-box; }
-.carousel-dot[aria-current='true'] { background: var(--terracotta); background-clip: content-box; }
+.carousel-dot[aria-current='true'] { background: var(--accent-primary); background-clip: content-box; }
 
 /* Tables */
 .table-scroll { overflow-x: auto; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); }
@@ -215,17 +236,17 @@
 .contact-options span { color: var(--muted); font-size: 14px; line-height: 1.5; }
 
 /* Footer: charcoal, so it closes the warm page without a second accent colour */
-.landing-footer { background: var(--charcoal); color: #e7e1d4; margin-top: 0; padding: 56px 0 0; }
+.landing-footer { background: var(--text-main); color: #F4F7F6; margin-top: 0; padding: 56px 0 0; }
 .landing-footer-grid { max-width: 1180px; margin: 0 auto; padding: 0 24px; display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 32px; }
 .landing-footer h3 { margin: 0 0 12px; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: #fff; }
 .landing-footer ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
-.landing-footer a { color: #e7e1d4; text-decoration: none; }
+.landing-footer a { color: #F4F7F6; text-decoration: none; }
 .landing-footer a:hover { color: #fff; text-decoration: underline; }
 .landing-footer .site-brand { color: #fff; }
 .landing-footer .site-brand span { color: #fff; }
 .footer-brand-col p { margin: 14px 0; font-size: 14px; line-height: 1.6; max-width: 36ch; }
 .social { display: flex; gap: 14px; }
-.landing-footer-base { max-width: 1180px; margin: 40px auto 0; padding: 18px 24px 28px; border-top: 1px solid rgba(255, 255, 255, 0.14); font-size: 13px; color: #bdb6a7; }
+.landing-footer-base { max-width: 1180px; margin: 40px auto 0; padding: 18px 24px 28px; border-top: 1px solid rgba(255, 255, 255, 0.14); font-size: 13px; color: #C9CFC4; }
 
 /* Floating controls */
 .sticky-cta {
@@ -236,7 +257,7 @@
 .sticky-cta.is-visible { opacity: 1; transform: none; pointer-events: auto; }
 .to-top {
   position: fixed; left: 20px; bottom: 20px; z-index: 30; width: 48px; height: 48px; border-radius: 50%; border: 0;
-  background: var(--charcoal); color: #fff; display: grid; place-items: center; cursor: pointer; box-shadow: 0 10px 24px rgba(42, 38, 34, 0.2);
+  background: var(--text-main); color: #fff; display: grid; place-items: center; cursor: pointer; box-shadow: 0 10px 24px rgba(42, 38, 34, 0.2);
   opacity: 0; pointer-events: none; transition: opacity 0.3s;
 }
 .to-top.is-visible { opacity: 1; pointer-events: auto; }
@@ -255,7 +276,6 @@
 }
 @media (max-width: 560px) {
   .marketing { padding: 0 18px; }
-  .marketing .section { padding: 52px 0; }
   .stat-grid, .step-list { grid-template-columns: 1fr; }
   .carousel-slide { padding: 26px; }
   .landing-footer-grid { grid-template-columns: 1fr; }

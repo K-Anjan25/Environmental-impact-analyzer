@@ -1,0 +1,189 @@
+/*
+ * Neo-Brutalist home page. Scoped to pages that contain .nb-home, so the calculator, blog, and
+ * other marketing pages keep their own styles. Static by design: no animation, no canvas, no images.
+ * Every text colour is black on a light fill, so contrast stays well above AAA.
+ */
+
+body:has(.nb-home) {
+  --nb-paper: #FFF6E0;
+  --nb-ink: #000000;
+  --nb-yellow: #FFD23F;
+  --nb-pink: #FF8FC7;
+  --nb-green: #5BE0A0;
+  --nb-blue: #8FD3FF;
+  --nb-orange: #FF9F47;
+  --nb-white: #FFFFFF;
+  --nb-border: 3px solid #000;
+  --nb-shadow: 6px 6px 0 #000;
+  --nb-shadow-lg: 10px 10px 0 #000;
+  background: var(--nb-paper);
+  color: var(--nb-ink);
+}
+body:has(.nb-home) .site-layout-landing { background: var(--nb-paper); color: var(--nb-ink); }
+
+/* Header and footer, restyled for this page only */
+body:has(.nb-home) .site-topbar {
+  background: var(--nb-white) !important;
+  border-bottom: var(--nb-border) !important;
+  backdrop-filter: none !important;
+  box-shadow: 0 3px 0 #000;
+}
+body:has(.nb-home) .site-cta,
+body:has(.nb-home) .site-cta:hover {
+  background: var(--nb-yellow) !important; color: #000 !important; border: var(--nb-border);
+  box-shadow: 4px 4px 0 #000; border-radius: 0 !important;
+}
+body:has(.nb-home) .landing-footer { background: #000 !important; color: #fff; border-top: var(--nb-border); }
+
+/* Focus: a thick black ring, offset so it reads on yellow, pink, and black */
+.nb-home :is(a, button):focus-visible,
+body:has(.nb-home) .site-topbar :is(a, button):focus-visible {
+  outline: 3px solid #000; outline-offset: 3px;
+}
+body:has(.nb-home) .landing-footer :is(a, button):focus-visible { outline-color: var(--nb-yellow); }
+
+.nb-home {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 24px 24px;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5;
+}
+.nb-home a { color: #000; }
+.nb-home p { margin: 0; }
+.nb-home .sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* Shared blocks */
+.nb-tag {
+  display: inline-block; padding: 6px 12px; border: var(--nb-border); background: var(--nb-yellow); box-shadow: 3px 3px 0 #000;
+  font-size: 13px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #000;
+}
+.nb-tag-small { font-size: 11px; padding: 4px 8px; box-shadow: 2px 2px 0 #000; }
+.nb-h2 { margin: 16px 0 16px; font-size: clamp(2rem, 4vw, 3rem); font-weight: 900; line-height: 1.02; letter-spacing: -0.035em; color: #000; max-width: 20ch; }
+.nb-h3 { margin: 12px 0 8px; font-size: 1.35rem; font-weight: 900; line-height: 1.15; letter-spacing: -0.02em; }
+.nb-body { font-size: 1.08rem; line-height: 1.6; max-width: 60ch; margin-top: 14px; }
+.nb-section { margin-top: 72px; }
+
+.nb-button {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 52px; padding: 12px 22px;
+  border: var(--nb-border); border-radius: 0; font-size: 1.05rem; font-weight: 800; text-decoration: none; cursor: pointer;
+  box-shadow: var(--nb-shadow); color: #000; background: #fff;
+}
+.nb-button-primary { background: var(--nb-yellow); }
+.nb-button-secondary { background: #fff; }
+.nb-button:hover { transform: translate(-2px, -2px); box-shadow: 8px 8px 0 #000; }
+.nb-button:active { transform: translate(3px, 3px); box-shadow: 2px 2px 0 #000; }
+.nb-actions { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 28px; }
+
+.nb-tone-yellow { background: var(--nb-yellow); }
+.nb-tone-paper { background: var(--nb-white); }
+.nb-tone-pink { background: var(--nb-pink); }
+.nb-tone-green { background: var(--nb-green); }
+.nb-tone-blue { background: var(--nb-blue); }
+.nb-tone-orange { background: var(--nb-orange); }
+
+/* Hero */
+.nb-hero { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 48px; align-items: center; }
+.nb-title {
+  margin: 22px 0 0; font-size: clamp(2.6rem, 6vw, 4.6rem); font-weight: 900; line-height: 0.98; letter-spacing: -0.045em;
+  text-transform: none; color: #000;
+}
+.nb-lede { margin-top: 24px; font-size: 1.15rem; line-height: 1.6; max-width: 56ch; color: #000; }
+.nb-trust { list-style: none; margin: 24px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px; }
+.nb-trust li { padding: 6px 12px; background: #fff; border: 2px solid #000; font-size: 14px; font-weight: 700; }
+.nb-trust li::before { content: "■ "; color: #000; }
+
+/* Specimen card: one process row, 16 tiles */
+.nb-spec {
+  border: var(--nb-border); background: #fff; box-shadow: var(--nb-shadow-lg); transform: rotate(-1.5deg);
+  padding: 0 0 16px;
+}
+.nb-spec-head {
+  display: flex; justify-content: space-between; gap: 12px; padding: 14px 18px; background: var(--nb-pink);
+  border-bottom: var(--nb-border); font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em;
+}
+.nb-spec-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; margin: 16px 16px 0; border: 2px solid #000; }
+.nb-tile {
+  display: grid; place-items: center; aspect-ratio: 1 / 1; border: 2px solid #000; margin: -2px 0 0 -2px;
+  font-size: 15px; font-weight: 900; font-family: ui-monospace, Menlo, Consolas, monospace; color: #000;
+}
+.nb-spec-foot { margin: 14px 18px 0; font-size: 13px; font-weight: 700; }
+
+/* Stats */
+.nb-home dd { margin: 0; }
+.nb-stats { margin-top: 72px; }
+.nb-stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin: 0; }
+.nb-stat { margin: 0; padding: 22px; border: var(--nb-border); box-shadow: var(--nb-shadow); min-height: 200px; display: flex; flex-direction: column; gap: 6px; }
+.nb-stat dt { font-size: 15px; font-weight: 800; }
+.nb-stat-value { margin: auto 0 0; font-size: clamp(2.6rem, 5vw, 3.6rem); font-weight: 900; line-height: 1; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+.nb-stat-note { font-size: 13px; font-weight: 700; line-height: 1.4; margin-top: 8px; }
+
+/* Feature panels */
+.nb-feature { display: grid; gap: 40px; align-items: center; margin-top: 88px; }
+.nb-feature-wide-left { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+.nb-feature-wide-right { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+.nb-feature-wide-right .nb-feature-copy { order: 2; }
+.nb-feature-wide-right .nb-feature-panel { order: 1; }
+.nb-feature-panel { border: var(--nb-border); box-shadow: var(--nb-shadow-lg); padding: 24px; background: #fff; }
+.nb-panel-indicators { background: var(--nb-blue); }
+.nb-panel-selection { background: var(--nb-green); }
+.nb-panel-boundary { background: var(--nb-pink); }
+.nb-checklist { list-style: none; margin: 22px 0 0; padding: 0; display: grid; gap: 10px; }
+.nb-checklist li { display: grid; grid-template-columns: 22px 1fr; gap: 12px; font-weight: 700; line-height: 1.45; }
+.nb-checklist li::before { content: ""; width: 18px; height: 18px; margin-top: 2px; border: 3px solid #000; background: var(--nb-yellow); box-shadow: 2px 2px 0 #000; }
+
+/* Mock panels inside features (static, decorative) */
+.nb-mock { display: grid; gap: 12px; }
+.nb-mock-row, .nb-mock-check, .nb-mock-lock, .nb-mock-total {
+  display: grid; gap: 12px; align-items: center; padding: 14px 16px; background: #fff; border: var(--nb-border); font-weight: 700;
+}
+.nb-mock-row { grid-template-columns: 64px 1fr auto; }
+.nb-mock-row b { font-family: ui-monospace, Menlo, monospace; font-size: 14px; background: #000; color: #fff; padding: 4px 6px; text-align: center; }
+.nb-mock-row i { font-style: normal; font-size: 13px; color: #000; }
+.nb-mock-more { background: var(--nb-yellow); grid-template-columns: 1fr; font-size: 14px; }
+.nb-mock-check { grid-template-columns: 24px 1fr; }
+.nb-box { width: 22px; height: 22px; border: 3px solid #000; background: #fff; display: inline-block; }
+.nb-box-on { background: #000; box-shadow: inset 0 0 0 4px #fff; }
+.nb-mock-total { background: #000; color: #fff; grid-template-columns: 1fr; }
+.nb-mock-lock { grid-template-columns: auto 1fr; font-size: 15px; }
+.nb-mock-api { background: var(--nb-yellow); }
+
+/* Use cases */
+.nb-cases { list-style: none; margin: 32px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; }
+.nb-case { margin: 0; padding: 24px; border: var(--nb-border); box-shadow: var(--nb-shadow); }
+.nb-case p { font-size: 1rem; line-height: 1.6; }
+.nb-case-num { display: inline-block; font-size: 15px; font-weight: 900; padding: 4px 8px; background: #000; color: #fff; font-family: ui-monospace, Menlo, monospace; }
+
+/* Latest posts */
+.nb-latest { list-style: none; margin: 28px 0 0; padding: 0; display: grid; gap: 16px; }
+.nb-latest-item { display: grid; grid-template-columns: 180px 1fr; gap: 16px; align-items: center; padding: 18px 20px; background: #fff; border: var(--nb-border); box-shadow: var(--nb-shadow); }
+.nb-latest-item a { font-size: 1.2rem; font-weight: 900; text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 4px; }
+
+/* Closing call to action */
+.nb-cta { margin: 88px 0 0; padding: clamp(32px, 5vw, 56px); background: var(--nb-yellow); border: var(--nb-border); box-shadow: var(--nb-shadow-lg); }
+.nb-cta-title { margin: 0; font-size: clamp(2.2rem, 5vw, 3.6rem); font-weight: 900; line-height: 1; letter-spacing: -0.04em; color: #000; }
+.nb-cta .nb-body { max-width: 56ch; }
+.nb-cta .nb-button-secondary { background: #fff; }
+
+/* Responsive */
+@media (max-width: 980px) {
+  .nb-hero, .nb-feature-wide-left, .nb-feature-wide-right { grid-template-columns: 1fr; }
+  .nb-feature-wide-right .nb-feature-copy, .nb-feature-wide-right .nb-feature-panel { order: initial; }
+  .nb-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .nb-cases { grid-template-columns: 1fr; }
+  .nb-spec { transform: none; max-width: 520px; }
+}
+@media (max-width: 560px) {
+  .nb-home { padding: 32px 18px 16px; }
+  .nb-stat-grid { grid-template-columns: 1fr; }
+  .nb-latest-item { grid-template-columns: 1fr; }
+  .nb-section { margin-top: 56px; }
+  .nb-feature { margin-top: 64px; }
+  .site-cta { display: none; }
+}
+/* Reduced motion: nothing here moves, but keep it explicit for the hover shift */
+@media (prefers-reduced-motion: reduce) {
+  .nb-button:hover, .nb-button:active { transform: none; }
+}

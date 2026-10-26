@@ -753,6 +753,7 @@ function App() {
       <SiteLayout current="calculator" sourceVersion={catalog?.source_version ?? '1.1.0'} totalRecords={catalog?.total_records ?? '302'}>
         <div className="calculator-page">
           <header className="page-heading">
+            <p className="privacy-pill"><span className="glow-dot" aria-hidden="true" />Local only · inputs stay in this browser</p>
             <p className="landing-eyebrow">PROCESS CALCULATOR</p>
             <h1 className="page-title">Calculate a process estimate.</h1>
             <p className="page-lede">Choose published apparel and footwear processes, enter quantities, and read the 16 EF 3.1 indicators for each selected row.</p>

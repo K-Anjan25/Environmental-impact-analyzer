@@ -1,69 +1,74 @@
-import { useState } from 'react';
-import { Drawer, IconButton } from '@mui/material';
+import { useEffect, useId, useRef, useState } from 'react';
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
-import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
-import CalculateOutlinedIcon from '@mui/icons-material/CalculateOutlined';
-import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
-import GavelOutlinedIcon from '@mui/icons-material/GavelOutlined';
-import PrivacyTipOutlinedIcon from '@mui/icons-material/PrivacyTipOutlined';
-import ScienceOutlinedIcon from '@mui/icons-material/ScienceOutlined';
-import SellOutlinedIcon from '@mui/icons-material/SellOutlined';
-import MailOutlineRoundedIcon from '@mui/icons-material/MailOutlineRounded';
 
-type SiteMenuProps = {
-  sourceVersion?: string;
-  totalRecords?: number | string;
-};
+/*
+ * Menu button and dropdown panel. The button sits at the start of the header, beside the logo.
+ * The panel drops down under the header. It closes on Escape, on an outside click, and after a link is used.
+ * Legal pages are linked from the footer, not from this menu.
+ */
 
 /** One item per destination. Blogs is a single item; its types have their own routes. */
-const MENU_ITEMS = [
-  { href: '#/', label: 'Home', icon: <HomeOutlinedIcon fontSize="small" /> },
-  { href: '#/calculator', label: 'Calculator', icon: <CalculateOutlinedIcon fontSize="small" /> },
-  { href: '#/method', label: 'Method and scope', icon: <ScienceOutlinedIcon fontSize="small" /> },
-  { href: '#/pricing', label: 'Plans', icon: <SellOutlinedIcon fontSize="small" /> },
-  { href: '#/blogs', label: 'Blogs', icon: <ArticleOutlinedIcon fontSize="small" /> },
-  { href: '#/contact', label: 'Contact', icon: <MailOutlineRoundedIcon fontSize="small" /> },
+export const MENU_ITEMS: { href: string; label: string }[] = [
+  { href: '#/', label: 'Home' },
+  { href: '#/calculator', label: 'Calculator' },
+  { href: '#/method', label: 'Method and scope' },
+  { href: '#/pricing', label: 'Plans' },
+  { href: '#/blogs', label: 'Blogs' },
+  { href: '#/contact', label: 'Contact' },
 ];
 
-export default function SiteMenu({ sourceVersion = '1.1.0', totalRecords = '302' }: SiteMenuProps) {
+export default function SiteMenu() {
   const [open, setOpen] = useState(false);
-  const close = () => setOpen(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const panelId = useId();
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setOpen(false);
+        buttonRef.current?.focus();
+      }
+    };
+    const onPointer = (event: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(event.target as Node)) setOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('mousedown', onPointer);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('mousedown', onPointer);
+    };
+  }, [open]);
+
   return (
-    <>
-      <IconButton className="site-menu-button" aria-label="Open menu" aria-expanded={open} onClick={() => setOpen(true)}>
-        <MenuRoundedIcon />
-      </IconButton>
-      <Drawer anchor="right" open={open} onClose={close} slotProps={{ paper: { className: 'site-menu-drawer' } }}>
-        <div className="menu-panel">
-          <div className="menu-panel-top">
-            <a className="brand" href="#/" onClick={close} aria-label="EcoImpact Lab home">
-              <img className="brand-mark-image" src="/brand/mark.svg" alt="" />
-              <span className="brand-name">EcoImpact Lab</span>
-            </a>
-            <IconButton className="menu-close" aria-label="Close menu" onClick={close}>
-              <CloseRoundedIcon />
-            </IconButton>
-          </div>
-          <div className="sidebar-kicker">APPAREL & FOOTWEAR</div>
-          <nav className="sidebar-navigation" aria-label="Site menu">
+    <div className="site-menu" ref={wrapRef}>
+      <button
+        ref={buttonRef}
+        type="button"
+        className="site-menu-button"
+        aria-label={open ? 'Close menu' : 'Open menu'}
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={() => setOpen((value) => !value)}
+      >
+        {open ? <CloseRoundedIcon /> : <MenuRoundedIcon />}
+      </button>
+      <div id={panelId} className="site-menu-panel" hidden={!open}>
+        <nav aria-label="Site menu">
+          <ul className="site-menu-list">
             {MENU_ITEMS.map((item) => (
-              <a key={item.href} href={item.href} onClick={close}>
-                {item.icon}
-                <span>{item.label}</span>
-              </a>
+              <li key={item.href}>
+                <a href={item.href} onClick={() => setOpen(false)}>
+                  {item.label}
+                </a>
+              </li>
             ))}
-            <a href="#/legal/terms" onClick={close}><GavelOutlinedIcon fontSize="small" /><span>Terms of use</span></a>
-            <a href="#/legal/privacy" onClick={close}><PrivacyTipOutlinedIcon fontSize="small" /><span>Privacy policy</span></a>
-          </nav>
-          <div className="sidebar-source-card menu-source-card">
-            <span className="sidebar-source-label">PINNED SOURCE</span>
-            <strong>Carbonfact</strong>
-            <span>Version {sourceVersion} · CC BY-SA 4.0</span>
-            <span className="sidebar-source-count"><i aria-hidden="true" /> {totalRecords} published factors</span>
-          </div>
-        </div>
-      </Drawer>
-    </>
+          </ul>
+        </nav>
+      </div>
+    </div>
   );
 }

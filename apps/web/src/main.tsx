@@ -11,6 +11,7 @@ import { parseRoute, routeHref, type Route } from './router';
 import theme from './theme';
 import './styles.css';
 import './marketing/marketing.css';
+import './neo-theme.css';
 
 function currentHash(): string {
   return window.location.hash;

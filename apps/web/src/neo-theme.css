@@ -1,0 +1,235 @@
+/*
+ * Neo-Brutalist theme for the whole site. Loaded last, so it overrides styles.css, marketing.css,
+ * and neo.css where they conflict. Bold colour blocks, 3px black borders, hard offset shadows,
+ * square corners, and no gradients, glass, or animation.
+ *
+ * Contrast: all body text is black or near-black on white or pale fills (AAA). Buttons use black
+ * text on yellow, pink, or white. Nothing relies on colour alone.
+ */
+
+:root {
+  --nb-paper: #FFF6E0;
+  --nb-white: #FFFFFF;
+  --nb-cream: #FFF0C2;
+  --nb-yellow: #FFD23F;
+  --nb-pink: #FF8FC7;
+  --nb-green: #5BE0A0;
+  --nb-blue: #8FD3FF;
+  --nb-orange: #FF9F47;
+  --nb-ink: #000000;
+  --nb-border: 3px solid #000000;
+  --nb-shadow: 6px 6px 0 #000000;
+  --nb-shadow-sm: 4px 4px 0 #000000;
+
+  /* Legacy tokens used across styles.css and marketing.css. Remapped so every component picks up the theme. */
+  --ink: #000000;
+  --text-main: #000000;
+  --muted: #1A1A1A;
+  --text-muted: #1A1A1A;
+  --forest: #000000;
+  --forest-dark: #000000;
+  --accent-primary: #000000;
+  --accent-deep: #000000;
+  --accent-warm: #FF8FC7;
+  --bg-primary: var(--nb-paper);
+  --bg-surface: var(--nb-cream);
+  --surface: var(--nb-white);
+  --line: #000000;
+  --border-subtle: #000000;
+  --sage: #000000;
+  --sage-soft: var(--nb-cream);
+  --amber: #000000;
+  --coral: #000000;
+  --citrus: var(--nb-yellow);
+  --sand: var(--nb-paper);
+  --soft-green: var(--nb-green);
+  --radius-lg: 0px;
+  --radius-sm: 0px;
+  color-scheme: light;
+}
+
+body {
+  background: var(--nb-paper);
+  color: #000000;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+h1, h2, h3, h4, h5, h6 { color: #000000; font-weight: 900; letter-spacing: -0.03em; }
+a { color: #000000; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+:focus-visible { outline: 3px solid #000000; outline-offset: 3px; }
+
+/* ----- Site header and footer ----- */
+.site-topbar {
+  background: var(--nb-white) !important; border-bottom: var(--nb-border) !important;
+  box-shadow: 0 3px 0 #000000; backdrop-filter: none !important;
+}
+.site-brand, .site-brand span, .brand-name { color: #000000 !important; font-weight: 900; }
+.site-cta, .site-cta:hover {
+  background: var(--nb-yellow) !important; color: #000000 !important; border: var(--nb-border);
+  box-shadow: var(--nb-shadow-sm); border-radius: 0 !important; font-weight: 900;
+}
+.landing-footer { background: #000000 !important; color: #ffffff; border-top: var(--nb-border); }
+.landing-footer a, .landing-footer .footer-base, .landing-footer-base { color: #ffffff !important; }
+.landing-footer :is(a, button):focus-visible { outline-color: var(--nb-yellow); }
+
+/* ----- Buttons ----- */
+.landing-button, .MuiButton-root {
+  border: var(--nb-border) !important; border-radius: 0 !important; box-shadow: var(--nb-shadow-sm) !important;
+  font-weight: 800 !important; color: #000000 !important; background: var(--nb-white);
+}
+.landing-button-primary, .MuiButton-containedPrimary, .MuiButton-contained {
+  background: var(--nb-yellow) !important; color: #000000 !important;
+}
+.landing-button-ghost, .MuiButton-outlined { background: var(--nb-white) !important; }
+.landing-button:hover, .MuiButton-root:hover { transform: translate(-2px, -2px); box-shadow: 8px 8px 0 #000000 !important; }
+.landing-button:active, .MuiButton-root:active { transform: translate(3px, 3px); box-shadow: 2px 2px 0 #000000 !important; }
+.MuiButton-root.Mui-disabled { opacity: 0.55; box-shadow: none !important; }
+.landing-button-primary:hover, .MuiButton-containedPrimary:hover { background: #FFC61A !important; }
+
+/* ----- Cards and panels ----- */
+.MuiPaper-root {
+  background: var(--nb-white) !important; background-image: none !important;
+  border: var(--nb-border) !important; border-radius: 0 !important; box-shadow: var(--nb-shadow) !important;
+}
+.MuiPaper-root.MuiAlert-root, .MuiAlert-root { box-shadow: var(--nb-shadow-sm) !important; border: 2px solid #000000 !important; border-radius: 0 !important; }
+.MuiAlert-standardError { background: var(--nb-pink) !important; color: #000000 !important; }
+.MuiAlert-standardSuccess { background: var(--nb-green) !important; color: #000000 !important; }
+.MuiAlert-standardInfo, .MuiAlert-standardWarning { background: var(--nb-yellow) !important; color: #000000 !important; }
+.MuiChip-root { border: 2px solid #000000 !important; border-radius: 0 !important; background: var(--nb-white) !important; color: #000000 !important; font-weight: 800; }
+.MuiChip-root.MuiChip-filled, .MuiChip-colorPrimary { background: var(--nb-yellow) !important; }
+.MuiAccordion-root { box-shadow: var(--nb-shadow-sm) !important; }
+
+/* Inputs */
+.MuiOutlinedInput-root { border-radius: 0 !important; background: var(--nb-white) !important; }
+.MuiOutlinedInput-notchedOutline { border: 2px solid #000000 !important; }
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline { border-width: 3px !important; }
+.MuiOutlinedInput-root.Mui-focused { box-shadow: 4px 4px 0 #000000; }
+.MuiFormLabel-root, .MuiInputLabel-root { color: #000000 !important; font-weight: 700; }
+.MuiFormHelperText-root { color: #1A1A1A !important; }
+.MuiSelect-icon, .MuiSvgIcon-root { color: #000000; }
+
+/* ----- Marketing sections ----- */
+.marketing .section-alt, .marketing .cta-band { background: var(--nb-cream); }
+.marketing .cta-band { border-top: var(--nb-border); border-bottom: var(--nb-border); }
+.marketing .section-eyebrow, .mkt-eyebrow, .latest-type, .landing-eyebrow, .step-label, .card-number {
+  display: inline-block; padding: 4px 10px; border: 2px solid #000000; background: var(--nb-yellow);
+  color: #000000 !important; font-size: 12px; font-weight: 900; letter-spacing: 0.08em; box-shadow: 3px 3px 0 #000000;
+}
+.marketing .section-title, .mkt-page-title, .mkt-title, .page-title, .card-title { font-weight: 900; letter-spacing: -0.035em; }
+.stat-card, .step-item, .carousel-slide, .contact-form, .contact-options li, .faq-item.MuiAccordion-root, .latest-item, .mkt-art {
+  background: var(--nb-white) !important; border: var(--nb-border) !important; border-radius: 0 !important; box-shadow: var(--nb-shadow) !important;
+}
+.stat-card { border-top: var(--nb-border) !important; }
+.stat-card:nth-child(4n+1), .step-item:nth-child(5n+1) { background: var(--nb-yellow) !important; }
+.stat-card:nth-child(4n+2), .step-item:nth-child(5n+2) { background: var(--nb-pink) !important; }
+.stat-card:nth-child(4n+3), .step-item:nth-child(5n+3) { background: var(--nb-green) !important; }
+.stat-card:nth-child(4n+4), .step-item:nth-child(5n+4) { background: var(--nb-blue) !important; }
+.step-number { border: var(--nb-border); background: var(--nb-white) !important; color: #000000 !important; border-radius: 0; }
+.latest-item { border-left: var(--nb-border) !important; }
+.latest-item a { color: #000000 !important; font-weight: 900; }
+.carousel-dot { border: 2px solid #000000 !important; border-radius: 0 !important; background: var(--nb-white) !important; }
+.carousel-dot[aria-current='true'] { background: var(--nb-yellow) !important; }
+.carousel-icon { border: var(--nb-border); background: var(--nb-pink) !important; color: #000000 !important; border-radius: 0 !important; }
+.pricing-note, .error-summary { background: var(--nb-yellow) !important; color: #000000 !important; border: var(--nb-border) !important; border-radius: 0 !important; box-shadow: var(--nb-shadow-sm); }
+
+/* Tables */
+.table-scroll { border: var(--nb-border) !important; border-radius: 0 !important; background: var(--nb-white) !important; box-shadow: var(--nb-shadow); }
+.scope-table th, .scope-table td, .pricing-table th, .pricing-table td { border-bottom: 2px solid #000000 !important; color: #000000; }
+.scope-table thead th, .pricing-table thead th { background: var(--nb-yellow) !important; color: #000000 !important; font-weight: 900; }
+
+/* Hero (landing) keeps the home design, so only its frame changes here */
+.marketing .mkt-hero { background: var(--nb-paper) !important; }
+.hero-trust li::before { color: #000000 !important; }
+.hero-trust { color: #000000 !important; }
+
+/* ----- Calculator ----- */
+.calculator-page .page-title { color: #000000; }
+.calculator-page .page-lede { color: #1A1A1A; }
+.calculator-page .privacy-pill {
+  display: inline-flex; align-items: center; gap: 8px; margin: 0 0 14px; padding: 6px 12px;
+  border: 2px solid #000000; background: var(--nb-green); color: #000000; font-size: 12px; font-weight: 900; box-shadow: var(--nb-shadow-sm);
+}
+.calculator-page .privacy-pill .glow-dot { width: 8px; height: 8px; background: #000000; border-radius: 0; }
+.calculator-page .product-input-workspace,
+.calculator-page .process-input-details,
+.calculator-page .selected-process,
+.calculator-page .product-input-item,
+.calculator-page .factor-suggestion-card,
+.calculator-page .method-note,
+.calculator-page .result-summary,
+.calculator-page .indicator-result,
+.calculator-page .known-fact,
+.calculator-page .mapping-details,
+.calculator-page .review-box,
+.calculator-page .source-registry-block,
+.calculator-page .source-candidate,
+.calculator-page .output-warning,
+.calculator-page .candidate-item {
+  background: var(--nb-white) !important; border: 2px solid #000000 !important; border-radius: 0 !important; box-shadow: var(--nb-shadow-sm);
+}
+.calculator-page .indicator-table-wrap, .calculator-page .table-scroll {
+  border: var(--nb-border) !important; border-radius: 0 !important; background: var(--nb-white) !important; box-shadow: var(--nb-shadow);
+}
+.calculator-page .indicator-table-wrap th { background: var(--nb-cream) !important; color: #000000 !important; font-weight: 900; }
+.calculator-page .indicator-code { display: inline-block; padding: 2px 6px; border: 2px solid #000000; background: var(--nb-yellow); color: #000000; }
+.calculator-page .result-summary { background: var(--nb-cream) !important; }
+.calculator-page .assessment-meta, .calculator-page .known-facts-list { border: var(--nb-border); border-radius: 0; }
+.calculator-page .selected-processes-heading, .calculator-page .output-section-heading { font-weight: 900; }
+
+/* ----- Blog and admin ----- */
+.blog-tabs a, .post-pages button, .post-card, .post-figure, .post-card-media, .admin-form, .admin-list-item, .visual-index-card, .visual-index-empty {
+  border: var(--nb-border) !important; border-radius: 0 !important; box-shadow: var(--nb-shadow-sm) !important; background: var(--nb-white) !important;
+}
+.blog-tabs a { color: #000000 !important; font-weight: 900; }
+.blog-tabs a[aria-current], .blog-tabs a.is-current { background: var(--nb-yellow) !important; }
+.post-pages button.is-current { background: #000000 !important; color: #ffffff !important; }
+.admin-field input, .admin-field select, .admin-field textarea, .admin-secondary, .admin-danger {
+  border: 2px solid #000000 !important; border-radius: 0 !important; background: var(--nb-white); color: #000000;
+}
+.admin-danger { background: var(--nb-pink) !important; }
+.admin-secondary { background: var(--nb-white) !important; }
+
+/* FAQ summary and accordion text */
+.faq-question.MuiTypography-root { color: #000000; font-weight: 800; }
+.faq-answer.MuiTypography-root { color: #1A1A1A; }
+
+/* Floating controls */
+.sticky-cta, .to-top { border: var(--nb-border) !important; border-radius: 0 !important; box-shadow: var(--nb-shadow-sm) !important; }
+.sticky-cta { background: var(--nb-yellow) !important; color: #000000 !important; font-weight: 900; }
+.to-top { background: var(--nb-white) !important; color: #000000 !important; }
+
+/* Reduced motion: keep the hover shift off */
+@media (prefers-reduced-motion: reduce) {
+  .landing-button:hover, .landing-button:active, .MuiButton-root:hover, .MuiButton-root:active { transform: none; }
+}
+
+/* The landing layout defines its own palette aliases. Remap them here so the landing pages match. */
+.site-layout-landing {
+  --bg-primary: var(--nb-paper);
+  --bg-surface: var(--nb-cream);
+  --text-main: #000000;
+  --text-muted: #1A1A1A;
+  --accent-primary: #000000;
+  --accent-deep: #000000;
+  --accent-warm: #FF8FC7;
+  --border-subtle: #000000;
+  --sage: #000000;
+  --paper: var(--nb-paper);
+  --surface: var(--nb-white);
+  --ink: #000000;
+  --charcoal: #000000;
+  --muted: #1A1A1A;
+  --forest: #000000;
+  --forest-dark: #000000;
+  --sage-soft: var(--nb-cream);
+  --terracotta: #FF8FC7;
+  --terracotta-soft: #FFE0F0;
+  --line: #000000;
+  --citrus: #000000;
+  background: var(--nb-paper);
+  color: #000000;
+}
+
+/* Headings that still carry the old teal from styles.css */
+.card-title, .page-title, .calculator-page h2, .calculator-page h3, .selected-process-summary-heading, .selected-processes-heading {
+  color: #000000 !important;
+}

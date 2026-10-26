@@ -233,3 +233,69 @@ a { color: #000000; text-decoration-thickness: 2px; text-underline-offset: 3px; 
 .card-title, .page-title, .calculator-page h2, .calculator-page h3, .selected-process-summary-heading, .selected-processes-heading {
   color: #000000 !important;
 }
+
+/* ---- Audit pass: square corners, no shimmer, black ink, Neo borders on app panels ---- */
+.skip-link,
+.site-menu-button.MuiIconButton-root,
+.MuiIconButton-root,
+.stage-action,
+.stage-coverage-item,
+.product-boundary,
+.ghg-inputs,
+.landing-cta,
+.site-cta,
+.skeleton-bar,
+.bom-mass-check-workspace,
+.result-scope-note,
+.boundary-issue,
+.product-input-workspace,
+.factor-detail-card {
+  border-radius: 0 !important;
+}
+
+.skeleton-bar {
+  background: #FFF0C2 !important;
+  animation: none !important;
+  border: 2px solid #000;
+}
+
+.stage-action {
+  background: #FFFFFF !important;
+  color: #000000 !important;
+  border: 3px solid #000000 !important;
+  box-shadow: 4px 4px 0 #000 !important;
+  font-weight: 800 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.stage-action:hover:not(:disabled) { background: #FFD23F !important; }
+.stage-action:disabled { opacity: 0.55; box-shadow: none !important; }
+
+.stage-coverage-item,
+.product-boundary,
+.ghg-inputs,
+.bom-mass-check-workspace,
+.product-input-workspace,
+.factor-detail-card,
+.result-scope-note {
+  border: 3px solid #000 !important;
+  background: #FFFFFF !important;
+  box-shadow: none !important;
+}
+.stage-coverage-item.stage-required-missing,
+.product-boundary.product-boundary-blocked { background: #FFF0C2 !important; }
+
+.bom-mass-field-label,
+.ghg-source-note,
+.admin-hint,
+.post-card-summary,
+.page-lede,
+.fu-suggestions-label,
+.post-list-status,
+.product-boundary-subtotal,
+.MuiFormLabel-root.MuiInputLabel-root,
+summary {
+  color: #000000 !important;
+}
+
+.landing-cta { box-shadow: 4px 4px 0 #000 !important; }

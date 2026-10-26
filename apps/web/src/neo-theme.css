@@ -299,3 +299,110 @@ summary {
 }
 
 .landing-cta { box-shadow: 4px 4px 0 #000 !important; }
+
+/* ---- Footer: brand name must be visible on the black footer ---- */
+.landing-footer .site-brand,
+.landing-footer .site-brand span,
+.landing-footer .footer-brand-col .site-brand span {
+  color: #ffffff !important;
+  font-weight: 900;
+}
+.landing-footer .site-brand img { filter: none; }
+
+/* ---- Legal pages: Neo document layout ---- */
+.legal-page { max-width: 880px; margin: 0 auto; padding: clamp(32px, 5vw, 64px) 20px clamp(48px, 7vw, 96px); color: #000; }
+.legal-tabs { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 32px; }
+.legal-tabs a { display: inline-block; padding: 9px 14px; border: 3px solid #000; background: #fff; color: #000; font-size: 13px; font-weight: 800; text-decoration: none; box-shadow: 4px 4px 0 #000; }
+.legal-tabs a[aria-current="page"] { background: #FFD23F; }
+.legal-tabs a:hover { background: #FFD23F; }
+.legal-body { border: 3px solid #000; background: #fff; box-shadow: 6px 6px 0 #000; padding: clamp(20px, 4vw, 40px); font-size: 16px; line-height: 1.65; overflow-wrap: anywhere; }
+.legal-body h1 { font-size: clamp(2rem, 4.5vw, 3rem); font-weight: 900; line-height: 1.05; letter-spacing: -0.02em; margin: 0 0 24px; }
+.legal-body h2 { font-size: 1.4rem; font-weight: 900; margin: 36px 0 12px; padding-top: 12px; border-top: 3px solid #000; }
+.legal-body h3 { font-size: 1.1rem; font-weight: 800; margin: 24px 0 8px; }
+.legal-body p, .legal-body li { max-width: 70ch; }
+.legal-body ul, .legal-body ol { padding-left: 22px; }
+.legal-body a { color: #000; font-weight: 700; text-decoration-thickness: 2px; }
+.legal-body code, .legal-body pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 14px; background: #FFF0C2; border: 2px solid #000; border-radius: 0; }
+.legal-body pre { padding: 14px; overflow-x: auto; }
+.legal-body table { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
+.legal-body th, .legal-body td { border: 2px solid #000; padding: 8px 10px; text-align: left; vertical-align: top; }
+.legal-body th { background: #FFD23F; }
+.legal-body blockquote { margin: 16px 0; padding: 10px 16px; border-left: 6px solid #FF8FC7; background: #FFF0C2; }
+
+/* ---- Process results: Neo cards instead of the old soft panels ---- */
+.selected-process-summary,
+.process-result,
+.product-input-result-context,
+.summary-table-wrap,
+.indicator-table-wrap {
+  border: 3px solid #000 !important;
+  border-radius: 0 !important;
+  background: #FFFFFF !important;
+  box-shadow: none !important;
+}
+.selected-process-summary,
+.process-result {
+  box-shadow: 6px 6px 0 #000 !important;
+  margin-bottom: 22px;
+}
+.process-result-title.MuiTypography-root,
+.process-result-title {
+  color: #000000 !important;
+  font-weight: 900 !important;
+  font-size: 1.05rem !important;
+  letter-spacing: -0.01em;
+}
+.process-result-meta,
+.process-result-meta span,
+.indicator-name,
+.result-value,
+.result-overline,
+.summary-scope-copy,
+.product-boundary-subtotal,
+.ghg-lines,
+.ghg-lines li,
+.stage-code,
+.stage-name {
+  color: #000000 !important;
+}
+.result-overline {
+  display: inline-block;
+  padding: 3px 8px;
+  border: 2px solid #000;
+  background: #FFD23F;
+  font-size: 11px !important;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+.ef-score-card {
+  border: 3px solid #000 !important;
+  border-radius: 0 !important;
+  background: #FFD23F !important;
+  box-shadow: 4px 4px 0 #000 !important;
+}
+.ef-score-card span,
+.ef-score-card small,
+.ef-score-card strong {
+  color: #000000 !important;
+}
+.indicator-code {
+  display: inline-block;
+  padding: 2px 6px;
+  border: 2px solid #000;
+  background: #FFD23F;
+  color: #000 !important;
+  font-weight: 900;
+  font-size: 11px;
+}
+.geo-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 2px solid #000;
+  border-radius: 0 !important;
+  background: #5BE0A0 !important;
+  color: #000 !important;
+  font-weight: 800;
+}
+.ghg-subtotal, .stage-note, .stage-status {
+  color: #000 !important;
+}

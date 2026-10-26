@@ -1,4 +1,5 @@
 import { POST_TYPE_SEGMENT, postTypeFromSegment, type PostType } from './posts';
+import { isLegalDocId, type LegalDocId } from './legal/legal-docs';
 
 export type Route =
   | { name: 'home' }
@@ -10,6 +11,7 @@ export type Route =
   | { name: 'blog-type'; type: PostType }
   | { name: 'blog-post'; type: PostType; slug: string }
   | { name: 'admin-blogs' }
+  | { name: 'legal'; doc: LegalDocId }
   | { name: 'not-found' };
 
 /** Old guide links (#/guides/<slug>) map to the blog post type they now belong to. */
@@ -56,6 +58,7 @@ export function parseRoute(hash: string): Route {
   }
 
   if (parts[0] === 'admin' && parts[1] === 'blogs' && parts.length === 2) return { name: 'admin-blogs' };
+  if (parts[0] === 'legal' && parts.length === 2 && isLegalDocId(parts[1])) return { name: 'legal', doc: parts[1] };
 
   return { name: 'not-found' };
 }
@@ -80,6 +83,8 @@ export function routeHref(route: Route): string {
       return `#/blogs/${POST_TYPE_SEGMENT[route.type]}/${encodeURIComponent(route.slug)}`;
     case 'admin-blogs':
       return '#/admin/blogs';
+    case 'legal':
+      return `#/legal/${route.doc}`;
     default:
       return '#/';
   }

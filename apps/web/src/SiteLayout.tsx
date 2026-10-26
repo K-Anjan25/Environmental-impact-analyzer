@@ -48,29 +48,7 @@ export default function SiteLayout({ current, variant = 'standard', sourceVersio
       <main id="main-content" className="site-main" tabIndex={-1}>
         {children}
       </main>
-      {landing ? <LandingFooter /> : <SiteFooter />}
+      <LandingFooter />
     </div>
-  );
-}
-
-export function SiteFooter() {
-  return (
-    <footer className="site-footer">
-      <div className="site-footer-inner">
-        <div className="footer-brand">
-          <img src="/brand/mark.svg" alt="" />
-          <div>
-            <strong>EcoImpact Lab</strong>
-            <span>Apparel &amp; footwear process data</span>
-          </div>
-        </div>
-        <nav className="site-footer-links" aria-label="Footer">
-          <a href="#/calculator">Calculator</a>
-          <a href="#/blogs">Blogs</a>
-          <a href="/legal/terms.html">Terms of use</a>
-          <a href="/legal/privacy.html">Privacy policy</a>
-        </nav>
-      </div>
-    </footer>
   );
 }

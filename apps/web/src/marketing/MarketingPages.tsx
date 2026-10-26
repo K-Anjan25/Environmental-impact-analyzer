@@ -278,7 +278,7 @@ export function ContactPage() {
             </ul>
             <p className="section-body">
               This site does not run analytics or advertising trackers, and it does not send your message to our servers. Read the{' '}
-              <a href="/legal/privacy.html">privacy policy</a>.
+              <a href="#/legal/privacy">privacy policy</a>.
             </p>
           </aside>
         </Reveal>

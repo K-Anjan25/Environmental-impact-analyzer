@@ -221,11 +221,11 @@ describe('process estimator accessibility', () => {
     expect(dashboardText).not.toContain('Open process library');
     expect(dashboardText).not.toContain('OPEN FACTORS');
     expect(screen.getAllByText('EcoImpact Lab')).toHaveLength(2);
-    const legalNavigation = screen.getByRole('navigation', { name: 'Footer' });
+    const legalNavigation = screen.getByRole('navigation', { name: 'Legal' });
     expect(legalNavigation).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Privacy policy' }).getAttribute('href')).toBe('/legal/privacy.html');
-    expect(screen.getByRole('link', { name: 'Terms of use' }).getAttribute('href')).toBe('/legal/terms.html');
-    expect(screen.queryByRole('link', { name: 'Software license' })).toBeNull();
+    expect(screen.getByRole('link', { name: 'Privacy policy' }).getAttribute('href')).toBe('#/legal/privacy');
+    expect(screen.getByRole('link', { name: 'Terms of use' }).getAttribute('href')).toBe('#/legal/terms');
+    expect(screen.getByRole('link', { name: 'Software license' }).getAttribute('href')).toBe('#/legal/software-license');
     expect(screen.queryByRole('link', { name: 'Data sources' })).toBeNull();
   });
 

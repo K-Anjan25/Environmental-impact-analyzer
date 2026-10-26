@@ -7,6 +7,7 @@ import LandingPage from './LandingPage';
 import { ContactPage, MethodPage, PricingPage } from './marketing/MarketingPages';
 import { BlogIndexPage, BlogPostPage, BlogTypePage } from './BlogPages';
 import SiteLayout from './SiteLayout';
+import LegalPage from './legal/LegalPage';
 import { parseRoute, routeHref, type Route } from './router';
 import theme from './theme';
 import './styles.css';
@@ -37,6 +38,8 @@ function RouteView({ route }: { route: Route }) {
       return <BlogPostPage type={route.type} slug={route.slug} />;
     case 'admin-blogs':
       return <AdminBlogsPage />;
+    case 'legal':
+      return <LegalPage doc={route.doc} />;
     default:
       return (
         <SiteLayout current="home">

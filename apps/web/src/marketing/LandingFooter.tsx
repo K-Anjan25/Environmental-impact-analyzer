@@ -51,11 +51,11 @@ export default function LandingFooter() {
         <nav className="footer-col" aria-label="Legal">
           <h3>Legal</h3>
           <ul>
-            <li><a href="/legal/terms.html">Terms of use</a></li>
-            <li><a href="/legal/privacy.html">Privacy policy</a></li>
-            <li><a href="/legal/license.html">Software license</a></li>
-            <li><a href="/legal/source-record.html">Carbonfact source record</a></li>
-            <li><a href="/legal/source-license.html">Dataset license</a></li>
+            <li><a href="#/legal/terms">Terms of use</a></li>
+            <li><a href="#/legal/privacy">Privacy policy</a></li>
+            <li><a href="#/legal/software-license">Software license</a></li>
+            <li><a href="#/legal/source-record">Carbonfact source record</a></li>
+            <li><a href="#/legal/dataset-license">Dataset license</a></li>
           </ul>
         </nav>
       </div>

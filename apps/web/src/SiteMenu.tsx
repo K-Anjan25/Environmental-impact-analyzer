@@ -53,8 +53,8 @@ export default function SiteMenu({ sourceVersion = '1.1.0', totalRecords = '302'
                 <span>{item.label}</span>
               </a>
             ))}
-            <a href="/legal/terms.html" onClick={close}><GavelOutlinedIcon fontSize="small" /><span>Terms of use</span></a>
-            <a href="/legal/privacy.html" onClick={close}><PrivacyTipOutlinedIcon fontSize="small" /><span>Privacy policy</span></a>
+            <a href="#/legal/terms" onClick={close}><GavelOutlinedIcon fontSize="small" /><span>Terms of use</span></a>
+            <a href="#/legal/privacy" onClick={close}><PrivacyTipOutlinedIcon fontSize="small" /><span>Privacy policy</span></a>
           </nav>
           <div className="sidebar-source-card menu-source-card">
             <span className="sidebar-source-label">PINNED SOURCE</span>

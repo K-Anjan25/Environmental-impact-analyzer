@@ -173,14 +173,14 @@ async function expectNoAxeViolations(): Promise<void> {
 
 async function calculateExample(): Promise<void> {
   await screen.findByText('Build a process estimate.');
-  const factorInput = screen.getByRole('combobox', { name: 'Process activity' });
+  const factorInput = screen.getByRole('combobox', { name: 'Pick a process' });
   fireEvent.change(factorInput, { target: { value: 'Spinning cotton to yarn' } });
   fireEvent.click(await screen.findByRole('option', { name: /Spinning cotton to yarn/ }));
-  fireEvent.change(screen.getByRole('spinbutton', { name: 'Quantity in source reference units' }), {
+  fireEvent.change(screen.getByRole('spinbutton', { name: 'How much? (in the unit shown)' }), {
     target: { value: '0.18' },
   });
-  fireEvent.click(screen.getByRole('button', { name: 'Add process' }));
-  fireEvent.click(screen.getByRole('button', { name: 'Calculate selected rows' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Add this step' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Calculate my results' }));
   await screen.findByRole('table', { name: /Separate environmental indicators for Spinning cotton to yarn/ });
 }
 
@@ -225,7 +225,7 @@ describe('process estimator accessibility', () => {
     expect(legalNavigation).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Privacy policy' }).getAttribute('href')).toBe('#/legal/privacy');
     expect(screen.getByRole('link', { name: 'Terms of use' }).getAttribute('href')).toBe('#/legal/terms');
-    expect(screen.getByRole('link', { name: 'Software license' }).getAttribute('href')).toBe('#/legal/software-license');
+    expect(screen.getByRole('link', { name: 'Website license' }).getAttribute('href')).toBe('#/legal/website-license');
     expect(screen.queryByRole('link', { name: 'Data sources' })).toBeNull();
   });
 
@@ -248,10 +248,10 @@ describe('process estimator accessibility', () => {
     render(<App />);
     await screen.findByText('Build a process estimate.');
 
-    fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Source geography' }));
+    fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Where is it made?' }));
     fireEvent.click(await screen.findByRole('option', { name: 'Vietnam (VN) (1)' }));
 
-    const factorInput = screen.getByRole('combobox', { name: 'Process activity' });
+    const factorInput = screen.getByRole('combobox', { name: 'Pick a process' });
     fireEvent.change(factorInput, { target: { value: 'Spinning cotton' } });
     expect(await screen.findByRole('option', { name: /Spinning cotton to yarn in Vietnam/ })).toBeTruthy();
     expect(screen.queryByRole('option', { name: /Spinning cotton to yarn · World/ })).toBeNull();
@@ -266,31 +266,31 @@ describe('process estimator accessibility', () => {
     expect(inputWorkspace?.textContent).not.toMatch(/context only|not sent to the API|manual association|not calculated, not zero/i);
     expect(screen.getByRole('heading', { name: 'Product inputs' })).toBeTruthy();
 
-    fireEvent.change(screen.getByRole('textbox', { name: 'Input or component name' }), {
+    fireEvent.change(screen.getByRole('textbox', { name: 'Name (for example, cotton yarn)' }), {
       target: { value: 'Upper cotton fabric' },
     });
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'Declared quantity' }), {
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Amount' }), {
       target: { value: '0.35' },
     });
-    fireEvent.change(screen.getByRole('textbox', { name: 'Unit label' }), {
+    fireEvent.change(screen.getByRole('textbox', { name: 'Unit (for example, kg)' }), {
       target: { value: 'kg' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Add input' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add material' }));
     expect(screen.getByText('Upper cotton fabric')).toBeTruthy();
 
-    const factorInput = screen.getByRole('combobox', { name: 'Process activity' });
+    const factorInput = screen.getByRole('combobox', { name: 'Pick a process' });
     fireEvent.change(factorInput, { target: { value: 'Spinning cotton to yarn' } });
     fireEvent.click(await screen.findByRole('option', { name: /Spinning cotton to yarn/ }));
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'Quantity in source reference units' }), {
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'How much? (in the unit shown)' }), {
       target: { value: '0.18' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Add process' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add this step' }));
 
-    const inputContext = screen.getByRole('combobox', { name: 'Link input' });
+    const inputContext = screen.getByRole('combobox', { name: 'Goes into which step?' });
     fireEvent.mouseDown(inputContext);
     fireEvent.click(await screen.findByRole('option', { name: 'Upper cotton fabric — 0.35 kg' }));
 
-    fireEvent.click(screen.getByRole('button', { name: 'Calculate selected rows' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Calculate my results' }));
     await screen.findByRole('table', { name: /Separate environmental indicators for Spinning cotton to yarn/ });
     const inputContextText = screen.getByText('Input mapping:').closest('p')?.textContent ?? '';
     expect(inputContextText).toContain('0.35 kg');
@@ -309,16 +309,16 @@ describe('process estimator accessibility', () => {
     stubApi();
     render(<App />);
     await screen.findByText('Build a process estimate.');
-    await screen.findByRole('combobox', { name: 'Process activity' });
+    await screen.findByRole('combobox', { name: 'Pick a process' });
 
-    fireEvent.change(screen.getByRole('textbox', { name: 'Input or component name' }), {
+    fireEvent.change(screen.getByRole('textbox', { name: 'Name (for example, cotton yarn)' }), {
       target: { value: 'Cotton yarn' },
     });
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'Declared quantity' }), {
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Amount' }), {
       target: { value: '0.35' },
     });
-    fireEvent.change(screen.getByRole('textbox', { name: 'Unit label' }), { target: { value: 'kg' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Add input' }));
+    fireEvent.change(screen.getByRole('textbox', { name: 'Unit (for example, kg)' }), { target: { value: 'kg' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add material' }));
     expect(await screen.findByText('Cotton yarn')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Find factor' }));
 
@@ -336,30 +336,30 @@ describe('process estimator accessibility', () => {
     render(<App />);
     await screen.findByText('Build a process estimate.');
 
-    fireEvent.change(screen.getByRole('textbox', { name: 'Input or component name' }), {
+    fireEvent.change(screen.getByRole('textbox', { name: 'Name (for example, cotton yarn)' }), {
       target: { value: 'Cotton feed' },
     });
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'Declared quantity' }), {
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Amount' }), {
       target: { value: '0.55' },
     });
-    fireEvent.change(screen.getByRole('textbox', { name: 'Unit label' }), { target: { value: 'kg' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Add input' }));
+    fireEvent.change(screen.getByRole('textbox', { name: 'Unit (for example, kg)' }), { target: { value: 'kg' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add material' }));
 
-    const factorInput = screen.getByRole('combobox', { name: 'Process activity' });
+    const factorInput = screen.getByRole('combobox', { name: 'Pick a process' });
     fireEvent.change(factorInput, { target: { value: 'Spinning cotton to yarn' } });
     fireEvent.click(await screen.findByRole('option', { name: /Spinning cotton to yarn/ }));
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'Quantity in source reference units' }), {
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'How much? (in the unit shown)' }), {
       target: { value: '1' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Add process' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add this step' }));
 
-    fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Link input' }));
+    fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Goes into which step?' }));
     fireEvent.click(await screen.findByRole('option', { name: 'Cotton feed — 0.55 kg' }));
     fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Quantity basis' }));
     fireEvent.click(await screen.findByRole('option', { name: 'Input is process feed' }));
     expect((screen.getByRole('spinbutton', { name: 'Mapped quantity' }) as HTMLInputElement).value).toBe('0.5');
 
-    fireEvent.click(screen.getByRole('button', { name: 'Calculate selected rows' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Calculate my results' }));
     await screen.findByRole('table', { name: /Separate environmental indicators for Spinning cotton to yarn/ });
     expect(screen.getByText(/0\.5 × 1 kg yarn/)).toBeTruthy();
     expect(fetchMock.mock.calls.some(([path]) => String(path) === '/api/v1/process-estimates')).toBe(false);
@@ -368,16 +368,16 @@ describe('process estimator accessibility', () => {
   it('checks flat BOM mass locally and keeps unmapped inputs explicitly uncalculated', async () => {
     const fetchMock = stubApi();
     render(<App />);
-    await screen.findByRole('combobox', { name: 'Process activity' });
+    await screen.findByRole('combobox', { name: 'Pick a process' });
 
     for (const [name, quantity, unit] of [
       ['Upper fabric', '250', 'g'],
       ['Rubber sole', '0.1', 'kg'],
     ]) {
-      fireEvent.change(screen.getByRole('textbox', { name: 'Input or component name' }), { target: { value: name } });
-      fireEvent.change(screen.getByRole('spinbutton', { name: 'Declared quantity' }), { target: { value: quantity } });
-      fireEvent.change(screen.getByRole('textbox', { name: 'Unit label' }), { target: { value: unit } });
-      fireEvent.click(screen.getByRole('button', { name: 'Add input' }));
+      fireEvent.change(screen.getByRole('textbox', { name: 'Name (for example, cotton yarn)' }), { target: { value: name } });
+      fireEvent.change(screen.getByRole('spinbutton', { name: 'Amount' }), { target: { value: quantity } });
+      fireEvent.change(screen.getByRole('textbox', { name: 'Unit (for example, kg)' }), { target: { value: unit } });
+      fireEvent.click(screen.getByRole('button', { name: 'Add material' }));
     }
 
     fireEvent.click(screen.getByText('Product mass check'));

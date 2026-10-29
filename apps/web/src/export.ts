@@ -82,10 +82,6 @@ const columns = [
   'dqr_geographical_representativeness',
   'source_version',
   'source_url',
-  'source_background_note',
-  'attribution',
-  'result_license',
-  'license_url',
   'aggregation',
   'bom_scope_confirmed',
   'bom_mass_status',
@@ -106,8 +102,6 @@ const columns = [
   'ghg_calculation',
   'ghg_indicator_scope',
   'ghg_source',
-  'ghg_source_licence',
-  'ghg_source_licence_url',
   'ghg_source_url',
   'ghg_retrieved',
   'ghg_source_note',
@@ -150,10 +144,6 @@ export function formatProcessEstimatesCsv(
         weighting_source_url: factor ? EF31_WEIGHTING_SOURCE : '',
         source_version: result.source_version,
         source_url: result.source_url,
-        source_background_note: result.background_database_note,
-        attribution: result.attribution_text,
-        result_license: result.result_license,
-        license_url: result.license_url,
         aggregation: 'sum of selected process rows only; not a completeness claim',
       });
     }
@@ -169,10 +159,6 @@ export function formatProcessEstimatesCsv(
         weighting_source_url: context.summary.singleScore.weightingSourceUrl,
         source_version: result.source_version,
         source_url: result.source_url,
-        source_background_note: result.background_database_note,
-        attribution: result.attribution_text,
-        result_license: result.result_license,
-        license_url: result.license_url,
         aggregation: 'sum of 16 normalised and weighted selected-row indicator totals',
       });
     }
@@ -217,8 +203,6 @@ export function formatProcessEstimatesCsv(
         ghg_calculation: line.detail,
         ghg_indicator_scope: 'climate change (GHG), IPCC AR5 GWP-100 embedded; not one of the 16 EF 3.1 indicators',
         ghg_source: DEFRA_2026_SOURCE.name,
-        ghg_source_licence: DEFRA_2026_SOURCE.licence,
-        ghg_source_licence_url: DEFRA_2026_SOURCE.licenceUrl,
         ghg_source_url: DEFRA_2026_SOURCE.publisherUrl,
         ghg_retrieved: DEFRA_2026_SOURCE.retrieved,
         ghg_source_note: DEFRA_2026_SOURCE.transcriptionNote,
@@ -291,10 +275,6 @@ export function formatProcessEstimatesCsv(
         dqr_geographical_representativeness: line.data_quality?.geographical_representativeness,
         source_version: result.source_version,
         source_url: result.source_url,
-        source_background_note: result.background_database_note,
-        attribution: result.attribution_text,
-        result_license: result.result_license,
-        license_url: result.license_url,
         aggregation: 'separate process row; included in selected-row subtotal when available',
       });
     }

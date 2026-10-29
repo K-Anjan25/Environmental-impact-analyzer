@@ -121,7 +121,6 @@ export const METHOD_SOURCES = [
   { label: 'Carbonfact Open Source LCA Database, pinned release v1.1.0', href: SOURCE_RELEASE_URL },
   { label: 'JRC EF 3.1 normalisation and weighting workbook', href: JRC_NORMALISATION_URL },
   { label: 'JRC EF weighting report (2018)', href: JRC_WEIGHTING_URL },
-  { label: 'Creative Commons Attribution-ShareAlike 4.0 licence', href: CC_BY_SA_URL },
 ];
 
 /**
@@ -141,7 +140,7 @@ export const USE_CASES = [
   },
   {
     title: 'Reporting preparation',
-    body: 'Export the rows with source, licence, and method notes attached, so each number keeps its limits when it leaves the tool.',
+    body: 'Export the rows with source and method notes attached, so each number keeps its limits when it leaves the tool.',
     icon: 'description' as const,
   },
 ];
@@ -188,7 +187,7 @@ export const FAQS: Faq[] = [
   {
     question: 'Where does the data come from?',
     answer:
-      'The factors come from the Carbonfact Open Source LCA Database for Footwear and Apparel, pinned to release v1.1.0 (tag v.1.1.0). The published scores are licensed under CC BY-SA 4.0. The bundled files and their licence are listed in the Method section and in every CSV export.',
+      'The factors come from the Carbonfact Open Source LCA Database for Footwear and Apparel, pinned to release v1.1.0 (tag v.1.1.0). The bundled files are listed in the Method section and in every CSV export.',
   },
   {
     question: 'How often is the data updated?',

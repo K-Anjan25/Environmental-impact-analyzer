@@ -112,9 +112,9 @@ export function MethodPage() {
 
       <section className="section" aria-labelledby="sources-title">
         <Reveal>
-          <h2 id="sources-title" className="section-title">Sources and licences</h2>
+          <h2 id="sources-title" className="section-title">Sources</h2>
           <p className="section-body">
-            The published scores are used under CC BY-SA 4.0 and are pinned to a specific release. The normalisation and weighting factors come from the JRC EF 3.1 method documents.
+            The published scores are pinned to a specific release. The normalisation and weighting factors come from the JRC EF 3.1 method documents.
           </p>
           <ul className="source-list">
             {METHOD_SOURCES.map((source) => (

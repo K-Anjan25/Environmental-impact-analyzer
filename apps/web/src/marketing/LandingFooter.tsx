@@ -53,14 +53,12 @@ export default function LandingFooter() {
           <ul>
             <li><a href="#/legal/terms">Terms of use</a></li>
             <li><a href="#/legal/privacy">Privacy policy</a></li>
-            <li><a href="#/legal/software-license">Software license</a></li>
-            <li><a href="#/legal/source-record">Carbonfact source record</a></li>
-            <li><a href="#/legal/dataset-license">Dataset license</a></li>
+            <li><a href="#/legal/website-license">Website license</a></li>
           </ul>
         </nav>
       </div>
       <div className="landing-footer-base">
-        <span>© {year} EcoImpact Lab. Published source data is licensed CC BY-SA 4.0.</span>
+        <span>© {year} EcoImpact Lab.</span>
       </div>
     </footer>
   );

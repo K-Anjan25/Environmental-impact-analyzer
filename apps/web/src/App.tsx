@@ -783,7 +783,7 @@ function App() {
               <div className="product-input-entry-grid">
                 <TextField
                   size="small"
-                  label="Input or component name"
+                  label="Name (for example, cotton yarn)"
                   value={productInputNameDraft}
                   onChange={(event) => setProductInputNameDraft(event.target.value)}
                   slotProps={{ htmlInput: { maxLength: 100 } }}
@@ -791,14 +791,14 @@ function App() {
                 <TextField
                   type="number"
                   size="small"
-                  label="Declared quantity"
+                  label="Amount"
                   value={productInputQuantityDraft}
                   onChange={(event) => setProductInputQuantityDraft(event.target.value)}
                   slotProps={{ htmlInput: { min: 0, step: 'any' } }}
                 />
                 <TextField
                   size="small"
-                  label="Unit label"
+                  label="Unit (for example, kg)"
                   placeholder="e.g., kg, pair"
                   value={productInputUnitDraft}
                   onChange={(event) => setProductInputUnitDraft(event.target.value)}
@@ -828,7 +828,7 @@ function App() {
                   onClick={saveProductInput}
                   disabled={productInputs.length >= MAX_PRODUCT_INPUTS && !editingProductInputId}
                 >
-                  {editingProductInputId ? 'Save input' : 'Add input'}
+                  {editingProductInputId ? 'Save input' : 'Add material'}
                 </Button>
                 {editingProductInputId && (
                   <Button type="button" onClick={clearProductInputDraft}>Cancel edit</Button>
@@ -934,7 +934,7 @@ function App() {
                 <fieldset className="ghg-inputs">
                   <legend>Transport and end of life (climate change only)</legend>
                   <p className="ghg-source-note">
-                    Factors: {DEFRA_2026_SOURCE.name}, {DEFRA_2026_SOURCE.licence}, retrieved {DEFRA_2026_SOURCE.retrieved}. These cover climate change (kg CO2e) only, not the 16 EF 3.1 indicators.
+                    Factors: {DEFRA_2026_SOURCE.name}, retrieved {DEFRA_2026_SOURCE.retrieved}. These cover climate change (kg CO2e) only, not the 16 EF 3.1 indicators.
                   </p>
                   <div className="form-grid two-col">
                     <TextField
@@ -1074,12 +1074,12 @@ function App() {
               <form id="process-library" onSubmit={calculate} className="estimator-form">
                 <div className="form-grid two-col">
                   <FormControl fullWidth size="small">
-                    <InputLabel id="family-label">Process family</InputLabel>
+                    <InputLabel id="family-label">Type of step</InputLabel>
                     <Select
                       labelId="family-label"
                       id="family-filter"
                       value={familyFilter}
-                      label="Process family"
+                      label="Type of step"
                       onChange={(event) => {
                         setFamilyFilter(event.target.value);
                         setGeographyFilter('');
@@ -1096,12 +1096,12 @@ function App() {
                   </FormControl>
 
                   <FormControl fullWidth size="small">
-                    <InputLabel id="geography-label">Source geography</InputLabel>
+                    <InputLabel id="geography-label">Where is it made?</InputLabel>
                     <Select
                       labelId="geography-label"
                       id="geography-filter"
                       value={geographyFilter}
-                      label="Source geography"
+                      label="Where is it made?"
                       onChange={(event) => {
                         setGeographyFilter(event.target.value);
                         setSelectedFactor(null);
@@ -1155,7 +1155,7 @@ function App() {
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      label="Process activity"
+                      label="Pick a process"
                       placeholder="Search and select a published activity"
                       size="small"
                     />
@@ -1179,7 +1179,7 @@ function App() {
                   <TextField
                     type="number"
                     size="small"
-                    label="Quantity in source reference units"
+                    label="How much? (in the unit shown)"
                     value={quantityDraft}
                     onChange={(event) => setQuantityDraft(event.target.value)}
                     disabled={!selectedFactor}
@@ -1193,7 +1193,7 @@ function App() {
                     disabled={!selectedFactor || !quantityDraft || selectedProcesses.length >= MAX_PROCESS_LINES || selectedFactorAlreadyAdded}
                     className="add-process-button"
                   >
-                    Add process
+                    Add this step
                   </Button>
                 </div>
 
@@ -1232,12 +1232,12 @@ function App() {
                             {productInputs.length > 0 && (
                               <div className="process-mapping-controls">
                                 <FormControl fullWidth size="small">
-                                  <InputLabel id={`process-input-context-label-${index}`}>Link input</InputLabel>
+                                  <InputLabel id={`process-input-context-label-${index}`}>Goes into which step?</InputLabel>
                                   <Select
                                     labelId={`process-input-context-label-${index}`}
                                     id={`process-input-context-${index}`}
                                     value={line.productInputId ?? ''}
-                                    label="Link input"
+                                    label="Goes into which step?"
                                     onChange={(event) => updateSelectedProductInput(line.key, event.target.value)}
                                   >
                                     <MenuItem value="">No input association</MenuItem>
@@ -1284,7 +1284,7 @@ function App() {
                     startIcon={calculating ? <CircularProgress size={16} color="inherit" /> : <CalculateOutlinedIcon />}
                     disabled={calculating || selectedProcesses.length === 0}
                   >
-                    Calculate selected rows
+                    Calculate my results
                   </Button>
                 </div>
               </form>

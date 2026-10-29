@@ -57,20 +57,15 @@ const estimate: ProcessEstimateResponse = {
 };
 
 describe('CSV export', () => {
-  it('preserves each process-indicator row with source attribution and license', () => {
+  it('preserves each process-indicator row with its source and method notes', () => {
     const csv = formatProcessEstimatesCsv(estimate);
     const lines = csv.split('\r\n');
     expect(lines).toHaveLength(3);
     expect(lines[0]).toContain('indicator_code');
     expect(lines[0]).toContain('published_factor_value');
-    expect(lines[0]).toContain('result_license');
-    expect(lines[0]).toContain('license_url');
     expect(lines[0]).toContain('normalised_value');
     expect(lines[1]).toContain('"Print, ""reactive"", cotton"');
-    expect(lines[1]).toContain('Data source: Sample, v1.1.0, CC BY-SA 4.0.');
     expect(lines[1]).toContain('1.1');
-    expect(lines[1]).toContain('CC BY-SA 4.0');
-    expect(lines[1]).toContain('https://creativecommons.org/licenses/by-sa/4.0/');
     expect(lines[1]).toContain('separate process row; included in selected-row subtotal when available');
     expect(lines[2]).toContain('WTU');
     expect(lines[2]).toContain('m³ world-eq');
@@ -165,7 +160,7 @@ describe('CSV export', () => {
     expect(bomRow).toContain('mass diagnostic only; not an environmental impact');
   });
 
-  it('exports DEFRA 2026 climate-change rows with source, licence, and retrieval date, separate from EF 3.1', () => {
+  it('exports DEFRA 2026 climate-change rows with source and retrieval date, separate from EF 3.1', () => {
     const csv = formatProcessEstimatesCsv(estimate, {
       productInputs: [{ id: 'fabric', name: 'Fabric', quantity: '0.25', unit: 'kg', parentId: null }],
       processLinks: [],
@@ -175,7 +170,6 @@ describe('CSV export', () => {
     });
     const ghgRow = csv.split('\r\n').find((line) => line.startsWith('ghg_supplement,')) ?? '';
     expect(ghgRow).toContain('C3');
-    expect(ghgRow).toContain('Open Government Licence v3.0');
     expect(ghgRow).toContain('2026-10-22');
     expect(ghgRow).toContain('not one of the 16 EF 3.1 indicators');
     const boundaryRow = csv.split('\r\n').find((line) => line.startsWith('product_boundary,')) ?? '';

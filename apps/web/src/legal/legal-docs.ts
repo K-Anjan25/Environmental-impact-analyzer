@@ -4,17 +4,13 @@
 import terms from '../../../../TERMS.md?raw';
 import privacy from '../../../../PRIVACY.md?raw';
 import softwareLicense from '../../../../LICENSE?raw';
-import datasetLicense from '../../../../services/api/data/carbonfact-v1.1.0/LICENSE?raw';
-import sourceRecord from '../../../../services/api/data/carbonfact-v1.1.0/SOURCE.md?raw';
 
-export type LegalDocId = 'terms' | 'privacy' | 'software-license' | 'dataset-license' | 'source-record';
+export type LegalDocId = 'terms' | 'privacy' | 'website-license';
 
 export const LEGAL_DOCS: Record<LegalDocId, { title: string; body: string }> = {
   terms: { title: 'Terms of use', body: terms },
   privacy: { title: 'Privacy policy', body: privacy },
-  'software-license': { title: 'Software license', body: softwareLicense },
-  'dataset-license': { title: 'Dataset license', body: datasetLicense },
-  'source-record': { title: 'Carbonfact source record', body: sourceRecord },
+  'website-license': { title: 'Website license', body: softwareLicense },
 };
 
 export const LEGAL_DOC_IDS = Object.keys(LEGAL_DOCS) as LegalDocId[];

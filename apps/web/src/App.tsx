@@ -185,6 +185,9 @@ function ResultHeadline({ report, subtotalsHidden }: { report: ResultReport; sub
           <small>selected rows</small>
         </div>
       </div>
+      {subtotalsHidden && (
+        <p className="subtotal-hold-note">Totals are hidden until the Step 2 items are fixed: functional unit, required process rows and mass check.</p>
+      )}
       {!subtotalsHidden && <p className="result-sentence">{report.sentence}</p>}
     </section>
   );
@@ -1006,70 +1009,88 @@ function App() {
                 )}
                 <details className="ghg-inputs ghg-accordion">
                   <summary>Transport and end of life (climate change only)</summary>
-                  <div className="form-grid two-col">
-                    <TextField
-                      select
-                      size="small"
-                      label="A2 inbound transport mode"
-                      value={inboundDraft.mode}
-                      onChange={(event) => setInboundDraft((draft) => ({ ...draft, mode: event.target.value as FreightMode }))}
-                      slotProps={{ select: { renderValue: (value) => FREIGHT_FACTORS[value as FreightMode].label } }}
-                    >
-                      {FREIGHT_MODE_OPTIONS.map(([id, option]) => (<MenuItem key={id} value={id}>{option.label}</MenuItem>))}
-                    </TextField>
-                    <TextField
-                      type="number"
-                      size="small"
-                      id="ghg-inbound-distance"
-                      label="A2 inbound distance (km)"
-                      value={inboundDraft.distanceKm}
-                      onChange={(event) => setInboundDraft((draft) => ({ ...draft, distanceKm: event.target.value }))}
-                      helperText={scenarioHint(inboundDraft.distanceKm)}
-                      slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: 0, step: 'any' } }}
-                    />
-                    <TextField
-                      select
-                      size="small"
-                      label="A4 distribution mode"
-                      value={distributionDraft.mode}
-                      onChange={(event) => setDistributionDraft((draft) => ({ ...draft, mode: event.target.value as FreightMode }))}
-                      slotProps={{ select: { renderValue: (value) => FREIGHT_FACTORS[value as FreightMode].label } }}
-                    >
-                      {FREIGHT_MODE_OPTIONS.map(([id, option]) => (<MenuItem key={id} value={id}>{option.label}</MenuItem>))}
-                    </TextField>
-                    <TextField
-                      type="number"
-                      size="small"
-                      id="ghg-distribution-distance"
-                      label="A4 distribution distance (km)"
-                      value={distributionDraft.distanceKm}
-                      onChange={(event) => setDistributionDraft((draft) => ({ ...draft, distanceKm: event.target.value }))}
-                      helperText={scenarioHint(distributionDraft.distanceKm)}
-                      slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: 0, step: 'any' } }}
-                    />
-                    <TextField
-                      type="number"
-                      size="small"
-                      id="ghg-to-waste-distance"
-                      label="C2 distance to waste (km, HGV)"
-                      value={toWasteKmDraft}
-                      onChange={(event) => setToWasteKmDraft(event.target.value)}
-                      helperText={scenarioHint(toWasteKmDraft)}
-                      slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: 0, step: 'any' } }}
-                    />
-                    <TextField
-                      select
-                      size="small"
-                      id="ghg-end-of-life"
-                      label="C3 and C4 end-of-life route"
-                      value={endOfLifeDraft}
-                      onChange={(event) => setEndOfLifeDraft(event.target.value as EndOfLifeRoute | '')}
-                      slotProps={{ inputLabel: { shrink: true }, select: { displayEmpty: true, renderValue: (value) => value === '' ? 'Not declared' : END_OF_LIFE_FACTORS[value as EndOfLifeRoute].label } }}
-                    >
-                      <MenuItem value="">Not declared</MenuItem>
-                      {END_OF_LIFE_OPTIONS.map(([id, option]) => (<MenuItem key={id} value={id}>{option.label}</MenuItem>))}
-                    </TextField>
-                  </div>
+                  <details className="ghg-stage-accordion">
+                    <summary>A2 · Transport to factory</summary>
+                    <div className="form-grid two-col">
+                      <TextField
+                        select
+                        size="small"
+                        label="A2 inbound transport mode"
+                        value={inboundDraft.mode}
+                        onChange={(event) => setInboundDraft((draft) => ({ ...draft, mode: event.target.value as FreightMode }))}
+                        slotProps={{ select: { renderValue: (value) => FREIGHT_FACTORS[value as FreightMode].label } }}
+                      >
+                        {FREIGHT_MODE_OPTIONS.map(([id, option]) => (<MenuItem key={id} value={id}>{option.label}</MenuItem>))}
+                      </TextField>
+                      <TextField
+                        type="number"
+                        size="small"
+                        id="ghg-inbound-distance"
+                        label="A2 inbound distance (km)"
+                        value={inboundDraft.distanceKm}
+                        onChange={(event) => setInboundDraft((draft) => ({ ...draft, distanceKm: event.target.value }))}
+                        helperText={scenarioHint(inboundDraft.distanceKm)}
+                        slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: 0, step: 'any' } }}
+                      />
+                    </div>
+                  </details>
+                  <details className="ghg-stage-accordion">
+                    <summary>A4 · Distribution to customer</summary>
+                    <div className="form-grid two-col">
+                      <TextField
+                        select
+                        size="small"
+                        label="A4 distribution mode"
+                        value={distributionDraft.mode}
+                        onChange={(event) => setDistributionDraft((draft) => ({ ...draft, mode: event.target.value as FreightMode }))}
+                        slotProps={{ select: { renderValue: (value) => FREIGHT_FACTORS[value as FreightMode].label } }}
+                      >
+                        {FREIGHT_MODE_OPTIONS.map(([id, option]) => (<MenuItem key={id} value={id}>{option.label}</MenuItem>))}
+                      </TextField>
+                      <TextField
+                        type="number"
+                        size="small"
+                        id="ghg-distribution-distance"
+                        label="A4 distribution distance (km)"
+                        value={distributionDraft.distanceKm}
+                        onChange={(event) => setDistributionDraft((draft) => ({ ...draft, distanceKm: event.target.value }))}
+                        helperText={scenarioHint(distributionDraft.distanceKm)}
+                        slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: 0, step: 'any' } }}
+                      />
+                    </div>
+                  </details>
+                  <details className="ghg-stage-accordion">
+                    <summary>C2 · Transport to waste treatment</summary>
+                    <div className="form-grid two-col">
+                      <TextField
+                        type="number"
+                        size="small"
+                        id="ghg-to-waste-distance"
+                        label="C2 distance to waste (km, HGV)"
+                        value={toWasteKmDraft}
+                        onChange={(event) => setToWasteKmDraft(event.target.value)}
+                        helperText={scenarioHint(toWasteKmDraft)}
+                        slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: 0, step: 'any' } }}
+                      />
+                    </div>
+                  </details>
+                  <details className="ghg-stage-accordion">
+                    <summary>C3 and C4 · End of life</summary>
+                    <div className="form-grid two-col">
+                      <TextField
+                        select
+                        size="small"
+                        id="ghg-end-of-life"
+                        label="C3 and C4 end-of-life route"
+                        value={endOfLifeDraft}
+                        onChange={(event) => setEndOfLifeDraft(event.target.value as EndOfLifeRoute | '')}
+                        slotProps={{ inputLabel: { shrink: true }, select: { displayEmpty: true, renderValue: (value) => value === '' ? 'Not declared' : END_OF_LIFE_FACTORS[value as EndOfLifeRoute].label } }}
+                      >
+                        <MenuItem value="">Not declared</MenuItem>
+                        {END_OF_LIFE_OPTIONS.map(([id, option]) => (<MenuItem key={id} value={id}>{option.label}</MenuItem>))}
+                      </TextField>
+                    </div>
+                  </details>
                 </details>
               </details>
             </section>

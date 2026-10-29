@@ -655,7 +655,6 @@ summary {
   padding: 6px 2px 4px !important;
 }
 .site-nav a[aria-current="page"] { border-bottom: 4px solid #000 !important; }
-.site-nav a:hover { text-decoration: underline !important; text-underline-offset: 4px; }
 
 /* 12-column grid on desktop: the form takes 7 columns, the results 5. Stacked below 1100px. */
 @media (min-width: 1100px) {
@@ -718,11 +717,25 @@ summary {
   scrollbar-color: #2f8f5b #e6f3ea;
 }
 
-/* Hover underlines on top navigation and footer links. */
+/* Hover on top navigation and footer links: a small lift, no text underline.
+   The current page keeps its bar, so a hovered current link shows one mark, not two. */
+.site-nav a,
+.landing-footer a {
+  transition: transform 160ms ease;
+}
+.site-nav a:hover,
+.site-nav a:focus-visible,
+.landing-footer a:hover,
+.landing-footer a:focus-visible {
+  text-decoration: none !important;
+}
 .site-nav a:hover,
 .landing-footer a:hover {
-  text-decoration: underline !important;
-  text-underline-offset: 4px;
+  transform: translateY(-2px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-nav a, .landing-footer a { transition: none; }
+  .site-nav a:hover, .landing-footer a:hover { transform: none; }
 }
 
 .subtotal-hold-note { margin: 8px 0 0; font-size: 13px; font-weight: 700; color: #000; }

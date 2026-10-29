@@ -454,15 +454,15 @@ body { background: #F7F9E1; }
 .bom-mass-check-workspace .MuiFormHelperText-root { margin: 3px 2px 0; font-size: 9px; color: #56655d; }
 .functional-unit-fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 10px; margin-top: 10px; }
 .functional-unit-fields .MuiFormControl-root, .functional-unit-fields .MuiTextField-root { min-width: 0; }
-.product-boundary { margin-top: 12px; padding: 10px 12px; border: 1px solid #dfe7dc; border-radius: 11px; background: #fffefa; color: #40594a; }
+.product-boundary { margin-top: 12px; padding: 12px 14px; border: 2px solid #000; border-radius: 0; background: #fffefa; color: #000; }
 .product-boundary-blocked { border-color: #e3c3b8; }
 .product-boundary-stages-missing { border-color: #e6d9b8; }
 .product-boundary-partial-boundary { border-color: #bfd9c8; }
-.product-boundary-title { display: block; color: #2b4437; font-size: 10.5px; font-weight: 700; line-height: 1.35; overflow-wrap: anywhere; }
-.product-boundary-verdict { margin: 6px 0 2px; color: #2b4437; font-size: 10px; line-height: 1.45; }
-.product-boundary-subtotal { margin: 0 0 8px; color: #56655d; font-size: 9.5px; line-height: 1.4; }
+.product-boundary-title { display: block; color: #000; font-size: 14px; font-weight: 800; line-height: 1.35; overflow-wrap: anywhere; }
+.product-boundary-verdict { margin: 6px 0 2px; color: #000; font-size: 13px; line-height: 1.45; }
+.product-boundary-subtotal { margin: 0 0 8px; color: #000; font-size: 13px; line-height: 1.4; }
 .stage-coverage-list { display: grid; gap: 5px; margin: 0; padding: 0; list-style: none; }
-.stage-coverage-item { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 1px 8px; padding: 6px 8px; border-radius: 8px; background: #f6f9f3; font-size: 9.5px; line-height: 1.4; }
+.stage-coverage-item { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 2px 10px; padding: 8px 10px; border-radius: 0; background: #f6f9f3; font-size: 13px; line-height: 1.4; }
 .stage-code { grid-row: span 3; color: #2b4437; font-weight: 750; }
 .stage-name { color: #2b4437; font-weight: 650; overflow-wrap: anywhere; }
 .stage-status { color: #3a5a47; font-weight: 650; }
@@ -470,7 +470,7 @@ body { background: #F7F9E1; }
 .stage-covered .stage-status { color: #1f6b47; }
 .stage-required-missing .stage-status, .stage-no-open-factor .stage-status { color: #7a4e0c; }
 .stage-excluded .stage-status { color: #4f5f57; }
-.boundary-issues { margin: 8px 0 0; padding-left: 16px; color: #8a3b2a; font-size: 9.5px; line-height: 1.45; }
+.boundary-issues { margin: 8px 0 0; padding-left: 18px; color: #000; font-size: 13px; line-height: 1.45; }
 .boundary-issue-warning { color: #6e5210; }
 @media (max-width: 720px) { .functional-unit-fields { grid-template-columns: 1fr; } }
 
@@ -478,12 +478,12 @@ body { background: #F7F9E1; }
 .ghg-inputs legend { padding: 0 4px; color: #2b4437; font-size: 10.5px; font-weight: 700; }
 .ghg-source-note { margin: 0 0 8px; color: #4f5f57; font-size: 9.5px; line-height: 1.45; overflow-wrap: anywhere; }
 .ghg-subtotal { margin: 8px 0 0; color: #2b4437; font-size: 10px; line-height: 1.45; overflow-wrap: anywhere; }
-.ghg-lines { margin: 6px 0 0; padding-left: 16px; color: #40594a; font-size: 9.5px; line-height: 1.45; }
+.ghg-lines { margin: 6px 0 0; padding-left: 18px; color: #000; font-size: 13px; line-height: 1.45; }
 .ghg-lines li { overflow-wrap: anywhere; }
 .ghg-detail { color: #56655d; }
 .stage-ghg-only .stage-status { color: #3a5a47; }
 .stage-not-declared .stage-status { color: #4f5f57; }
-.stage-excluded-summary { margin: 8px 0 0; color: #4f5f57; font-size: 9.5px; line-height: 1.45; }
+.stage-excluded-summary { margin: 8px 0 0; color: #000; font-size: 13px; line-height: 1.45; }
 
 .bom-mass-field { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; min-width: 0; }
 .bom-mass-field-label { display: block; color: #2b4437; font-size: 13px; font-weight: 650; line-height: 1.4; overflow-wrap: anywhere; }

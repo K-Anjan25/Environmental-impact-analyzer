@@ -74,8 +74,8 @@ export const DECLARED_BOUNDARY_STAGES: readonly LifeCycleStage[] = [...EF_BOUNDA
 export const EXCLUDED_BOUNDARY_STAGES: readonly LifeCycleStage[] = ['B', 'C1'];
 
 export const EXCLUDED_STAGE_REASON: Readonly<Record<'B' | 'C1', string>> = {
-  B: 'Use phase depends on consumer washing, drying, and wear. It is excluded from this boundary.',
-  C1: 'No separate deconstruction step is modelled. Disposal is covered by C3 and C4.',
+  B: 'use phase not modelled',
+  C1: 'deconstruction not modelled',
 };
 
 /** Product-specific coverage rules: which stages must be covered, and by which process families. */
@@ -90,7 +90,7 @@ export const CATEGORY_COVERAGE_RULES: Record<ProductCategory, readonly CoverageR
     {
       stage: 'A1',
       acceptedFamilies: ['synthetic-pu-leather', 'natural-rubber'],
-      reason: 'Footwear raw materials must be covered by a PU leather or natural rubber row. Textile fibre production is not in the bundled data.',
+      reason: 'Add a PU leather or natural rubber row.',
     },
     {
       stage: 'A3',
@@ -177,7 +177,7 @@ export function validateFunctionalUnit(definition: FunctionalUnitDefinition): St
     issues.push({
       severity: 'error',
       code: 'functional-unit-undefined',
-      message: 'Describe the functional unit, for example "one pair of women\'s boots" or "one knitted t-shirt".',
+      message: 'Describe the functional unit, e.g. "one pair of boots".',
       inputIds: [],
     });
   }
@@ -391,7 +391,7 @@ export function assessStageCoverage(
         status: declared ? 'ghg-only' : 'not-declared',
         note: declared
           ? 'Climate change (GHG) only, from DEFRA 2026 factors. The other EF 3.1 indicators are not calculated for this stage.'
-          : 'Not declared. Enter this transport or end-of-life scenario to add a climate-change value.',
+          : 'Enter a distance or route to add a climate value.',
       };
     }
 
@@ -461,7 +461,7 @@ export function assessProductBoundary(input: ProductBoundaryInput): ProductBound
     structureIssues.unshift({
       severity: 'error',
       code: 'no-leaf-components',
-      message: 'Declare at least one component line that has no sub-components.',
+      message: 'Add at least one component line with no sub-components.',
       inputIds: [],
     });
   }
@@ -492,11 +492,10 @@ export function assessProductBoundary(input: ProductBoundaryInput): ProductBound
 
   const undeclared = stageCoverage.filter((item) => item.status === 'not-declared').map((item) => item.stage);
   const verdictText = verdict === 'blocked'
-    ? 'Fix the structure, mass, and scenario issues listed before any subtotal is shown.'
+    ? 'Fix the items below before a subtotal is shown.'
     : verdict === 'stages-missing'
-      ? `Required EF stages are not covered: ${missingRequiredStages.map((stage) => `${stage} ${STAGE_LABEL[stage]}`).join('; ')}. The subtotal is not a product total.`
-      : `Partial boundary. EF 3.1 covers A1 and A3 only. A2, A4, C2, C3 and C4 are climate change (GHG) only${undeclared.length ? `, and ${undeclared.join(', ')} are not declared` : ''}. B and C1 are excluded. This is not a complete product footprint.`;
-
+      ? `Missing: ${missingRequiredStages.map((stage) => `${stage} ${STAGE_LABEL[stage]}`).join('; ')}. No product total yet.`
+      : `Covers A1 and A3 (EF 3.1). A2, A4, C2–C4 are GHG only${undeclared.length ? `; not declared: ${undeclared.join(', ')}` : ''}. This is not a complete product footprint.`;
   return {
     functionalUnit: input.functionalUnit,
     functionalUnitIssues,
@@ -506,7 +505,7 @@ export function assessProductBoundary(input: ProductBoundaryInput): ProductBound
     missingRequiredStages,
     verdict,
     verdictText,
-    subtotalLabel: 'EF 3.1 subtotal (A1 + A3, selected rows) and separate GHG-only layer (A2, A4, C2–C4)',
+    subtotalLabel: 'EF 3.1 subtotal: A1 + A3 (selected rows). GHG only: A2, A4, C2–C4.',
     massAssessment,
     ghg,
   };

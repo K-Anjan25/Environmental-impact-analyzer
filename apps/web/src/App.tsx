@@ -76,7 +76,7 @@ import SiteLayout from './SiteLayout';
 const STAGE_STATUS_LABEL: Record<ProductBoundaryResult['stageCoverage'][number]['status'], string> = {
   covered: 'EF 3.1 covered by linked rows',
   'ghg-only': 'Climate change (GHG) only',
-  'not-declared': 'Not declared (climate change only)',
+  'not-declared': 'Not declared',
   'required-missing': 'Required, not covered',
   'no-open-factor': 'Required, no open factor in bundled data',
   excluded: 'Excluded on purpose',
@@ -203,7 +203,6 @@ function ResultHeadline({ report }: { report: ResultReport }) {
         </div>
       </div>
       <p className="result-sentence">{report.sentence}</p>
-      <p className="summary-scope-copy">Selected rows only. Not a complete product footprint.</p>
     </section>
   );
 }
@@ -1104,7 +1103,7 @@ function App() {
                 </fieldset>
                 <div className={`product-boundary product-boundary-${productBoundary.verdict}`} aria-live="polite">
                   <strong className="product-boundary-title">
-                    {PRODUCT_CATEGORY_LABEL[functionalUnitCategory]}: {functionalUnitDescription.trim() || 'functional unit not described'}
+                    {functionalUnitDescription.trim() || 'Functional unit not set'}
                   </strong>
                   <p className="product-boundary-verdict">{productBoundary.verdictText}</p>
                   <p className="product-boundary-subtotal">{productBoundary.subtotalLabel}</p>
@@ -1114,7 +1113,6 @@ function App() {
                         <span className="stage-code">{item.stage}</span>
                         <span className="stage-name">{item.label}</span>
                         <span className="stage-status">{STAGE_STATUS_LABEL[item.status]}</span>
-                        <span className="stage-note">{item.note}</span>
                         {item.status === 'not-declared' && SCENARIO_FIELD_FOR_STAGE[item.stage] ? (
                           <button type="button" className="stage-action" onClick={() => focusField(SCENARIO_FIELD_FOR_STAGE[item.stage]!.id)}>
                             {SCENARIO_FIELD_FOR_STAGE[item.stage]!.label}
@@ -1129,7 +1127,7 @@ function App() {
                     ))}
                   </ul>
                   <p className="stage-excluded-summary">
-                    Excluded on purpose: {productBoundary.stageCoverage.filter((item) => !item.inBoundary).map((item) => `${item.stage} ${item.label.toLowerCase()} (${item.note})`).join(' ')}
+                    Not in scope: {productBoundary.stageCoverage.filter((item) => !item.inBoundary).map((item) => `${item.stage} ${item.label.toLowerCase()}`).join(', ')}
                   </p>
                   {[...productBoundary.functionalUnitIssues, ...productBoundary.structureIssues].length > 0 && (
                     <ul className="boundary-issues" aria-label="Structure issues">
@@ -1395,7 +1393,6 @@ function App() {
                 <Typography className="empty-copy">
                   16 environmental indicators for each selected process.
                 </Typography>
-                <div className="result-scope-note"><InfoOutlinedIcon fontSize="small" /> Selected rows only; not a complete product footprint.</div>
               </div>
             )}
 

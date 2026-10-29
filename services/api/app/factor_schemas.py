@@ -77,11 +77,6 @@ class FactorCatalogResponse(BaseModel):
     source_name: str
     source_version: str
     source_url: str
-    license_name: str
-    attribution_text: str
-    license_url: str
-    result_license: str
-    background_database_note: str
     total_records: int
     offset: int
     limit: int
@@ -137,9 +132,4 @@ class ProcessEstimateResponse(BaseModel):
     source_name: str
     source_version: str
     source_url: str
-    license_name: str
-    attribution_text: str
-    license_url: str
-    background_database_note: str
-    result_license: str
     results: list[ProcessEstimateLine]

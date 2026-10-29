@@ -28,10 +28,6 @@ Use the Service lawfully and do not interfere with its availability, security, o
 
 For manual process rows, the Service accepts factor identifiers and numeric quantities in the source reference units. Its optional product-input worksheet accepts user-entered labels, quantities, and unit text; visitors may confirm a text-match suggestion and use a declared quantity as process output or as mass feed where the published source provides the required coefficient. Supported mappings and the optional flat-BOM mass comparison run locally in browser memory and are not sent to the calculation API. These features do not infer product composition or validate the mapping. A CSV download may contain worksheet values, finished-product mass, mappings, and results, and the visitor is responsible for handling that file. Do not submit personal information, confidential business information, trade secrets, supplier secrets, or information about another person. The Service has no account or saved-history feature and is not designed to store such information.
 
-## Licenses and third-party material
-
-The original application code and project documentation are made available under the MIT License in [`LICENSE`](LICENSE), except where a file states otherwise. The bundled Carbonfact v1.1.0 score data, its source documentation, and dataset-derived results have separate **CC BY-SA 4.0** terms and attribution requirements. See [`data-sources.md`](data-sources.md), the bundled source [`LICENSE`](services/api/data/carbonfact-v1.1.0/LICENSE), and [`SOURCE.md`](services/api/data/carbonfact-v1.1.0/SOURCE.md). The MIT license does not relicense that data or other third-party material. Dependency and linked-site terms also remain separate.
-
 The Service is not affiliated with or endorsed by Carbonfact, Vercel, or the publishers of the referenced datasets.
 
 ## Availability and changes

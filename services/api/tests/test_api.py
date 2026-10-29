@@ -56,8 +56,7 @@ def test_health_methodology_and_security_headers_are_production_oriented() -> No
     assert methodology["factor_record_count"] == 302
     assert methodology["privacy"]["assessment_persistence"] is False
     assert methodology["privacy"]["request_body_logging"] is False
-    assert methodology["data_policy"]["mode"] == "open_only"
-    assert methodology["data_policy"]["result_license"] == "CC BY-SA 4.0"
+
     assert "complete product footprint" in methodology["scope_note"]
 
 
@@ -68,7 +67,6 @@ def test_openapi_exposes_only_the_process_estimator_api() -> None:
     assert set(paths) == {
         "/healthz",
         "/api/v1/methodology",
-        "/api/v1/sources",
         "/api/v1/factors",
         "/api/v1/process-estimates",
     }
@@ -76,42 +74,11 @@ def test_openapi_exposes_only_the_process_estimator_api() -> None:
     assert not any("product" in path or "assessment" in path for path in paths)
 
 
-def test_source_registry_identifies_active_open_license_and_limits() -> None:
-    response = _send("GET", "/api/v1/sources")
-    assert response.status_code == 200
-    sources = response.json()
-    assert len(sources) == 1
-    source = sources[0]
-    assert source["id"] == "carbonfact-apparel-footwear-v1.1.0"
-    assert source["release_date"] == "2026-07-01"
-    assert source["license_status"] == "applied"
-    assert source["active_for_process_estimates"] is True
-    assert source["factor_count"] == 302
-    assert source["family_count"] == 11
-    assert source["license_name"].startswith("Creative Commons Attribution-ShareAlike 4.0")
-    assert source["share_alike_required"] is True
-    assert source["result_license"] == "CC BY-SA 4.0"
-    assert source["attribution_text"].startswith("Data source:")
-    assert "includes, queries, and reconstructs none" in source["background_database_note"]
-    assert (
-        "may reflect those modeled background contributions" in source["background_database_note"]
-    )
-    assert "top-level documentation says 304" in " ".join(source["limitations"])
-    assert "license_review_status" not in source
-    assert "review_gates" not in source
-    assert "pending" not in str(source).lower()
-
-
 def test_factor_catalog_contains_only_loaded_rows_and_all_16_separate_indicators() -> None:
     response = _send("GET", "/api/v1/factors?limit=500")
     assert response.status_code == 200
     catalog = response.json()
     assert catalog["total_records"] == 302
-    assert catalog["license_url"] == "https://creativecommons.org/licenses/by-sa/4.0/"
-    assert catalog["result_license"] == "CC BY-SA 4.0"
-    assert (
-        "may reflect those modeled background contributions" in catalog["background_database_note"]
-    )
     assert catalog["offset"] == 0
     assert catalog["limit"] == 500
     assert len(catalog["factors"]) == 302
@@ -189,11 +156,6 @@ def test_process_estimate_scales_source_factor_and_keeps_indicators_separate() -
     assert result["status"] == "calculated"
     assert result["methodology_version"] == "published-process-factor-scaling-v1.0"
     assert result["aggregation"] == "none"
-    assert result["result_license"] == "CC BY-SA 4.0"
-    assert result["license_url"] == "https://creativecommons.org/licenses/by-sa/4.0/"
-    assert (
-        "may reflect those modeled background contributions" in result["background_database_note"]
-    )
     assert result["source_version"] == "1.1.0"
     assert len(result["results"]) == 1
 

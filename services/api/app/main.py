@@ -1,9 +1,10 @@
-"""FastAPI service for openly licensed, process-level impact estimates."""
+"""FastAPI service for published, process-level impact estimates."""
 
 import os
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import RequestResponseEndpoint
@@ -21,12 +22,11 @@ from .factor_catalog import (
     query_factors,
 )
 from .factor_schemas import FactorCatalogResponse, ProcessEstimateRequest, ProcessEstimateResponse
-from .sources import ACTIVE_SOURCES, DataSourceRecord
 
 app = FastAPI(
     title="Environmental Impact Analyzer API",
     description=(
-        "Scales openly licensed published apparel and footwear process factors by reference-unit "
+        "Scales published apparel and footwear process factors by reference-unit "
         "quantities. The API returns independent process lines; the browser can display a "
         "selected-row subtotal and EF 3.1 single score, but not a complete product footprint."
     ),
@@ -34,6 +34,9 @@ app = FastAPI(
     docs_url="/api/docs",
     redoc_url=None,
 )
+
+# Compress JSON responses; the 500-factor list is about 700 KB uncompressed.
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 
 @app.middleware("http")
@@ -72,24 +75,11 @@ def methodology() -> dict[str, object]:
         "source_name": SOURCE_NAME,
         "source_version": SOURCE_VERSION,
         "source_url": SOURCE_URL,
-        "active_source_count": len(ACTIVE_SOURCES),
         "factor_catalog": "/api/v1/factors",
-        "source_registry": "/api/v1/sources",
         "privacy": {
             "assessment_persistence": False,
             "request_body_logging": False,
             "account_or_history": False,
-        },
-        "data_policy": {
-            "mode": "open_only",
-            "active_source_count": len(ACTIVE_SOURCES),
-            "result_license": "CC BY-SA 4.0",
-            "note": (
-                "Only the pinned release's published impact-score files and process-family "
-                "notes are bundled. The source's published scores may reflect ecoinvent 3.12 "
-                "background contributions; the underlying inventories are not included, queried, "
-                "or reconstructed."
-            ),
         },
         "scope_note": (
             "The browser can sum selected process rows by indicator and calculate an EF 3.1 "
@@ -97,13 +87,6 @@ def methodology() -> dict[str, object]:
             "established. Source process boundaries and reference units vary."
         ),
     }
-
-
-@app.get("/api/v1/sources", response_model=list[DataSourceRecord], tags=["sources"])
-def list_active_sources() -> list[DataSourceRecord]:
-    """List the open-licensed source currently used by the process estimator."""
-
-    return list(ACTIVE_SOURCES)
 
 
 @app.get("/api/v1/factors", response_model=FactorCatalogResponse, tags=["factors"])

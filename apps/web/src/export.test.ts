@@ -13,11 +13,6 @@ const estimate: ProcessEstimateResponse = {
   source_name: 'Open apparel process factors',
   source_version: '1.1.0',
   source_url: 'https://example.com/release',
-  license_name: 'CC BY-SA 4.0',
-  attribution_text: 'Data source: Sample, v1.1.0, CC BY-SA 4.0.',
-  license_url: 'https://creativecommons.org/licenses/by-sa/4.0/',
-  background_database_note: 'Scores may include licensed background process contributions.',
-  result_license: 'CC BY-SA 4.0',
   results: [{
     factor_id: 'factor-1',
     family_id: 'printing',
@@ -57,20 +52,15 @@ const estimate: ProcessEstimateResponse = {
 };
 
 describe('CSV export', () => {
-  it('preserves each process-indicator row with source attribution and license', () => {
+  it('preserves each process-indicator row with its source and method notes', () => {
     const csv = formatProcessEstimatesCsv(estimate);
     const lines = csv.split('\r\n');
     expect(lines).toHaveLength(3);
     expect(lines[0]).toContain('indicator_code');
     expect(lines[0]).toContain('published_factor_value');
-    expect(lines[0]).toContain('result_license');
-    expect(lines[0]).toContain('license_url');
     expect(lines[0]).toContain('normalised_value');
     expect(lines[1]).toContain('"Print, ""reactive"", cotton"');
-    expect(lines[1]).toContain('Data source: Sample, v1.1.0, CC BY-SA 4.0.');
     expect(lines[1]).toContain('1.1');
-    expect(lines[1]).toContain('CC BY-SA 4.0');
-    expect(lines[1]).toContain('https://creativecommons.org/licenses/by-sa/4.0/');
     expect(lines[1]).toContain('separate process row; included in selected-row subtotal when available');
     expect(lines[2]).toContain('WTU');
     expect(lines[2]).toContain('m³ world-eq');
@@ -79,13 +69,13 @@ describe('CSV export', () => {
   it('exports a manual input association as context and leaves unassociated input results blank', () => {
     const csv = formatProcessEstimatesCsv(estimate, {
       productInputs: [
-        { id: 'input-1', name: 'Upper fabric', quantity: '0.35', unit: 'kg' },
-        { id: 'input-2', name: 'Rubber outsole', quantity: '0.18', unit: 'kg' },
+        { id: 'input-1', name: 'Upper fabric', quantity: '0.35', unit: 'kg', parentId: null },
+        { id: 'input-2', name: 'Rubber outsole', quantity: '0.18', unit: 'kg', parentId: null },
       ],
-      processLinks: [{ factorId: 'factor-1', productInputId: 'input-1' }],
+      processLinks: [{ factorId: 'factor-1', familyId: 'spinning', productInputId: 'input-1' }],
     });
     const lines = csv.split('\r\n');
-    expect(lines).toHaveLength(5);
+    expect(lines).toHaveLength(6);
     expect(lines[0]).toContain('declared_input_name');
     expect(lines[0]).toContain('input_association_status');
     expect(lines[0]).toContain('bom_mass_status');
@@ -146,7 +136,7 @@ describe('CSV export', () => {
 
   it('exports a flat BOM mass diagnostic separately from environmental results', () => {
     const context = {
-      productInputs: [{ id: 'fabric', name: 'Fabric', quantity: '0.25', unit: 'kg' }],
+      productInputs: [{ id: 'fabric', name: 'Fabric', quantity: '0.25', unit: 'kg', parentId: null }],
       processLinks: [],
       finishedProductMassKg: '0.3',
     };
@@ -161,14 +151,31 @@ describe('CSV export', () => {
     expect(bomRow).toContain('inputs-below-product-mass');
     expect(bomRow).toContain('0.25');
     expect(bomRow).toContain('0.3');
-    expect(bomRow).toContain('user-declared flat input mass');
+    expect(bomRow).toContain('validates mass closure only');
     expect(bomRow).toContain('mass diagnostic only; not an environmental impact');
+  });
+
+  it('exports DEFRA 2026 climate-change rows with source and retrieval date, separate from EF 3.1', () => {
+    const csv = formatProcessEstimatesCsv(estimate, {
+      productInputs: [{ id: 'fabric', name: 'Fabric', quantity: '0.25', unit: 'kg', parentId: null }],
+      processLinks: [],
+      finishedProductMassKg: '0.3',
+      flatBomScopeConfirmed: true,
+      ghg: { endOfLife: 'landfill-mixed-ci' },
+    });
+    const ghgRow = csv.split('\r\n').find((line) => line.startsWith('ghg_supplement,')) ?? '';
+    expect(ghgRow).toContain('C3');
+    expect(ghgRow).toContain('2026-10-22');
+    expect(ghgRow).toContain('not one of the 16 EF 3.1 indicators');
+    const boundaryRow = csv.split('\r\n').find((line) => line.startsWith('product_boundary,')) ?? '';
+    expect(boundaryRow).toContain('separate climate-change layer');
+    expect(boundaryRow).not.toMatch(/\bcomplete product footprint\b(?<!not a complete product footprint)/);
   });
 
   it('distinguishes a locally mapped input from a manual context association', () => {
     const csv = formatProcessEstimatesCsv(estimate, {
-      productInputs: [{ id: 'input-1', name: 'Cotton feed', quantity: '550', unit: 'g' }],
-      processLinks: [{ factorId: 'factor-1', productInputId: 'input-1', quantityBasis: 'declared-input' }],
+      productInputs: [{ id: 'input-1', name: 'Cotton feed', quantity: '550', unit: 'g', parentId: null }],
+      processLinks: [{ factorId: 'factor-1', familyId: 'spinning', productInputId: 'input-1', quantityBasis: 'declared-input' }],
     });
     expect(csv).toContain('declared input mass used locally as process feed');
     expect(csv).toContain('declared input mass converted using source input-required value');

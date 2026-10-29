@@ -1,0 +1,742 @@
+/*
+ * Neo-Brutalist theme for the whole site. Loaded last, so it overrides styles.css, marketing.css,
+ * and neo.css where they conflict. Bold colour blocks, 3px black borders, hard offset shadows,
+ * square corners, and no gradients, glass, or animation.
+ *
+ * Contrast: all body text is black or near-black on white or pale fills (AAA). Buttons use black
+ * text on yellow, pink, or white. Nothing relies on colour alone.
+ */
+
+:root {
+  --nb-paper: #FFF6E0;
+  --nb-white: #FFFFFF;
+  --nb-cream: #FFF0C2;
+  --nb-yellow: #FFD23F;
+  --nb-pink: #FF8FC7;
+  --nb-green: #5BE0A0;
+  --nb-blue: #8FD3FF;
+  --nb-orange: #FF9F47;
+  --nb-ink: #000000;
+  --nb-border: 3px solid #000000;
+  --nb-shadow: 6px 6px 0 #000000;
+  --nb-shadow-sm: 4px 4px 0 #000000;
+
+  /* Legacy tokens used across styles.css and marketing.css. Remapped so every component picks up the theme. */
+  --ink: #000000;
+  --text-main: #000000;
+  --muted: #1A1A1A;
+  --text-muted: #1A1A1A;
+  --forest: #000000;
+  --forest-dark: #000000;
+  --accent-primary: #000000;
+  --accent-deep: #000000;
+  --accent-warm: #FF8FC7;
+  --bg-primary: var(--nb-paper);
+  --bg-surface: var(--nb-cream);
+  --surface: var(--nb-white);
+  --line: #000000;
+  --border-subtle: #000000;
+  --sage: #000000;
+  --sage-soft: var(--nb-cream);
+  --amber: #000000;
+  --coral: #000000;
+  --citrus: var(--nb-yellow);
+  --sand: var(--nb-paper);
+  --soft-green: var(--nb-green);
+  --radius-lg: 0px;
+  --radius-sm: 0px;
+  color-scheme: light;
+}
+
+body {
+  background: var(--nb-paper);
+  color: #000000;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+h1, h2, h3, h4, h5, h6 { color: #000000; font-weight: 900; letter-spacing: -0.03em; }
+a { color: #000000; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+:focus-visible { outline: 3px solid #000000; outline-offset: 3px; }
+
+/* ----- Site header and footer ----- */
+.site-topbar {
+  background: var(--nb-white) !important; border-bottom: var(--nb-border) !important;
+  box-shadow: 0 3px 0 #000000; backdrop-filter: none !important;
+}
+.site-brand, .site-brand span { color: #000000 !important; font-weight: 900; }
+.site-cta, .site-cta:hover {
+  background: var(--nb-yellow) !important; color: #000000 !important; border: var(--nb-border);
+  box-shadow: var(--nb-shadow-sm); border-radius: 0 !important; font-weight: 900;
+}
+.landing-footer { background: #000000 !important; color: #ffffff; border-top: var(--nb-border); }
+.landing-footer a, .landing-footer-base { color: #ffffff !important; }
+.landing-footer :is(a, button):focus-visible { outline-color: var(--nb-yellow); }
+
+/* ----- Buttons ----- */
+.landing-button, .MuiButton-root {
+  border: var(--nb-border) !important; border-radius: 0 !important; box-shadow: var(--nb-shadow-sm) !important;
+  font-weight: 800 !important; color: #000000 !important; background: var(--nb-white);
+}
+.landing-button-primary, .MuiButton-containedPrimary, .MuiButton-contained {
+  background: var(--nb-yellow) !important; color: #000000 !important;
+}
+.landing-button-ghost, .MuiButton-outlined { background: var(--nb-white) !important; }
+.landing-button:hover, .MuiButton-root:hover { transform: translate(-2px, -2px); box-shadow: 8px 8px 0 #000000 !important; }
+.landing-button:active, .MuiButton-root:active { transform: translate(3px, 3px); box-shadow: 2px 2px 0 #000000 !important; }
+.MuiButton-root.Mui-disabled { opacity: 0.55; box-shadow: none !important; }
+.landing-button-primary:hover, .MuiButton-containedPrimary:hover { background: #FFC61A !important; }
+
+/* ----- Cards and panels ----- */
+.MuiPaper-root {
+  background: var(--nb-white) !important; background-image: none !important;
+  border: var(--nb-border) !important; border-radius: 0 !important; box-shadow: var(--nb-shadow) !important;
+}
+.MuiPaper-root.MuiAlert-root, .MuiAlert-root { box-shadow: var(--nb-shadow-sm) !important; border: 2px solid #000000 !important; border-radius: 0 !important; }
+.MuiAlert-standardError { background: var(--nb-pink) !important; color: #000000 !important; }
+.MuiAlert-standardSuccess { background: var(--nb-green) !important; color: #000000 !important; }
+.MuiAlert-standardInfo, .MuiAlert-standardWarning { background: var(--nb-yellow) !important; color: #000000 !important; }
+.MuiChip-root { border: 2px solid #000000 !important; border-radius: 0 !important; background: var(--nb-white) !important; color: #000000 !important; font-weight: 800; }
+.MuiChip-root.MuiChip-filled, .MuiChip-colorPrimary { background: var(--nb-yellow) !important; }
+.MuiAccordion-root { box-shadow: var(--nb-shadow-sm) !important; }
+
+/* Inputs */
+.MuiOutlinedInput-root { border-radius: 0 !important; background: var(--nb-white) !important; }
+.MuiOutlinedInput-notchedOutline { border: 2px solid #000000 !important; }
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline { border-width: 3px !important; }
+.MuiOutlinedInput-root.Mui-focused { box-shadow: 4px 4px 0 #000000; }
+.MuiFormLabel-root, .MuiInputLabel-root { color: #000000 !important; font-weight: 700; }
+.MuiFormHelperText-root { color: #1A1A1A !important; }
+.MuiSelect-icon, .MuiSvgIcon-root { color: #000000; }
+
+/* ----- Marketing sections ----- */
+.marketing .section-alt, .marketing .cta-band { background: var(--nb-cream); }
+.marketing .cta-band { border-top: var(--nb-border); border-bottom: var(--nb-border); }
+.marketing .section-eyebrow, .mkt-eyebrow, .landing-eyebrow, .step-label {
+  display: inline-block; padding: 4px 10px; border: 2px solid #000000; background: var(--nb-yellow);
+  color: #000000 !important; font-size: 12px; font-weight: 900; letter-spacing: 0.08em; box-shadow: 3px 3px 0 #000000;
+}
+.marketing .section-title, .mkt-page-title, .mkt-title, .page-title, .card-title { font-weight: 900; letter-spacing: -0.035em; }
+.step-item, .carousel-slide, .contact-form, .contact-options li, .faq-item.MuiAccordion-root, .mkt-art {
+  background: var(--nb-white) !important; border: var(--nb-border) !important; border-radius: 0 !important; box-shadow: var(--nb-shadow) !important;
+}
+.step-item:nth-child(5n+1) { background: var(--nb-yellow) !important; }
+.step-item:nth-child(5n+2) { background: var(--nb-pink) !important; }
+.step-item:nth-child(5n+3) { background: var(--nb-green) !important; }
+.step-item:nth-child(5n+4) { background: var(--nb-blue) !important; }
+.step-number { border: var(--nb-border); background: var(--nb-white) !important; color: #000000 !important; border-radius: 0; }
+.carousel-dot { border: 2px solid #000000 !important; border-radius: 0 !important; background: var(--nb-white) !important; }
+.carousel-dot[aria-current='true'] { background: var(--nb-yellow) !important; }
+.carousel-icon { border: var(--nb-border); background: var(--nb-pink) !important; color: #000000 !important; border-radius: 0 !important; }
+.pricing-note, .error-summary { background: var(--nb-yellow) !important; color: #000000 !important; border: var(--nb-border) !important; border-radius: 0 !important; box-shadow: var(--nb-shadow-sm); }
+
+/* Tables */
+.table-scroll { border: var(--nb-border) !important; border-radius: 0 !important; background: var(--nb-white) !important; box-shadow: var(--nb-shadow); }
+.scope-table th, .scope-table td, .pricing-table th, .pricing-table td { border-bottom: 2px solid #000000 !important; color: #000000; }
+.scope-table thead th, .pricing-table thead th { background: var(--nb-yellow) !important; color: #000000 !important; font-weight: 900; }
+
+/* Hero (landing) keeps the home design, so only its frame changes here */
+.marketing .mkt-hero { background: var(--nb-paper) !important; }
+
+/* ----- Calculator ----- */
+.calculator-page .page-title { color: #000000; }
+.calculator-page .page-lede { color: #1A1A1A; }
+.calculator-page .privacy-pill {
+  display: inline-flex; align-items: center; gap: 8px; margin: 0 0 14px; padding: 6px 12px;
+  border: 2px solid #000000; background: var(--nb-green); color: #000000; font-size: 12px; font-weight: 900; box-shadow: var(--nb-shadow-sm);
+}
+.calculator-page .privacy-pill .glow-dot { width: 8px; height: 8px; background: #000000; border-radius: 0; }
+.calculator-page .product-input-workspace,
+.calculator-page .selected-process,
+.calculator-page .product-input-item,
+.calculator-page .factor-suggestion-card {
+  background: var(--nb-white) !important; border: 2px solid #000000 !important; border-radius: 0 !important; box-shadow: var(--nb-shadow-sm);
+}
+.calculator-page .indicator-table-wrap, .calculator-page .table-scroll {
+  border: var(--nb-border) !important; border-radius: 0 !important; background: var(--nb-white) !important; box-shadow: var(--nb-shadow);
+}
+.calculator-page .indicator-table-wrap th { background: var(--nb-cream) !important; color: #000000 !important; font-weight: 900; }
+.calculator-page .indicator-code { display: inline-block; padding: 2px 6px; border: 2px solid #000000; background: var(--nb-yellow); color: #000000; }
+.calculator-page .selected-processes-heading { font-weight: 900; }
+
+/* ----- Blog and admin ----- */
+.blog-tabs a, .post-pages button, .post-card, .post-figure, .post-card-media, .admin-form, .admin-list-item {
+  border: var(--nb-border) !important; border-radius: 0 !important; box-shadow: var(--nb-shadow-sm) !important; background: var(--nb-white) !important;
+}
+.blog-tabs a { color: #000000 !important; font-weight: 900; }
+.blog-tabs a[aria-current], .blog-tabs a.is-current { background: var(--nb-yellow) !important; }
+.post-pages button.is-current { background: #000000 !important; color: #ffffff !important; }
+.admin-field input, .admin-field select, .admin-field textarea, .admin-secondary, .admin-danger {
+  border: 2px solid #000000 !important; border-radius: 0 !important; background: var(--nb-white); color: #000000;
+}
+.admin-danger { background: var(--nb-pink) !important; }
+.admin-secondary { background: var(--nb-white) !important; }
+
+/* FAQ summary and accordion text */
+.faq-question.MuiTypography-root { color: #000000; font-weight: 800; }
+.faq-answer.MuiTypography-root { color: #1A1A1A; }
+
+/* Floating controls */
+.sticky-cta, .to-top { border: var(--nb-border) !important; border-radius: 0 !important; box-shadow: var(--nb-shadow-sm) !important; }
+.sticky-cta { background: var(--nb-yellow) !important; color: #000000 !important; font-weight: 900; }
+.to-top { background: var(--nb-white) !important; color: #000000 !important; }
+
+/* Reduced motion: keep the hover shift off */
+@media (prefers-reduced-motion: reduce) {
+  .landing-button:hover, .landing-button:active, .MuiButton-root:hover, .MuiButton-root:active { transform: none; }
+}
+
+/* The landing layout defines its own palette aliases. Remap them here so the landing pages match. */
+.site-layout-landing {
+  --bg-primary: var(--nb-paper);
+  --bg-surface: var(--nb-cream);
+  --text-main: #000000;
+  --text-muted: #1A1A1A;
+  --accent-primary: #000000;
+  --accent-deep: #000000;
+  --accent-warm: #FF8FC7;
+  --border-subtle: #000000;
+  --sage: #000000;
+  --paper: var(--nb-paper);
+  --surface: var(--nb-white);
+  --ink: #000000;
+  --charcoal: #000000;
+  --muted: #1A1A1A;
+  --forest: #000000;
+  --forest-dark: #000000;
+  --sage-soft: var(--nb-cream);
+  --terracotta: #FF8FC7;
+  --terracotta-soft: #FFE0F0;
+  --line: #000000;
+  --citrus: #000000;
+  background: var(--nb-paper);
+  color: #000000;
+}
+
+/* Headings that still carry the old teal from styles.css */
+.card-title, .page-title, .calculator-page h2, .calculator-page h3, .selected-process-summary-heading, .selected-processes-heading {
+  color: #000000 !important;
+}
+
+/* ---- Audit pass: square corners, no shimmer, black ink, Neo borders on app panels ---- */
+.skip-link,
+.site-menu-button.MuiIconButton-root,
+.MuiIconButton-root,
+.stage-action,
+.stage-coverage-item,
+.product-boundary,
+.ghg-inputs,
+.landing-cta,
+.site-cta,
+.skeleton-bar,
+.bom-mass-check-workspace,
+.result-scope-note,
+.boundary-issue,
+.product-input-workspace,
+.factor-detail-card {
+  border-radius: 0 !important;
+}
+
+.skeleton-bar {
+  background: #FFF0C2 !important;
+  animation: none !important;
+  border: 2px solid #000;
+}
+
+.stage-action {
+  background: #FFFFFF !important;
+  color: #000000 !important;
+  border: 3px solid #000000 !important;
+  box-shadow: 4px 4px 0 #000 !important;
+  font-weight: 800 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.stage-action:hover:not(:disabled) { background: #FFD23F !important; }
+.stage-action:disabled { opacity: 0.55; box-shadow: none !important; }
+
+.stage-coverage-item,
+.product-boundary,
+.ghg-inputs,
+.product-input-workspace,
+.factor-detail-card,
+.result-scope-note {
+  border: 2px solid #000 !important;
+  background: #FFFFFF !important;
+  box-shadow: none !important;
+}
+/* Nested panels: one heavy outer frame only, thin rules inside it. */
+.stage-coverage-item { border-width: 1px !important; }
+.bom-mass-check-workspace {
+  border: 0 !important;
+  border-top: 2px solid #000 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.stage-coverage-item.stage-required-missing,
+.product-boundary.product-boundary-blocked { background: #FFF0C2 !important; }
+
+.bom-mass-field-label,
+.ghg-source-note,
+.admin-hint,
+.post-card-summary,
+.page-lede,
+.fu-suggestions-label,
+.post-list-status,
+.product-boundary-subtotal,
+.MuiFormLabel-root.MuiInputLabel-root,
+summary {
+  color: #000000 !important;
+}
+
+.landing-cta { box-shadow: 4px 4px 0 #000 !important; }
+
+/* ---- Footer: brand name must be visible on the black footer ---- */
+.landing-footer .site-brand,
+.landing-footer .site-brand span,
+.landing-footer .footer-brand-col .site-brand span {
+  color: #ffffff !important;
+  font-weight: 900;
+}
+.landing-footer .site-brand img { filter: none; }
+
+/* ---- Legal pages: Neo document layout ---- */
+.legal-page { max-width: 880px; margin: 0 auto; padding: clamp(32px, 5vw, 64px) 20px clamp(48px, 7vw, 96px); color: #000; }
+.legal-tabs { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 32px; }
+.legal-tabs a { display: inline-block; padding: 9px 14px; border: 3px solid #000; background: #fff; color: #000; font-size: 13px; font-weight: 800; text-decoration: none; box-shadow: 4px 4px 0 #000; }
+.legal-tabs a[aria-current="page"] { background: #FFD23F; }
+.legal-tabs a:hover { background: #FFD23F; }
+.legal-body { border: 3px solid #000; background: #fff; box-shadow: 6px 6px 0 #000; padding: clamp(20px, 4vw, 40px); font-size: 16px; line-height: 1.65; overflow-wrap: anywhere; }
+.legal-body h1 { font-size: clamp(2rem, 4.5vw, 3rem); font-weight: 900; line-height: 1.05; letter-spacing: -0.02em; margin: 0 0 24px; }
+.legal-body h2 { font-size: 1.4rem; font-weight: 900; margin: 36px 0 12px; padding-top: 12px; border-top: 3px solid #000; }
+.legal-body h3 { font-size: 1.1rem; font-weight: 800; margin: 24px 0 8px; }
+.legal-body p, .legal-body li { max-width: 70ch; }
+.legal-body ul, .legal-body ol { padding-left: 22px; }
+.legal-body a { color: #000; font-weight: 700; text-decoration-thickness: 2px; }
+.legal-body code, .legal-body pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 14px; background: #FFF0C2; border: 2px solid #000; border-radius: 0; }
+.legal-body pre { padding: 14px; overflow-x: auto; }
+.legal-body table { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
+.legal-body th, .legal-body td { border: 2px solid #000; padding: 8px 10px; text-align: left; vertical-align: top; }
+.legal-body th { background: #FFD23F; }
+.legal-body blockquote { margin: 16px 0; padding: 10px 16px; border-left: 6px solid #FF8FC7; background: #FFF0C2; }
+
+/* ---- Process results: Neo cards instead of the old soft panels ---- */
+.selected-process-summary,
+.product-input-result-context,
+.summary-table-wrap,
+.indicator-table-wrap {
+  border: 3px solid #000 !important;
+  border-radius: 0 !important;
+  background: #FFFFFF !important;
+  box-shadow: none !important;
+}
+.selected-process-summary {
+  box-shadow: 6px 6px 0 #000 !important;
+  margin-bottom: 22px;
+}
+.process-result-title.MuiTypography-root,
+.process-result-title {
+  color: #000000 !important;
+  font-weight: 900 !important;
+  font-size: 1.05rem !important;
+  letter-spacing: -0.01em;
+}
+.indicator-name,
+.result-value,
+.result-overline,
+.summary-scope-copy,
+.product-boundary-subtotal,
+.ghg-lines,
+.ghg-lines li,
+.stage-code,
+.stage-name {
+  color: #000000 !important;
+}
+.result-overline {
+  display: inline-block;
+  padding: 3px 8px;
+  border: 2px solid #000;
+  background: #FFD23F;
+  font-size: 11px !important;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+.ef-score-card {
+  border: 3px solid #000 !important;
+  border-radius: 0 !important;
+  background: #FFD23F !important;
+  box-shadow: 4px 4px 0 #000 !important;
+}
+.ef-score-card span,
+.ef-score-card small,
+.ef-score-card strong {
+  color: #000000 !important;
+}
+.indicator-code {
+  display: inline-block;
+  padding: 2px 6px;
+  border: 2px solid #000;
+  background: #FFD23F;
+  color: #000 !important;
+  font-weight: 900;
+  font-size: 11px;
+}
+.ghg-subtotal, .stage-note, .stage-status {
+  color: #000 !important;
+}
+
+/* ---- Header: menu button and logo at the start, links on desktop, dropdown menu ---- */
+.site-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: grid !important;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 12px clamp(16px, 4vw, 56px) !important;
+  background: #FFFFFF !important;
+  border-bottom: 3px solid #000 !important;
+}
+.site-topbar-start { display: flex; align-items: center; gap: 12px; min-width: 0; position: relative; }
+.site-topbar-end { display: flex; justify-content: flex-end; }
+.site-topbar .site-brand { display: inline-flex; align-items: center; gap: 10px; color: #000; text-decoration: none; font-weight: 900; font-size: 17px; white-space: nowrap; }
+.site-topbar .site-brand img { width: 30px; height: 30px; }
+.site-nav { display: flex; gap: 6px; }
+.site-nav a {
+  padding: 8px 12px;
+  border: 3px solid transparent;
+  color: #000;
+  font-weight: 800;
+  text-decoration: none;
+}
+.site-nav a:hover { border-color: #000; background: #FFD23F; }
+.site-nav a[aria-current="page"] { border-color: #000; background: #FFD23F; }
+.site-cta { display: inline-block; padding: 9px 16px; border: 3px solid #000; background: #FFD23F; color: #000; font-weight: 900; text-decoration: none; box-shadow: 4px 4px 0 #000; }
+.site-cta:hover { transform: translate(-1px, -1px); box-shadow: 5px 5px 0 #000; }
+
+.site-menu { position: relative; }
+.site-menu-button.MuiIconButton-root,
+.site-menu-button {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0 !important;
+  border: 3px solid #000 !important;
+  border-radius: 0 !important;
+  background: #FFD23F !important;
+  color: #000 !important;
+  box-shadow: 3px 3px 0 #000 !important;
+  cursor: pointer;
+}
+.site-menu-button:hover { background: #FF8FC7 !important; }
+.site-menu-button[aria-expanded="true"] { background: #FFFFFF !important; }
+
+.site-menu-panel {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 14px);
+  z-index: 60;
+  width: min(360px, 90vw);
+  padding: 8px;
+  border: 3px solid #000;
+  background: #FFFFFF;
+  box-shadow: 6px 6px 0 #000;
+}
+.site-menu-panel[hidden] { display: none; }
+.site-menu-list { list-style: none; margin: 0; padding: 0; display: grid; }
+.site-menu-list a {
+  display: block;
+  padding: 12px 14px;
+  border-bottom: 2px solid #000;
+  color: #000;
+  font-weight: 800;
+  font-size: 16px;
+  text-decoration: none;
+}
+.site-menu-list li:last-child a { border-bottom: 0; }
+.site-menu-list a:hover, .site-menu-list a:focus-visible { background: #FFD23F; }
+
+@media (max-width: 900px) {
+  .site-topbar { grid-template-columns: 1fr auto; }
+  .site-nav { display: none; }
+  .site-topbar-end .site-cta { display: none; }
+}
+@media (max-width: 560px) {
+  .site-topbar .site-brand span { font-size: 15px; }
+}
+
+/* Active header link: black text, no leftover red underline from the older header */
+.site-nav a,
+.site-nav a[aria-current="page"],
+.site-nav a:hover {
+  color: #000000 !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
+  border-bottom: 3px solid transparent !important;
+}
+.site-nav a[aria-current="page"] { border: 3px solid #000 !important; background: #FFD23F !important; }
+.site-nav a::after, .site-nav a::before { content: none !important; display: none !important; }
+
+/* ---- No glows: focus and hover use hard black offset shadows only ---- */
+.MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline,
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline,
+.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  box-shadow: none !important;
+}
+.MuiOutlinedInput-root.Mui-focused {
+  box-shadow: 4px 4px 0 #000000 !important;
+}
+.post-card:hover,
+.post-card:focus-within,
+.form-card.MuiPaper-root,
+.result-card.MuiPaper-root,
+.ef-score-card:hover {
+  box-shadow: 4px 4px 0 #000000 !important;
+}
+.post-card {
+  transform: none !important;
+}
+
+/* Focused fields: black 3px outline and black label, never the older teal */
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline,
+.MuiOutlinedInput-root.Mui-focused:hover .MuiOutlinedInput-notchedOutline {
+  border-color: #000000 !important;
+  border-width: 3px !important;
+}
+.MuiInputLabel-root.Mui-focused,
+.MuiFormLabel-root.Mui-focused {
+  color: #000000 !important;
+}
+
+/* Blog post: back link on its own line, black ink, tag below it */
+.post-back {
+  display: block !important;
+  width: max-content;
+  margin-bottom: 20px !important;
+  padding: 6px 10px;
+  border: 3px solid #000;
+  background: #FFFFFF;
+  color: #000000 !important;
+  font-weight: 800 !important;
+  text-decoration: none;
+  box-shadow: 4px 4px 0 #000;
+}
+.post-back:hover { background: #FFD23F; }
+.post-page .landing-eyebrow { margin-top: 4px; }
+
+/* Tables on phones: columns fit the screen width; text wraps instead of scrolling sideways */
+@media (max-width: 700px) {
+  .scope-table, .pricing-table { min-width: 0 !important; }
+  .scope-table th, .scope-table td, .pricing-table th, .pricing-table td { padding: 10px 8px !important; font-size: 14px; line-height: 1.4; overflow-wrap: break-word; }
+  .scope-table tbody th { width: 30%; }
+}
+
+/* ---- Result report (plain-language summary, per-process cards, collapsible tables) ---- */
+.results-output { display: flex; flex-direction: column; gap: 18px; }
+.result-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.result-headline,
+.result-processes {
+  border: 3px solid #000;
+  background: #FFF;
+  box-shadow: 6px 6px 0 #000;
+  padding: 16px;
+}
+.result-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 12px 0;
+}
+.result-stat {
+  border: 3px solid #000;
+  box-shadow: 4px 4px 0 #000;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #000;
+}
+.result-stat span { font-weight: 800; text-transform: uppercase; font-size: 12px; letter-spacing: 0.02em; }
+.result-stat { min-width: 0; }
+.result-stat strong { font-size: clamp(1.2rem, 2vw, 1.8rem); font-weight: 900; line-height: 1.1; overflow-wrap: anywhere; }
+.result-stat small { font-size: 13px; }
+.result-stat-yellow { background: #FFD23F; }
+.result-stat-pink { background: #FF8FC7; }
+.result-stat-green { background: #5BE0A0; }
+.result-sentence { font-weight: 700; margin: 8px 0 4px; color: #000; }
+.process-impact-card {
+  border: 3px solid #000;
+  background: #FFF6E0;
+  box-shadow: 4px 4px 0 #000;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.process-impact-top { display: flex; gap: 12px; align-items: flex-start; }
+.process-impact-index {
+  border: 3px solid #000;
+  background: #FFD23F;
+  font-weight: 900;
+  padding: 2px 8px;
+  min-width: 2.4em;
+  text-align: center;
+}
+.process-impact-name { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.process-impact-title { font-weight: 900 !important; font-size: 1.1rem !important; color: #000 !important; margin: 0 !important; }
+.process-impact-meta { font-size: 13px; color: #000; }
+.process-impact-figures {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+.process-impact-figures > div { border: 2px solid #000; background: #FFF; padding: 8px; }
+.process-impact-figures dt { font-size: 12px; font-weight: 800; text-transform: uppercase; }
+.process-impact-figures dd { margin: 2px 0 0; font-size: clamp(0.95rem, 1.6vw, 1.15rem); font-weight: 900; white-space: nowrap; }
+.process-impact-figures dt { line-height: 1.25; }
+.share-bar { border: 3px solid #000; height: 18px; background: #FFF; }
+.share-bar > span { display: block; height: 100%; background: #FF8FC7; border-right: 3px solid #000; }
+.process-driver { margin: 0; font-size: 14px; color: #000; }
+.indicator-disclosure,
+.result-details { border: 3px solid #000; background: #FFF; }
+.indicator-disclosure > summary,
+.result-details > summary {
+  cursor: pointer;
+  font-weight: 900;
+  padding: 10px 12px;
+  color: #000;
+  list-style-position: inside;
+}
+.indicator-disclosure > summary:hover,
+.result-details > summary:hover { background: #8FD3FF; }
+.indicator-disclosure > summary:focus-visible,
+.result-details > summary:focus-visible { outline: 3px solid #000; outline-offset: 2px; }
+.indicator-disclosure[open] > summary,
+.result-details[open] > summary { border-bottom: 3px solid #000; }
+.indicator-disclosure > .indicator-table-wrap,
+.result-details > .selected-process-summary { margin: 0; padding: 12px; }
+/* Indicator table sits inside the disclosure: border-box keeps it within the panel width (no overflow past the right border). */
+.indicator-disclosure > .indicator-table-wrap { box-sizing: border-box; width: 100%; max-width: 100%; min-width: 0; border: 0; border-radius: 0; }
+.result-panel .indicator-disclosure, .result-panel .result-details { max-width: 100%; min-width: 0; box-sizing: border-box; }
+@media (max-width: 720px) {
+  .result-stat-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 560px) {
+  .process-impact-figures { grid-template-columns: minmax(0, 1fr); }
+  .result-headline, .result-processes { padding: 12px; }
+}
+
+/* Summary tiles while subtotals are held back */
+.result-stat-hidden { font-size: 1.25rem; font-weight: 800; letter-spacing: 0.02em; }
+
+/* Download buttons are held while subtotals are hidden */
+.exports-locked-note { font-size: 13px; font-weight: 700; color: #000; }
+
+/* Visible keyboard focus (WCAG 2.4.7): the neo borders are forced black, so focus needs its own ring. */
+:where(input, textarea, select, [role="combobox"], button, a, summary, [tabindex]):focus-visible {
+  outline: 3px solid #000 !important;
+  outline-offset: 2px;
+}
+.MuiOutlinedInput-root.Mui-focused {
+  box-shadow: 0 0 0 3px #FFD23F;
+}
+
+/* ---- Calculator layout: tab-style navigation, 12-column grid, accordion, button hierarchy ---- */
+
+/* Top navigation: the current page is marked by an underline tab, not a filled block. */
+.site-nav a,
+.site-nav a[aria-current="page"],
+.site-nav a:hover {
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 6px 2px 4px !important;
+}
+.site-nav a[aria-current="page"] { border-bottom: 4px solid #000 !important; }
+.site-nav a:hover { text-decoration: underline !important; text-underline-offset: 4px; }
+
+/* 12-column grid on desktop: the form takes 7 columns, the results 5. Stacked below 1100px. */
+@media (min-width: 1100px) {
+  .estimator-grid { grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 24px; }
+  .estimator-grid > .estimator-card { grid-column: span 7; min-width: 0; }
+  .estimator-grid > .result-panel { grid-column: span 5; min-width: 0; }
+}
+
+/* Accordion for the transport and end-of-life inputs (climate change only). */
+.ghg-accordion > summary {
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 14px;
+  padding: 8px 2px;
+  color: #000;
+  list-style-position: inside;
+}
+.ghg-accordion > summary:focus-visible { outline: 3px solid #000 !important; outline-offset: 2px; }
+.ghg-accordion[open] > summary { border-bottom: 2px solid #000; margin-bottom: 10px; }
+
+/* Button hierarchy: one filled primary action (yellow), secondary actions outlined, one size. */
+.calculator-page .MuiButton-root { min-height: 44px; font-weight: 800; }
+.calculator-page .MuiButton-contained {
+  background: #FFD23F !important;
+  color: #000 !important;
+  border: 3px solid #000 !important;
+  box-shadow: 4px 4px 0 #000 !important;
+}
+.calculator-page .MuiButton-outlined,
+.calculator-page .MuiButton-text {
+  background: #FFFFFF !important;
+  color: #000 !important;
+  border: 3px solid #000 !important;
+  box-shadow: none !important;
+}
+.calculator-page .MuiButton-root.Mui-disabled { opacity: 0.55; box-shadow: none !important; }
+
+/* ---- Round 2: equal panels, sticky results, green scrollbars, hover underlines, stage accordions ---- */
+
+@media (min-width: 1100px) {
+  .estimator-grid { grid-template-columns: repeat(12, minmax(0, 1fr)); align-items: stretch; }
+  .estimator-grid > .estimator-card,
+  .estimator-grid > .result-panel { grid-column: span 6; min-width: 0; }
+  /* Results follow the page while the form scrolls, and their bottom edge lines up with the form. */
+  .estimator-grid > .result-panel {
+    position: sticky;
+    top: 96px;
+    align-self: stretch;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+  }
+}
+
+/* Green scrollbars wherever results scroll. */
+.result-panel,
+.indicator-table-wrap,
+.summary-table-wrap,
+.results-output {
+  scrollbar-width: thin;
+  scrollbar-color: #2f8f5b #e6f3ea;
+}
+
+/* Hover underlines on top navigation and footer links. */
+.site-nav a:hover,
+.landing-footer a:hover {
+  text-decoration: underline !important;
+  text-underline-offset: 4px;
+}
+
+.subtotal-hold-note { margin: 8px 0 0; font-size: 13px; font-weight: 700; color: #000; }
+
+/* Stage accordions inside the transport group. */
+.ghg-stage-accordion { border: 2px solid #000; background: #FFFFFF; margin-top: 10px; }
+.ghg-stage-accordion > summary {
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 14px;
+  padding: 8px 10px;
+  color: #000;
+  list-style-position: inside;
+}
+.ghg-stage-accordion > summary:focus-visible { outline: 3px solid #000 !important; outline-offset: 2px; }
+.ghg-stage-accordion[open] > summary { border-bottom: 2px solid #000; }
+.ghg-stage-accordion > .form-grid { padding: 10px; }

@@ -5,7 +5,13 @@ import {
   EF31_WEIGHTING_SOURCE,
   type Ef31IndicatorCode,
 } from './ef31-score';
-import { assessFlatBomMass, describeBomMassStatus } from './product-bom';
+import { describeBomMassStatus } from './product-bom';
+import { assessProductBoundary, type FunctionalUnitDefinition } from './product-boundary';
+import { DEFRA_2026_SOURCE, type GhgDeclarations } from './ghg-supplement';
+
+// Required credit for the bundled source data, carried in every CSV export row.
+const SOURCE_CREDIT =
+  'Data source: The Open Source LCA Database for Footwear & Apparel, Carbonfact, version 1.1.0. https://github.com/carbonfact/lca-database-footwear-apparel, CC BY-SA 4.0.';
 import type { ProcessQuantityBasis } from './product-quantity';
 import type { SelectedProcessSummary } from './product-summary';
 
@@ -14,10 +20,12 @@ export interface ProductInputExportRecord {
   name: string;
   quantity: string;
   unit: string;
+  parentId: string | null;
 }
 
 export interface ProcessInputExportLink {
   factorId: string;
+  familyId: string;
   productInputId: string | null;
   quantityBasis?: ProcessQuantityBasis;
 }
@@ -25,8 +33,10 @@ export interface ProcessInputExportLink {
 export interface ProcessEstimateExportContext {
   productInputs: ProductInputExportRecord[];
   processLinks: ProcessInputExportLink[];
+  functionalUnit?: FunctionalUnitDefinition;
   finishedProductMassKg?: string;
   flatBomScopeConfirmed?: boolean;
+  ghg?: GhgDeclarations;
   summary?: SelectedProcessSummary | null;
 }
 
@@ -76,10 +86,7 @@ const columns = [
   'dqr_geographical_representativeness',
   'source_version',
   'source_url',
-  'source_background_note',
-  'attribution',
-  'result_license',
-  'license_url',
+  'source_credit',
   'aggregation',
   'bom_scope_confirmed',
   'bom_mass_status',
@@ -89,6 +96,20 @@ const columns = [
   'bom_mass_coverage_percent',
   'bom_unconvertible_input_names',
   'bom_method_note',
+  'functional_unit',
+  'functional_unit_category',
+  'stage_coverage',
+  'declared_boundary',
+  'excluded_stages',
+  'ghg_stage',
+  'ghg_label',
+  'ghg_kg_co2e_per_functional_unit',
+  'ghg_calculation',
+  'ghg_indicator_scope',
+  'ghg_source',
+  'ghg_source_url',
+  'ghg_retrieved',
+  'ghg_source_note',
 ];
 
 function quantityBasisLabel(basis: ProcessQuantityBasis): string {
@@ -128,10 +149,7 @@ export function formatProcessEstimatesCsv(
         weighting_source_url: factor ? EF31_WEIGHTING_SOURCE : '',
         source_version: result.source_version,
         source_url: result.source_url,
-        source_background_note: result.background_database_note,
-        attribution: result.attribution_text,
-        result_license: result.result_license,
-        license_url: result.license_url,
+        source_credit: SOURCE_CREDIT,
         aggregation: 'sum of selected process rows only; not a completeness claim',
       });
     }
@@ -147,10 +165,7 @@ export function formatProcessEstimatesCsv(
         weighting_source_url: context.summary.singleScore.weightingSourceUrl,
         source_version: result.source_version,
         source_url: result.source_url,
-        source_background_note: result.background_database_note,
-        attribution: result.attribution_text,
-        result_license: result.result_license,
-        license_url: result.license_url,
+        source_credit: SOURCE_CREDIT,
         aggregation: 'sum of 16 normalised and weighted selected-row indicator totals',
       });
     }
@@ -159,7 +174,57 @@ export function formatProcessEstimatesCsv(
   const finishedProductMass = context?.finishedProductMassKg ?? '';
   if (productInputs.length > 0 || finishedProductMass.trim() !== '') {
     const flatBomScopeConfirmed = context?.flatBomScopeConfirmed === true;
-    const bomMass = assessFlatBomMass(productInputs, finishedProductMass, flatBomScopeConfirmed);
+    const boundary = assessProductBoundary({
+      functionalUnit: context?.functionalUnit ?? { category: 'footwear', basis: 'pair', description: '' },
+      inputs: productInputs,
+      parentIdByInput: new Map(productInputs.map((input) => [input.id, input.parentId])),
+      processLinks: (context?.processLinks ?? []).map((link) => ({
+        productInputId: link.productInputId,
+        quantityBasis: link.quantityBasis ?? 'manual',
+        factorId: link.factorId,
+        familyId: link.familyId,
+      })),
+      finishedProductMass,
+      scopeConfirmed: flatBomScopeConfirmed,
+      ghg: context?.ghg,
+    });
+    const bomMass = boundary.massAssessment;
+    rows.push({
+      record_type: 'product_boundary',
+      input_association_status: boundary.verdictText,
+      bom_scope_confirmed: flatBomScopeConfirmed,
+      bom_mass_status: boundary.verdict,
+      functional_unit: boundary.functionalUnit.description,
+      functional_unit_category: boundary.functionalUnit.category,
+      stage_coverage: boundary.stageCoverage.map((item) => `${item.stage}:${item.status}`).join(' | '),
+      declared_boundary: 'EF 3.1: A1 raw materials + A3 manufacturing. GHG only: A2 transport to factory, A4 distribution, C2 transport to waste treatment, C3-C4 waste treatment and disposal.',
+      excluded_stages: 'B use (excluded on purpose); C1 deconstruction (excluded on purpose)',
+      aggregation: 'EF 3.1 subtotal (selected rows, A1 + A3) and a separate climate-change layer; never summed together; not a complete product footprint',
+    });
+    for (const line of boundary.ghg.lines) {
+      rows.push({
+        record_type: 'ghg_supplement',
+        ghg_stage: line.stage,
+        ghg_label: line.label,
+        ghg_kg_co2e_per_functional_unit: line.kgCo2e,
+        ghg_calculation: line.detail,
+        ghg_indicator_scope: 'climate change (GHG), IPCC AR5 GWP-100 embedded; not one of the 16 EF 3.1 indicators',
+        ghg_source: DEFRA_2026_SOURCE.name,
+        ghg_source_url: DEFRA_2026_SOURCE.publisherUrl,
+        ghg_retrieved: DEFRA_2026_SOURCE.retrieved,
+        ghg_source_note: DEFRA_2026_SOURCE.transcriptionNote,
+        aggregation: 'climate change only; separate from the EF 3.1 subtotal; not a complete product footprint',
+      });
+    }
+    if (boundary.ghg.totalKgCo2e !== null) {
+      rows.push({
+        record_type: 'ghg_supplement_total',
+        ghg_stage: boundary.ghg.declaredStages.join(' | '),
+        ghg_kg_co2e_per_functional_unit: boundary.ghg.totalKgCo2e,
+        ghg_indicator_scope: 'climate change (GHG) only',
+        aggregation: 'sum of declared A2, A4, C2, C3-C4 climate-change lines; not added to the EF 3.1 subtotal',
+      });
+    }
     rows.push({
       record_type: 'bom_mass_check',
       input_association_status: describeBomMassStatus(bomMass),
@@ -170,7 +235,7 @@ export function formatProcessEstimatesCsv(
       bom_mass_difference_kg: bomMass.differenceKg,
       bom_mass_coverage_percent: bomMass.massCoveragePercent,
       bom_unconvertible_input_names: bomMass.unconvertibleInputNames.join(' | '),
-      bom_method_note: 'Arithmetic comparison of user-declared flat input mass with finished-product mass per functional unit; not a composition, completeness, or environmental-impact validation.',
+      bom_method_note: 'Arithmetic check that the user-declared component masses close to the finished-product mass per functional unit. It validates mass closure only; it does not validate component identity, material composition, or environmental impact.',
       aggregation: 'mass diagnostic only; not an environmental impact',
     });
   }
@@ -217,10 +282,7 @@ export function formatProcessEstimatesCsv(
         dqr_geographical_representativeness: line.data_quality?.geographical_representativeness,
         source_version: result.source_version,
         source_url: result.source_url,
-        source_background_note: result.background_database_note,
-        attribution: result.attribution_text,
-        result_license: result.result_license,
-        license_url: result.license_url,
+        source_credit: SOURCE_CREDIT,
         aggregation: 'separate process row; included in selected-row subtotal when available',
       });
     }
@@ -257,6 +319,18 @@ export function formatProcessEstimatesCsv(
 
 export function downloadProcessEstimatesCsv(csv: string, filename: string): void {
   const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.style.display = 'none';
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+export function downloadBlob(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;

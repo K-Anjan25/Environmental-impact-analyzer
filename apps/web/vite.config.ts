@@ -6,6 +6,8 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     allowedHosts: ['.e2b.app'],
+    // Legal pages import the repository's root legal files (see src/legal/legal-docs.ts).
+    fs: { allow: ['..', '../..'] },
     proxy: {
       '/api': {
         target: 'http://127.0.0.1:8000',

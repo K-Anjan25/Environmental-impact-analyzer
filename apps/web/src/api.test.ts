@@ -1,14 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   calculateProcessEstimates,
-  getActiveSources,
   getFactorCatalog,
-  type ActiveDataSource,
   type FactorCatalog,
   type ProcessEstimateResponse,
 } from './api';
 
-const source: ActiveDataSource = {
+const source = {
   id: 'carbonfact-apparel-footwear-v1.1.0',
   name: 'The Open Source LCA Database for Footwear & Apparel',
   version: '1.1.0',
@@ -17,17 +15,7 @@ const source: ActiveDataSource = {
   source_url: 'https://zenodo.org/records/21102756',
   repository_url: 'https://github.com/carbonfact/lca-database-footwear-apparel/releases/tag/v.1.1.0',
   changelog_url: 'https://github.com/carbonfact/lca-database-footwear-apparel/blob/v.1.1.0/CHANGELOG.md',
-  license_name: 'Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)',
-  license_url: 'https://creativecommons.org/licenses/by-sa/4.0/',
-  license_terms_url: 'https://github.com/carbonfact/lca-database-footwear-apparel/blob/v.1.1.0/README.md#license',
-  license_status: 'applied',
   method_basis: 'Source factors are scaled independently by reference-unit quantities.',
-  use_terms_summary: 'Attribution is available in the Method/source dialog and CSV; derived values use CC BY-SA 4.0.',
-  attribution_text: 'Data source: Carbonfact Open Source LCA Database v1.1.0, CC BY-SA 4.0.',
-  attribution_links: [{ label: 'Pinned source release', url: 'https://example.com/source' }],
-  share_alike_required: true,
-  result_license: 'CC BY-SA 4.0',
-  background_database_note: 'Underlying inventories are not included or reconstructed.',
   scope_summary: 'Published process-level factors.',
   factor_count: 302,
   family_count: 11,
@@ -41,11 +29,6 @@ const catalog: FactorCatalog = {
   source_name: source.name,
   source_version: source.version,
   source_url: source.repository_url,
-  license_name: source.license_name,
-  attribution_text: source.attribution_text,
-  license_url: source.license_url,
-  result_license: source.result_license,
-  background_database_note: source.background_database_note,
   total_records: 1,
   offset: 0,
   limit: 500,
@@ -92,11 +75,6 @@ const estimate: ProcessEstimateResponse = {
   source_name: source.name,
   source_version: source.version,
   source_url: source.repository_url,
-  license_name: source.license_name,
-  attribution_text: source.attribution_text,
-  license_url: source.license_url,
-  background_database_note: source.background_database_note,
-  result_license: 'CC BY-SA 4.0',
   results: [
     {
       factor_id: catalog.factors[0].id,
@@ -133,14 +111,6 @@ describe('process factor API', () => {
 
     await expect(getFactorCatalog()).resolves.toEqual(catalog);
     expect(fetchMock).toHaveBeenCalledWith('/api/v1/factors?limit=500');
-  });
-
-  it('loads the active source registry and its attribution terms', async () => {
-    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => [source] });
-    vi.stubGlobal('fetch', fetchMock);
-
-    await expect(getActiveSources()).resolves.toEqual([source]);
-    expect(fetchMock).toHaveBeenCalledWith('/api/v1/sources');
   });
 
   it('sends selected factors and quantities to the stateless estimate endpoint', async () => {

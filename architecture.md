@@ -32,8 +32,7 @@ services/api/
   app/main.py              FastAPI app, endpoints, security headers, static SPA serving
   app/factor_catalog.py    Versioned CSV loader, family/index registry, Decimal calculator
   app/factor_schemas.py   Request/response contracts and JSON number serialization
-  app/sources.py           Active source/license/provenance disclosure
-  data/carbonfact-v1.1.0/  Included CC BY-SA 4.0 source files, license, SOURCE.md
+  data/carbonfact-v1.1.0/  Included source files and SOURCE.md record
   tests/                   API, factor-catalog, and arithmetic tests
 ```
 
@@ -41,7 +40,7 @@ services/api/
 
 1. At API import/startup, `factor_catalog.py` reads an explicit allowlist of CSV paths from the pinned data directory. Non-woven preview files are not on the allowlist.
 2. The loader checks required headers, all 16 indicator columns, finite decimal values, stable descriptor IDs, and reference-unit mappings. Missing or malformed required data fails startup rather than serving an empty catalog.
-3. `GET /api/v1/factors` returns up to 500 factor records with source values, units, geography tags, DQR fields, family metadata, license/attribution metadata, and optional filters/pagination.
+3. `GET /api/v1/factors` returns up to 500 factor records with source values, units, geography tags, DQR fields, family metadata, source credit, and optional filters/pagination.
 4. Product-input labels, declared amounts/units, associations, and quantity mappings remain in client state. Manual process quantities may be sent as `[{factor_id, quantity}, ...]` to `POST /api/v1/process-estimates`; mapped input quantities are derived and calculated locally and never enter that POST body.
 5. The API validates 1–25 positive quantities, finds each exact factor ID, and computes each indicator value as `source_factor_value × quantity` using Python `Decimal`. The API response has independent process lines and `aggregation: none`.
 6. For local mappings, `product-quantity.ts` validates unit dimensions and converts declared output or feed mass into factor reference quantity; `local-estimates.ts` scales the already-loaded factors. `product-summary.ts` sums compatible indicators across exactly the selected result rows; `ef31-score.ts` normalizes and weights the 16 categories with JRC values. Invalid or incomplete category sets suppress the score.
@@ -51,7 +50,6 @@ services/api/
 
 - `GET /healthz` — readiness and loaded factor count/source version.
 - `GET /api/v1/methodology` — formula, indicator count, privacy behavior, data policy, and product-footprint boundary.
-- `GET /api/v1/sources` — active source license, attribution, source background dependency, scope, and limitations.
 - `GET /api/v1/factors?family=&q=&offset=&limit=` — source factor catalog; default page size 500 and maximum 500.
 - `POST /api/v1/process-estimates` — validated selections, maximum 25 rows; separate process/indicator response.
 - `GET /api/docs` — OpenAPI UI. ReDoc is disabled.
@@ -75,13 +73,13 @@ A browser-memory record of a user-provided name, positive quantity, and free-tex
 
 Each process line contains source factor identity/metadata, quantity and reference unit, and 16 separate indicator records. Each indicator keeps source factor value/unit and scaled result value/unit. Separately, the browser may return compatible per-indicator sums for selected rows and an EF 3.1 score with normalized values, weights, and contributions. These are not complete-product results or a coverage percentage.
 
-## 7. Data lineage and licensing
+## 7. Data lineage and terms
 
-The bundled snapshot is Carbonfact v1.1.0 tag `v.1.1.0`, commit `fa063ecac17ab36691a0d5c7326fedaa2e9d4ab8`. The active files are published impact-score CSVs and process-family README files licensed CC BY-SA 4.0. The exact license text is shipped alongside them.
+The bundled snapshot is Carbonfact v1.1.0 tag `v.1.1.0`, commit `fa063ecac17ab36691a0d5c7326fedaa2e9d4ab8`. The active files are published impact-score CSVs and process-family README files. The source record ships alongside them.
 
 The source says its complete Brightway/Activity Browser inventories are not distributed and use ecoinvent 3.12. Published impact scores may reflect those modeled background contributions. The app uses the published outputs only; it does not bundle, query, or reconstruct full inventories. This limitation is returned by both source and calculation APIs and shown in the UI.
 
-Schema normalization is documented in `SOURCE.md`: header variants for `Input required (kg)` and DQR names are normalized, reference-unit metadata are assigned from source family documentation, and indicator values are loaded unchanged. Global EF 3.1 normalisation factors are transcribed from the [JRC EF 3.1 workbook](https://eplca.jrc.ec.europa.eu/permalink/EF3_1/Normalisation_Weighting_Factors_EF_3.1.xlsx), while the all-category final weights, including robustness, are transcribed from the [JRC EF weighting report](https://eplca.jrc.ec.europa.eu/permalink/2018_JRC_Weighting_EF.pdf) and scaled to 100%. Normalisation values are reported to three significant figures; explicit category-specific unit aliases are tested for the toxicity and water-use outputs. Derived Carbonfact results are offered under CC BY-SA 4.0. Linked attribution, the pinned release, and the background-data note are available in the Method, source and reuse dialog and included in CSV exports.
+Schema normalization is documented in `SOURCE.md`: header variants for `Input required (kg)` and DQR names are normalized, reference-unit metadata are assigned from source family documentation, and indicator values are loaded unchanged. Global EF 3.1 normalisation factors are transcribed from the [JRC EF 3.1 workbook](https://eplca.jrc.ec.europa.eu/permalink/EF3_1/Normalisation_Weighting_Factors_EF_3.1.xlsx), while the all-category final weights, including robustness, are transcribed from the [JRC EF weighting report](https://eplca.jrc.ec.europa.eu/permalink/2018_JRC_Weighting_EF.pdf) and scaled to 100%. Normalisation values are reported to three significant figures; explicit category-specific unit aliases are tested for the toxicity and water-use outputs. The source credit is carried in every CSV export (column `source_credit`) and the source record; the pinned release and background-data note are on the method page.
 
 ## 8. Privacy and security
 
@@ -110,8 +108,8 @@ For local development, run the API on `0.0.0.0:8000` with `--no-access-log`, the
 
 - Selected-row subtotals and an EF 3.1 score are now authorized and implemented in the browser, but no complete product LCA or coverage percentage is claimed.
 - Product inputs and derived mappings stay local; text suggestions require human confirmation; unsupported unit conversions are rejected.
-- Carbonfact published v1.1.0 score outputs remain active under CC BY-SA 4.0; ShareAlike and linked attribution are applied.
-- Ecoinvent and other restricted background data are not included or reconstructed. Use requires license evidence permitting the intended processing and redistribution.
+- Carbonfact published v1.1.0 score outputs are active; the source credit is applied.
+- Ecoinvent and other restricted background data are not included or reconstructed. Use requires evidence that the source terms permit the intended processing and redistribution.
 - The v1.1.0 count discrepancy is handled by loading exact included CSV rows (302) and documenting the source's 304 headline; no placeholders are created.
 - Global and country-specific factors remain explicit source choices; no default geography is inferred.
 - Missing upstream, transport, waste-treatment, and end-of-life coverage remains a blocker to a complete product footprint.

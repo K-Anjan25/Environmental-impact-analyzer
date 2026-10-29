@@ -10,7 +10,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Divider,
   FormControl,
   FormControlLabel,
   IconButton,
@@ -30,33 +29,25 @@ import {
   Typography,
 } from '@mui/material';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import ArrowDownwardRoundedIcon from '@mui/icons-material/ArrowDownwardRounded';
 import CalculateOutlinedIcon from '@mui/icons-material/CalculateOutlined';
-import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
-import FactoryOutlinedIcon from '@mui/icons-material/FactoryOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
-import QueryStatsOutlinedIcon from '@mui/icons-material/QueryStatsOutlined';
-import OpenInNewOutlinedIcon from '@mui/icons-material/OpenInNewOutlined';
 import ScienceOutlinedIcon from '@mui/icons-material/ScienceOutlined';
 import {
   calculateProcessEstimates,
-  getActiveSources,
   getFactorCatalog,
-  type ActiveDataSource,
   type FactorCatalog,
   type ProcessEstimateLine,
   type ProcessEstimateResponse,
   type ProcessFactor,
 } from './api';
-import { formatProcessEstimatesCsv, downloadProcessEstimatesCsv } from './export';
-import { EF31_SINGLE_SCORE_SOURCE, EF31_WEIGHTING_SOURCE } from './ef31-score';
+import { formatProcessEstimatesCsv, downloadProcessEstimatesCsv, downloadBlob } from './export';
+import { buildResultReport, formatCompact, formatShare, type ProcessImpactRow, type ResultReport } from './result-report';
+import { buildResultWorkbook, workbookFilename } from './result-workbook';
 import { calculateFromCatalog } from './local-estimates';
 import {
-  assessFlatBomMass,
   describeBomMassStatus,
   reviewProductInputUse,
   type BomMassAssessment,
@@ -64,13 +55,37 @@ import {
 } from './product-bom';
 import { deriveProcessQuantity, type ProcessQuantityBasis } from './product-quantity';
 import { summarizeSelectedProcesses, type SelectedProcessSummary } from './product-summary';
+import {
+  assessProductBoundary,
+  FUNCTIONAL_UNIT_BASIS,
+  PRODUCT_CATEGORY_LABEL,
+  type ProductBoundaryResult,
+  type ProductCategory,
+} from './product-boundary';
+import {
+  END_OF_LIFE_FACTORS,
+  FREIGHT_FACTORS,
+  type EndOfLifeRoute,
+  type FreightMode,
+} from './ghg-supplement';
 import { suggestFactorsByInputName } from './factor-suggestions';
+import SiteLayout from './SiteLayout';
+
+type GhgFreightDraft = { mode: FreightMode; distanceKm: string };
+const FUNCTIONAL_UNIT_EXAMPLES: Record<ProductCategory, string[]> = {
+  footwear: ["one pair of women's boots", 'one pair of sneakers'],
+  apparel: ['one knitted t-shirt', 'one pair of trousers'],
+};
+const FREIGHT_MODE_OPTIONS = Object.entries(FREIGHT_FACTORS) as Array<[FreightMode, (typeof FREIGHT_FACTORS)[FreightMode]]>;
+const END_OF_LIFE_OPTIONS = Object.entries(END_OF_LIFE_FACTORS) as Array<[EndOfLifeRoute, (typeof END_OF_LIFE_FACTORS)[EndOfLifeRoute]]>;
+
 
 type ProductInput = {
   id: string;
   name: string;
   quantity: string;
   unit: string;
+  parentId: string | null;
 };
 
 type SelectedProcess = {
@@ -101,75 +116,142 @@ function factorLabel(factor: ProcessFactor): string {
   return `${factor.activity} · ${geographyFor(factor)} · ${factor.reference_unit}`;
 }
 
-function ProcessResult({
+function IndicatorTable({ line }: { line: ProcessEstimateLine }) {
+  const water = line.indicators.find((item) => item.code === 'WTU');
+  return (
+    <TableContainer className="indicator-table-wrap">
+      <Table size="small" aria-label={`Separate environmental indicators for ${line.activity}`}>
+        <TableHead>
+          <TableRow>
+            <TableCell>Indicator</TableCell>
+            <TableCell align="right">Published factor</TableCell>
+            <TableCell align="right">Scaled result</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {line.indicators.map((indicator) => (
+            <TableRow key={indicator.code}>
+              <TableCell>
+                <strong className="indicator-code">{indicator.code}</strong>
+                <span className="indicator-name">{indicator.name}</span>
+              </TableCell>
+              <TableCell align="right">
+                <span className="numeric-value">{numberForDisplay(indicator.factor_value)}</span>
+                <span className="unit-note">{indicator.factor_unit}</span>
+              </TableCell>
+              <TableCell align="right">
+                <span className="numeric-value result-value">{numberForDisplay(indicator.result_value)}</span>
+                <span className="unit-note">{indicator.result_unit}</span>
+                {indicator.code === 'WTU' && water && (
+                  <Tooltip title="EF 3.1 water-use impact, not a physical water volume in litres.">
+                    <InfoOutlinedIcon className="unit-info-icon" aria-label="Water impact unit note" fontSize="small" />
+                  </Tooltip>
+                )}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+}
+
+function ResultHeadline({ report, subtotalsHidden }: { report: ResultReport; subtotalsHidden: boolean }) {
+  return (
+    <section className="result-headline" aria-labelledby="result-headline-heading">
+      <Typography id="result-headline-heading" component="h3" className="output-heading">Summary</Typography>
+      <div className="result-stat-grid">
+        <div className="result-stat result-stat-yellow">
+          <span>EF 3.1 total</span>
+          {subtotalsHidden ? (
+            <strong className="result-stat-hidden">Hidden</strong>
+          ) : (
+            <strong>{formatCompact(report.efPointsTotal)}</strong>
+          )}
+          <small>{subtotalsHidden ? 'Fix the items in Step 2' : 'points · higher means more impact'}</small>
+        </div>
+        <div className="result-stat result-stat-pink">
+          <span>Climate change</span>
+          {subtotalsHidden ? (
+            <strong className="result-stat-hidden">Hidden</strong>
+          ) : (
+            <strong>{formatCompact(report.ghgTotal)}</strong>
+          )}
+          <small>{subtotalsHidden ? 'GHG layer waits for Step 2' : (report.ghgUnit ?? 'GHG not available')}</small>
+        </div>
+        <div className="result-stat result-stat-green">
+          <span>Processes</span>
+          <strong>{report.processCount}</strong>
+          <small>selected rows</small>
+        </div>
+      </div>
+      {subtotalsHidden && (
+        <p className="subtotal-hold-note">Totals are hidden until the Step 2 items are fixed: functional unit, required process rows and mass check.</p>
+      )}
+      {!subtotalsHidden && <p className="result-sentence">{report.sentence}</p>}
+    </section>
+  );
+}
+
+function ProcessImpactCard({
+  row,
   line,
   index,
   productInput,
   quantityBasisLabel,
+  subtotalsHidden,
 }: {
+  row: ProcessImpactRow;
   line: ProcessEstimateLine;
   index: number;
   productInput: ProductInput | null;
   quantityBasisLabel: string;
+  subtotalsHidden: boolean;
 }) {
-  const water = line.indicators.find((item) => item.code === 'WTU');
-  const headingId = `result-${index}-${line.factor_id}`;
-
+  const headingId = `impact-${index}-${line.factor_id}`;
+  const share = subtotalsHidden ? null : row.sharePercent;
   return (
-    <article className="process-result" aria-labelledby={headingId}>
-      <div className="process-result-heading">
-        <div>
-          <div className="result-overline">{line.family_label}</div>
-          <Typography id={headingId} component="h3" className="process-result-title">
-            {line.activity}
-          </Typography>
-          <div className="process-result-meta">
-            <Chip size="small" label={geographyFor(line)} className="geo-chip" />
-            <span>{numberForDisplay(line.quantity)} × {line.reference_unit}</span>
-          </div>
-          {productInput && (
-            <p className="product-input-result-context">
-              <strong>Input mapping:</strong> {productInput.name} · {productInput.quantity} {productInput.unit} · {quantityBasisLabel}
-            </p>
-          )}
+    <article className="process-impact-card" aria-labelledby={headingId}>
+      <div className="process-impact-top">
+        <span className="process-impact-index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+        <div className="process-impact-name">
+          <Typography id={headingId} component="h4" className="process-impact-title">{row.activity}</Typography>
+          <span className="process-impact-meta">
+            {row.familyLabel} · {row.geography} · {numberForDisplay(row.quantity)} × {row.referenceUnit}
+          </span>
         </div>
       </div>
-
-      <TableContainer className="indicator-table-wrap">
-        <Table size="small" aria-label={`Separate environmental indicators for ${line.activity}`}>
-          <TableHead>
-            <TableRow>
-              <TableCell>Indicator</TableCell>
-              <TableCell align="right">Published factor</TableCell>
-              <TableCell align="right">Scaled result</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {line.indicators.map((indicator) => (
-              <TableRow key={indicator.code}>
-                <TableCell>
-                  <strong className="indicator-code">{indicator.code}</strong>
-                  <span className="indicator-name">{indicator.name}</span>
-                </TableCell>
-                <TableCell align="right">
-                  <span className="numeric-value">{numberForDisplay(indicator.factor_value)}</span>
-                  <span className="unit-note">{indicator.factor_unit}</span>
-                </TableCell>
-                <TableCell align="right">
-                  <span className="numeric-value result-value">{numberForDisplay(indicator.result_value)}</span>
-                  <span className="unit-note">{indicator.result_unit}</span>
-                  {indicator.code === 'WTU' && water && (
-                    <Tooltip title="EF 3.1 water-use impact, not a physical water volume in litres.">
-                      <InfoOutlinedIcon className="unit-info-icon" aria-label="Water impact unit note" fontSize="small" />
-                    </Tooltip>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
+      <dl className="process-impact-figures">
+        <div>
+          <dt>EF 3.1 points</dt>
+          <dd>{formatCompact(row.efPoints)}</dd>
+        </div>
+        <div>
+          <dt>Share of total</dt>
+          <dd>{subtotalsHidden ? 'Hidden' : formatShare(share)}</dd>
+        </div>
+        <div>
+          <dt>Climate change</dt>
+          <dd>{row.ghgValue === null ? '—' : `${formatCompact(row.ghgValue)} ${row.ghgUnit ?? ''}`}</dd>
+        </div>
+      </dl>
+      {share !== null && (
+        <div className="share-bar" aria-hidden="true"><span style={{ width: `${Math.min(100, Math.max(0, share))}%` }} /></div>
+      )}
+      {row.driver && (
+        <p className="process-driver">
+          Biggest driver: <strong>{row.driver.name}</strong> ({row.driver.code}), {formatShare(row.driver.sharePercent)} of this row.
+        </p>
+      )}
+      {productInput && (
+        <p className="product-input-result-context">
+          <strong>Input mapping:</strong> {productInput.name} · {productInput.quantity} {productInput.unit} · {quantityBasisLabel}
+        </p>
+      )}
+      <details className="indicator-disclosure">
+        <summary>Show all 16 indicators</summary>
+        <IndicatorTable line={line} />
+      </details>
     </article>
   );
 }
@@ -360,108 +442,9 @@ function FactorSuggestionDialog({
   );
 }
 
-function SourceDialog({
-  open,
-  onClose,
-}: {
-  open: boolean;
-  onClose: () => void;
-}) {
-  const [sources, setSources] = useState<ActiveDataSource[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [sourceLoaded, setSourceLoaded] = useState(false);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    if (!open || sourceLoaded) return;
-    let current = true;
-    setLoading(true);
-    getActiveSources()
-      .then((items) => {
-        if (current) setSources(items);
-      })
-      .catch((requestError: unknown) => {
-        if (current) {
-          setError(requestError instanceof Error ? requestError.message : 'Source details could not be loaded.');
-        }
-      })
-      .finally(() => {
-        if (current) {
-          setLoading(false);
-          setSourceLoaded(true);
-        }
-      });
-    return () => {
-      current = false;
-    };
-  }, [open, sourceLoaded]);
-
-  return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth aria-labelledby="source-dialog-title">
-      <DialogTitle id="source-dialog-title" className="dialog-title">Method, source and reuse</DialogTitle>
-      <DialogContent dividers className="source-dialog-content">
-        <Stack spacing={2.5}>
-          <section>
-            <Typography component="h3" className="dialog-section-title">Implemented calculation</Typography>
-            <Typography variant="body2">
-              Each published process factor is scaled by its own reference-unit quantity, and the 16 midpoint indicators remain visible separately for every process row. The browser can map a user-declared input to a process as either its output quantity or its mass feed; supported unit conversions are explicit, and mass-feed conversion uses the source-reported Input required (kg) value. The browser also sums selected rows by indicator and calculates an EF 3.1 single score from the JRC normalisation and weighting factors. These are selected-row subtotals, not a complete product footprint or ranking.
-            </Typography>
-          </section>
-          <section>
-            <Typography component="h3" className="dialog-section-title">EF 3.1 single-score method</Typography>
-            <Typography variant="body2">
-              For each of the 16 EF midpoint categories, the browser divides the selected-row indicator total by the JRC global normalisation factor, multiplies by its EF weighting percentage as a fraction, and sums the weighted categories. This uses the JRC report's recommended final weights including robustness, scaled to 100% for all 16 categories; the report also gives an alternative set excluding three toxicity categories. Weighting reflects value choices, so inspect the separate indicator results alongside the selected-row score. Normalisation factors are reported to three significant figures. The results table shows each normalised value, weighting percentage, and contribution.
-            </Typography>
-            <p className="source-attribution-copy">
-              Method sources: the European Commission Joint Research Centre EF 3.1 Normalisation and Weighting Factors workbook, its EF weighting report, and its 2023 guide describing a 16-category single weighted score.{' '}
-              <a href={EF31_SINGLE_SCORE_SOURCE} target="_blank" rel="noreferrer">Open normalisation workbook <OpenInNewOutlinedIcon fontSize="inherit" /></a>{' · '}
-              <a href={EF31_WEIGHTING_SOURCE} target="_blank" rel="noreferrer">Open weighting report <OpenInNewOutlinedIcon fontSize="inherit" /></a>{' · '}
-              <a href="https://eplca.jrc.ec.europa.eu/uploads/JRC132621_MS_guide.pdf" target="_blank" rel="noreferrer">Open JRC single-score guide <OpenInNewOutlinedIcon fontSize="inherit" /></a>
-            </p>
-          </section>
-          <section>
-            <Typography component="h3" className="dialog-section-title">Data boundary and limits</Typography>
-            <Typography variant="body2">
-              Product inputs are a flat, user-declared worksheet. The optional BOM mass check runs only after you confirm that every declared line is a product component for the same functional unit; it compares supported input masses with your finished-product mass and cannot validate a hierarchy, composition, or completeness. Factor suggestions compare words in the input name with activity names; they require user confirmation and do not validate supplier/material equivalence or process boundaries. Composition inference, allocation, and automatic stage completion are not performed. A source-reported input/output mass difference may be shown; it is not a waste-treatment inventory, and no waste-treatment impact is added. The bundled factors contain no transport/distribution or waste-treatment/end-of-life records and do not cover all raw materials or product-specific stages. Do not sum overlapping or incompatible process boundaries. Missing or unmapped inputs are not zero. Factor reference units, modeled boundaries, and geographies vary by row. Use-phase records describe representative European consumer behavior. WTU is an EF 3.1 water-use impact indicator in m³ world-equivalent, not physical litres. The bundled source’s full ecoinvent-based background inventories are not included or reconstructed.
-            </Typography>
-          </section>
-          {loading && <CircularProgress size={22} aria-label="Loading source details" />}
-          {error && <Alert severity="error" onClose={() => setError('')}>{error}</Alert>}
-          {sources.map((source) => (
-            <section key={source.id} className="source-dialog-card">
-              <Typography component="h3" className="dialog-section-title">{source.name} · v{source.version}</Typography>
-              <Typography variant="body2">{source.scope_summary}</Typography>
-              <p className="source-attribution-copy">{source.attribution_text}</p>
-              <div className="source-dialog-links">
-                {source.attribution_links.map((link) => (
-                  <a key={link.url} href={link.url} target="_blank" rel="noreferrer">
-                    {link.label} <OpenInNewOutlinedIcon fontSize="inherit" />
-                  </a>
-                ))}
-              </div>
-              <Typography variant="body2"><strong>License for source-derived results:</strong> {source.result_license}. Attribution and ShareAlike apply.</Typography>
-              <Typography variant="body2"><strong>Underlying inventories:</strong> {source.background_database_note}</Typography>
-              <ul className="source-limitations">
-                {source.limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}
-              </ul>
-            </section>
-          ))}
-          <section>
-            <Typography component="h3" className="dialog-section-title">Privacy</Typography>
-            <Typography variant="body2">
-              The app has no user accounts, analytics, database, or calculation history. Product-input labels, quantities, units, associations, and the optional finished-product mass used for the flat BOM mass check stay in browser page memory and are never sent to the API; the mass check also requires your confirmation that every declared line is a product component for one functional unit. Unit conversion, mapped factor calculations, and the BOM mass diagnostic run locally in the browser. For manually entered process quantities, the API receives only selected factor IDs and those reference-unit quantities. Nothing is saved after the page is closed or reloaded. A downloaded CSV may contain the input labels, quantities, units, and finished-product mass you entered. The API access log is disabled and request bodies are not logged by the app. Hosting infrastructure may retain network metadata under its own operating policy.
-            </Typography>
-          </section>
-        </Stack>
-      </DialogContent>
-      <DialogActions><Button onClick={onClose} variant="contained">Close</Button></DialogActions>
-    </Dialog>
-  );
-}
-
 function App() {
   const [catalog, setCatalog] = useState<FactorCatalog | null>(null);
-  const [catalogLoading, setCatalogLoading] = useState(true);
+  const [, setCatalogLoading] = useState(true);
   const [catalogError, setCatalogError] = useState('');
   const [familyFilter, setFamilyFilter] = useState('');
   const [geographyFilter, setGeographyFilter] = useState('');
@@ -473,14 +456,20 @@ function App() {
   const [productInputQuantityDraft, setProductInputQuantityDraft] = useState('');
   const [productInputUnitDraft, setProductInputUnitDraft] = useState('');
   const [finishedProductMassDraft, setFinishedProductMassDraft] = useState('');
+  const [inboundDraft, setInboundDraft] = useState<GhgFreightDraft>({ mode: 'hgv-articulated', distanceKm: '' });
+  const [distributionDraft, setDistributionDraft] = useState<GhgFreightDraft>({ mode: 'hgv-articulated', distanceKm: '' });
+  const [toWasteKmDraft, setToWasteKmDraft] = useState('');
+  const [endOfLifeDraft, setEndOfLifeDraft] = useState<EndOfLifeRoute | ''>('');
   const [flatBomScopeConfirmed, setFlatBomScopeConfirmed] = useState(false);
+  const [functionalUnitCategory, setFunctionalUnitCategory] = useState<ProductCategory>('footwear');
+  const [functionalUnitDescription, setFunctionalUnitDescription] = useState('');
+  const [productInputParentDraft, setProductInputParentDraft] = useState('');
   const [editingProductInputId, setEditingProductInputId] = useState<string | null>(null);
   const [productInputError, setProductInputError] = useState('');
   const productInputSequence = useRef(0);
   const [result, setResult] = useState<ProcessEstimateResponse | null>(null);
   const [calculating, setCalculating] = useState(false);
   const [error, setError] = useState('');
-  const [sourceDialogOpen, setSourceDialogOpen] = useState(false);
   const [suggestionInputId, setSuggestionInputId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -543,10 +532,32 @@ function App() {
     }))),
     [productInputs, selectedProcesses],
   );
-  const bomMassAssessment = useMemo(
-    () => assessFlatBomMass(productInputs, finishedProductMassDraft, flatBomScopeConfirmed),
-    [productInputs, finishedProductMassDraft, flatBomScopeConfirmed],
-  );
+  const productBoundary = useMemo<ProductBoundaryResult>(() => assessProductBoundary({
+    functionalUnit: {
+      category: functionalUnitCategory,
+      basis: FUNCTIONAL_UNIT_BASIS[functionalUnitCategory],
+      description: functionalUnitDescription,
+    },
+    inputs: productInputs,
+    parentIdByInput: new Map(productInputs.map((item) => [item.id, item.parentId])),
+    processLinks: selectedProcesses.map((line) => ({
+      productInputId: line.productInputId,
+      quantityBasis: line.quantityBasis,
+      factorId: line.factor.id,
+      familyId: line.factor.family_id,
+    })),
+    finishedProductMass: finishedProductMassDraft,
+    scopeConfirmed: flatBomScopeConfirmed,
+    ghg: {
+      inbound: inboundDraft.distanceKm.trim() === '' ? null : inboundDraft,
+      distribution: distributionDraft.distanceKm.trim() === '' ? null : distributionDraft,
+      toWasteKm: toWasteKmDraft.trim() === '' ? null : toWasteKmDraft,
+      endOfLife: endOfLifeDraft === '' ? null : endOfLifeDraft,
+    },
+  }), [productInputs, selectedProcesses, finishedProductMassDraft, flatBomScopeConfirmed, functionalUnitCategory, functionalUnitDescription, inboundDraft, distributionDraft, toWasteKmDraft, endOfLifeDraft]);
+  const bomMassAssessment = productBoundary.massAssessment;
+  const massBalanced = bomMassAssessment.status === 'balanced';
+  const scenarioHint = (value: string) => (!massBalanced && value.trim() !== '' ? 'Not counted until the product mass check balances.' : undefined);
   const selectedProcessSummary = useMemo(
     () => result ? summarizeSelectedProcesses(result.results) : null,
     [result],
@@ -560,6 +571,7 @@ function App() {
     setProductInputNameDraft('');
     setProductInputQuantityDraft('');
     setProductInputUnitDraft('');
+    setProductInputParentDraft('');
     setEditingProductInputId(null);
     setProductInputError('');
   };
@@ -585,9 +597,15 @@ function App() {
       return;
     }
 
+    const parentId = productInputParentDraft || null;
+    if (parentId !== null && parentId === editingProductInputId) {
+      setProductInputError('A component cannot be its own parent.');
+      return;
+    }
+
     if (editingProductInputId) {
       setProductInputs((current) => current.map((item) => item.id === editingProductInputId
-        ? { ...item, name, quantity: productInputQuantityDraft.trim(), unit }
+        ? { ...item, name, quantity: productInputQuantityDraft.trim(), unit, parentId }
         : item));
     } else {
       productInputSequence.current += 1;
@@ -596,6 +614,7 @@ function App() {
         name,
         quantity: productInputQuantityDraft.trim(),
         unit,
+        parentId,
       }]);
     }
     clearProductInputDraft();
@@ -609,6 +628,7 @@ function App() {
     setProductInputNameDraft(item.name);
     setProductInputQuantityDraft(item.quantity);
     setProductInputUnitDraft(item.unit);
+    setProductInputParentDraft(item.parentId ?? '');
     setProductInputError('');
   };
 
@@ -744,126 +764,85 @@ function App() {
     }
   };
 
+  const resultReport = useMemo(() => (result ? buildResultReport(result.results) : null), [result]);
+
+  const exportsLocked = productBoundary.verdict === 'blocked';
+  const exportExcel = async () => {
+    if (!result || !resultReport) return;
+    const now = new Date();
+    const blob = await buildResultWorkbook({
+      result,
+      report: resultReport,
+      summary: selectedProcessSummary,
+      inputs: selectedProcesses.map((line) => {
+        const linkedInput = line.productInputId ? productInputsById.get(line.productInputId) ?? null : null;
+        const mapping = deriveProcessQuantity(line.factor, line.quantity, linkedInput, line.quantityBasis);
+        const calculated = result.results.find((item) => item.factor_id === line.factor.id);
+        return {
+          activity: line.factor.activity,
+          familyLabel: line.factor.family_label,
+          geography: geographyFor(line.factor),
+          referenceUnit: line.factor.reference_unit,
+          quantity: calculated?.quantity ?? Number(line.quantity),
+          basis: line.quantityBasis,
+          basisLabel: mapping.basisLabel,
+          productInputName: linkedInput?.name ?? null,
+        };
+      }),
+      functionalUnitLabel: functionalUnitDescription.trim() || 'Not given',
+      categoryLabel: PRODUCT_CATEGORY_LABEL[functionalUnitCategory],
+      generatedAt: now,
+    });
+    downloadBlob(blob, workbookFilename(now));
+  };
+
   const exportResults = () => {
     if (!result) return;
     const csv = formatProcessEstimatesCsv(result, {
       productInputs,
       finishedProductMassKg: finishedProductMassDraft,
       flatBomScopeConfirmed,
+      ghg: {
+        inbound: inboundDraft.distanceKm.trim() === '' ? null : inboundDraft,
+        distribution: distributionDraft.distanceKm.trim() === '' ? null : distributionDraft,
+        toWasteKm: toWasteKmDraft.trim() === '' ? null : toWasteKmDraft,
+        endOfLife: endOfLifeDraft === '' ? null : endOfLifeDraft,
+      },
       processLinks: selectedProcesses.map((line) => ({
         factorId: line.factor.id,
+        familyId: line.factor.family_id,
         productInputId: line.productInputId,
         quantityBasis: line.quantityBasis,
       })),
+      functionalUnit: {
+        category: functionalUnitCategory,
+        basis: FUNCTIONAL_UNIT_BASIS[functionalUnitCategory],
+        description: functionalUnitDescription,
+      },
       summary: selectedProcessSummary,
     });
     downloadProcessEstimatesCsv(csv, 'environmental-process-estimates.csv');
   };
 
   return (
-    <div className="app-shell app-layout">
-      <aside className="sidebar" aria-label="Workspace navigation">
-        <a className="brand" href="#top" aria-label="Environmental Impact Analyzer home">
-          <img className="brand-mark-image" src="/brand/mark.svg" alt="" />
-          <span className="brand-name">Environmental Impact Analyzer</span>
-        </a>
-        <div className="sidebar-kicker">APPAREL & FOOTWEAR</div>
-        <nav className="sidebar-navigation" aria-label="Main navigation">
-          <a href="#top" aria-current="page" aria-label="Overview"><DashboardOutlinedIcon fontSize="small" /><span>Overview</span></a>
-          <a href="#product-inputs" aria-label="Product inputs"><Inventory2OutlinedIcon fontSize="small" /><span>Product inputs</span></a>
-          <a href="#process-library" aria-label="Process library"><FactoryOutlinedIcon fontSize="small" /><span>Process library</span></a>
-          <a href="#results-heading" aria-label="Results"><QueryStatsOutlinedIcon fontSize="small" /><span>Results</span></a>
-        </nav>
-        <div className="sidebar-bottom">
-          <div className="sidebar-source-card">
-            <span className="sidebar-source-label">PINNED SOURCE</span>
-            <strong>Carbonfact</strong>
-            <span>Version {catalog?.source_version ?? '1.1.0'} · CC BY-SA 4.0</span>
-            <span className="sidebar-source-count"><i aria-hidden="true" /> {catalog?.total_records ?? '302'} published factors</span>
-          </div>
-          <Button variant="text" startIcon={<InfoOutlinedIcon />} onClick={() => setSourceDialogOpen(true)} className="sidebar-method-button">
-            Method, source & privacy
-          </Button>
-        </div>
-      </aside>
-
-      <header className="site-header">
-        <div className="header-right">
-          <Button variant="text" startIcon={<InfoOutlinedIcon />} onClick={() => setSourceDialogOpen(true)} className="method-button">
-            Method & data
-          </Button>
-        </div>
-      </header>
-
-      <main id="top" className="main-content estimator-main">
-        <section className="hero-section estimator-hero" aria-labelledby="hero-title">
-          <div className="hero-copy">
-            <div className="eyebrow"><span className="eyebrow-line" /> OPEN PROCESS DATA</div>
-            <Typography id="hero-title" component="h1" className="hero-title">
-              Every process has <span className="hero-title-accent">a story.</span>
-            </Typography>
-            <Typography className="hero-subtitle">
-              Explore published apparel and footwear factors across 16 EF 3.1 indicators—with source units and boundaries in view.
-            </Typography>
-            <div className="hero-actions">
-              <Button component="a" href="#process-library" variant="contained" endIcon={<ArrowDownwardRoundedIcon />} className="hero-primary-action">
-                Explore factors
-              </Button>
-              <span className="hero-action-note">302 source-linked records</span>
-            </div>
-          </div>
-          <div className="hero-visual">
-            <img
-              className="hero-photo"
-              src="/images/textile-materials-hero.jpg"
-              alt="Cotton yarn, woven fabric swatches and natural fibres arranged in a textile studio."
-              fetchPriority="high"
-            />
-            <div className="hero-photo-note">
-              <span className="hero-photo-note-mark"><img src="/brand/mark.svg" alt="" /></span>
-              <div><span>TEXTILE STUDY · 01</span><strong>From fibre to fabric</strong></div>
-            </div>
-            <span className="hero-photo-index" aria-hidden="true">01 / 03</span>
-          </div>
-        </section>
-
-        <div className="catalog-strip" aria-label="Loaded source coverage">
-          <div><strong>{catalog?.total_records ?? '—'}</strong><span>published factors</span></div>
-          <Divider orientation="vertical" flexItem />
-          <div><strong>{catalog?.families.length ?? '—'}</strong><span>selectable groups</span></div>
-          <Divider orientation="vertical" flexItem />
-          <div><strong>16</strong><span>EF 3.1 indicators</span></div>
-          <div className="catalog-strip-note">Carbonfact · v{catalog?.source_version ?? '1.1.0'} · open factor data</div>
-        </div>
-
-        <section className="visual-index" aria-label="Browse apparel and footwear factor areas">
-          <a className="visual-index-card textile-index-card" href="#process-library">
-            <img src="/images/textile-process-detail.jpg" alt="" loading="lazy" />
-            <span className="visual-index-shade" />
-            <span className="visual-index-copy"><small>01 / TEXTILES</small><strong>Yarn · fabric · finishing</strong></span>
-            <span className="visual-index-arrow" aria-hidden="true">↗</span>
-          </a>
-          <a className="visual-index-card footwear-index-card" href="#process-library">
-            <img src="/images/footwear-material-detail.jpg" alt="" loading="lazy" />
-            <span className="visual-index-shade" />
-            <span className="visual-index-copy"><small>02 / FOOTWEAR</small><strong>Materials · assembly · use</strong></span>
-            <span className="visual-index-arrow" aria-hidden="true">↗</span>
-          </a>
-        </section>
-
+    <>
+      <SiteLayout current="calculator" sourceVersion={catalog?.source_version ?? '1.1.0'} totalRecords={catalog?.total_records ?? '302'}>
+        <div className="calculator-page">
+          <header className="page-heading">
+            <p className="privacy-pill"><span className="glow-dot" aria-hidden="true" />Local only · inputs stay in this browser</p>
+            <p className="landing-eyebrow">PROCESS CALCULATOR</p>
+            <h1 className="page-title">Calculate a process estimate.</h1>
+            <p className="page-lede">Choose published apparel and footwear processes, enter quantities, and read the 16 EF 3.1 indicators for each selected row.</p>
+          </header>
         <div className="estimator-grid">
-          <Paper component="section" elevation={0} className="form-card estimator-card" aria-labelledby="calculator-heading">
+          <Paper component="section" elevation={0} className="form-card estimator-card ui-art-form" aria-labelledby="calculator-heading">
             <div className="card-heading-row">
               <div>
-                <div className="step-label">01 <span aria-hidden="true">·</span> SELECT PROCESS DATA</div>
+                <div className="step-label">STEP 2 · ADD PROCESSES</div>
                 <Typography id="calculator-heading" component="h2" variant="h5" className="card-title">Build a process estimate.</Typography>
               </div>
-              <div className="card-number" aria-hidden="true">01</div>
-            </div>
+                          </div>
 
-            {catalogLoading && (
-              <div className="catalog-loading" aria-busy="true"><CircularProgress size={22} aria-label="Loading process factors" /></div>
-            )}
             {catalogError && (
               <Alert severity="error" onClose={() => setCatalogError('')}>
                 {catalogError} Reload the page to retry the bundled factor catalog.
@@ -873,14 +852,14 @@ function App() {
             <section id="product-inputs" className="product-input-workspace" aria-labelledby="product-input-heading">
               <div className="product-input-heading-row">
                 <Typography id="product-input-heading" component="h3" className="product-input-title">
-                  Product inputs
+                  Step 1 · Product inputs (optional)
                 </Typography>
                 <Chip label={`${productInputs.length} / ${MAX_PRODUCT_INPUTS}`} size="small" className="soft-chip" />
               </div>
               <div className="product-input-entry-grid">
                 <TextField
                   size="small"
-                  label="Input or component name"
+                  label="Name (for example, cotton yarn)"
                   value={productInputNameDraft}
                   onChange={(event) => setProductInputNameDraft(event.target.value)}
                   slotProps={{ htmlInput: { maxLength: 100 } }}
@@ -888,19 +867,34 @@ function App() {
                 <TextField
                   type="number"
                   size="small"
-                  label="Declared quantity"
+                  label="Amount"
                   value={productInputQuantityDraft}
                   onChange={(event) => setProductInputQuantityDraft(event.target.value)}
                   slotProps={{ htmlInput: { min: 0, step: 'any' } }}
                 />
                 <TextField
                   size="small"
-                  label="Unit label"
+                  label="Unit (for example, kg)"
                   placeholder="e.g., kg, pair"
                   value={productInputUnitDraft}
                   onChange={(event) => setProductInputUnitDraft(event.target.value)}
                   slotProps={{ htmlInput: { maxLength: 40 } }}
                 />
+                <FormControl size="small" fullWidth>
+                  <InputLabel id="product-input-parent-label">Part of</InputLabel>
+                  <Select
+                    labelId="product-input-parent-label"
+                    id="product-input-parent"
+                    value={productInputParentDraft}
+                    label="Part of"
+                    onChange={(event) => setProductInputParentDraft(event.target.value)}
+                  >
+                    <MenuItem value="">Top-level line</MenuItem>
+                    {productInputs
+                      .filter((item) => item.id !== editingProductInputId)
+                      .map((item) => <MenuItem key={item.id} value={item.id}>{item.name}</MenuItem>)}
+                  </Select>
+                </FormControl>
               </div>
               <div className="product-input-actions">
                 <Button
@@ -910,7 +904,7 @@ function App() {
                   onClick={saveProductInput}
                   disabled={productInputs.length >= MAX_PRODUCT_INPUTS && !editingProductInputId}
                 >
-                  {editingProductInputId ? 'Save input' : 'Add input'}
+                  {editingProductInputId ? 'Save input' : 'Add material'}
                 </Button>
                 {editingProductInputId && (
                   <Button type="button" onClick={clearProductInputDraft}>Cancel edit</Button>
@@ -923,7 +917,7 @@ function App() {
                     <div className="product-input-item" key={item.id}>
                       <div className="product-input-item-copy">
                         <span className="product-input-index">{String(index + 1).padStart(2, '0')}</span>
-                        <div><strong>{item.name}</strong><span>{item.quantity} {item.unit}</span></div>
+                        <div><strong>{item.name}</strong><span>{item.quantity} {item.unit}{item.parentId ? ` · part of ${productInputs.find((parent) => parent.id === item.parentId)?.name ?? 'a missing line'}` : ''}</span></div>
                       </div>
                       <div className="product-input-item-actions">
                         <Button size="small" onClick={() => setSuggestionInputId(item.id)}>Find factor</Button>
@@ -939,7 +933,40 @@ function App() {
                 </Stack>
               )}
               <details className="bom-mass-check-workspace">
-                <summary>Product mass check</summary>
+                <summary>Optional checks: mass, transport, and life-cycle stages</summary>
+                <div className="functional-unit-fields">
+                  <FormControl size="small" fullWidth>
+                    <InputLabel id="functional-unit-category-label">Product category</InputLabel>
+                    <Select
+                      labelId="functional-unit-category-label"
+                      id="functional-unit-category"
+                      value={functionalUnitCategory}
+                      label="Product category"
+                      onChange={(event) => {
+                        setFunctionalUnitCategory(event.target.value as ProductCategory);
+                        setFlatBomScopeConfirmed(false);
+                      }}
+                    >
+                      <MenuItem value="footwear">Footwear (per pair)</MenuItem>
+                      <MenuItem value="apparel">Apparel (per piece)</MenuItem>
+                    </Select>
+                  </FormControl>
+                  <TextField
+                    size="small"
+                    fullWidth
+                    label="Functional unit"
+                    placeholder="e.g., one pair of women's boots"
+                    value={functionalUnitDescription}
+                    onChange={(event) => setFunctionalUnitDescription(event.target.value)}
+                    slotProps={{ htmlInput: { maxLength: 140 } }}
+                  />
+                </div>
+                <div className="fu-suggestions" aria-label="Functional unit examples">
+                  <span className="fu-suggestions-label">Examples:</span>
+                  {FUNCTIONAL_UNIT_EXAMPLES[functionalUnitCategory].map((example) => (
+                    <Chip key={example} size="small" variant="outlined" label={example} onClick={() => setFunctionalUnitDescription(example)} />
+                  ))}
+                </div>
                 <FormControlLabel
                   className="bom-mass-confirmation"
                   control={(
@@ -951,14 +978,19 @@ function App() {
                   )}
                   label="All declared lines are product components for one functional unit"
                 />
-                <TextField
-                  type="number"
-                  size="small"
-                  label="Finished product mass per functional unit (kg)"
-                  value={finishedProductMassDraft}
-                  onChange={(event) => setFinishedProductMassDraft(event.target.value)}
-                  slotProps={{ htmlInput: { min: 0, step: 'any' } }}
-                />
+                <div className="bom-mass-field">
+                  <label className="bom-mass-field-label" htmlFor="finished-product-mass">Finished product mass per functional unit (kg)</label>
+                  <TextField
+                    id="finished-product-mass"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    placeholder="e.g., 0.42"
+                    value={finishedProductMassDraft}
+                    onChange={(event) => setFinishedProductMassDraft(event.target.value)}
+                    slotProps={{ htmlInput: { min: 0, step: 'any', 'aria-label': 'Finished product mass per functional unit (kg)' } }}
+                  />
+                </div>
                 {bomMassAssessment.status === 'scope-not-confirmed' && (
                   <div className="bom-mass-compact" aria-live="polite">
                     <strong>{describeBomMassStatus(bomMassAssessment)}</strong>
@@ -975,19 +1007,120 @@ function App() {
                     <strong>{describeBomMassStatus(bomMassAssessment)}</strong>
                   </div>
                 )}
+                <details className="ghg-inputs ghg-accordion">
+                  <summary>Transport and end of life (climate change only)</summary>
+                  <details className="ghg-stage-accordion">
+                    <summary>A2 · Transport to factory</summary>
+                    <div className="form-grid two-col">
+                      <TextField
+                        select
+                        size="small"
+                        label="A2 inbound transport mode"
+                        value={inboundDraft.mode}
+                        onChange={(event) => setInboundDraft((draft) => ({ ...draft, mode: event.target.value as FreightMode }))}
+                        slotProps={{ select: { renderValue: (value) => FREIGHT_FACTORS[value as FreightMode].label } }}
+                      >
+                        {FREIGHT_MODE_OPTIONS.map(([id, option]) => (<MenuItem key={id} value={id}>{option.label}</MenuItem>))}
+                      </TextField>
+                      <TextField
+                        type="number"
+                        size="small"
+                        id="ghg-inbound-distance"
+                        label="A2 inbound distance (km)"
+                        value={inboundDraft.distanceKm}
+                        onChange={(event) => setInboundDraft((draft) => ({ ...draft, distanceKm: event.target.value }))}
+                        helperText={scenarioHint(inboundDraft.distanceKm)}
+                        slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: 0, step: 'any' } }}
+                      />
+                    </div>
+                  </details>
+                  <details className="ghg-stage-accordion">
+                    <summary>A4 · Distribution to customer</summary>
+                    <div className="form-grid two-col">
+                      <TextField
+                        select
+                        size="small"
+                        label="A4 distribution mode"
+                        value={distributionDraft.mode}
+                        onChange={(event) => setDistributionDraft((draft) => ({ ...draft, mode: event.target.value as FreightMode }))}
+                        slotProps={{ select: { renderValue: (value) => FREIGHT_FACTORS[value as FreightMode].label } }}
+                      >
+                        {FREIGHT_MODE_OPTIONS.map(([id, option]) => (<MenuItem key={id} value={id}>{option.label}</MenuItem>))}
+                      </TextField>
+                      <TextField
+                        type="number"
+                        size="small"
+                        id="ghg-distribution-distance"
+                        label="A4 distribution distance (km)"
+                        value={distributionDraft.distanceKm}
+                        onChange={(event) => setDistributionDraft((draft) => ({ ...draft, distanceKm: event.target.value }))}
+                        helperText={scenarioHint(distributionDraft.distanceKm)}
+                        slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: 0, step: 'any' } }}
+                      />
+                    </div>
+                  </details>
+                  <details className="ghg-stage-accordion">
+                    <summary>C2 · Transport to waste treatment</summary>
+                    <div className="form-grid two-col">
+                      <TextField
+                        type="number"
+                        size="small"
+                        id="ghg-to-waste-distance"
+                        label="C2 distance to waste (km, HGV)"
+                        value={toWasteKmDraft}
+                        onChange={(event) => setToWasteKmDraft(event.target.value)}
+                        helperText={scenarioHint(toWasteKmDraft)}
+                        slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: 0, step: 'any' } }}
+                      />
+                    </div>
+                  </details>
+                  <details className="ghg-stage-accordion">
+                    <summary>C3 and C4 · End of life</summary>
+                    <div className="form-grid two-col">
+                      <TextField
+                        select
+                        size="small"
+                        id="ghg-end-of-life"
+                        label="C3 and C4 end-of-life route"
+                        value={endOfLifeDraft}
+                        onChange={(event) => setEndOfLifeDraft(event.target.value as EndOfLifeRoute | '')}
+                        slotProps={{ inputLabel: { shrink: true }, select: { displayEmpty: true, renderValue: (value) => value === '' ? 'Not declared' : END_OF_LIFE_FACTORS[value as EndOfLifeRoute].label } }}
+                      >
+                        <MenuItem value="">Not declared</MenuItem>
+                        {END_OF_LIFE_OPTIONS.map(([id, option]) => (<MenuItem key={id} value={id}>{option.label}</MenuItem>))}
+                      </TextField>
+                    </div>
+                  </details>
+                </details>
               </details>
             </section>
 
+            {!catalog && !catalogError && (
+              <div className="process-skeleton" aria-busy="true">
+                <span className="visually-hidden" role="status">Loading process factors</span>
+                <div className="process-skeleton-row" aria-hidden="true">
+                  <span className="skeleton-bar skeleton-bar-label" />
+                  <span className="skeleton-bar skeleton-bar-field" />
+                </div>
+                <div className="process-skeleton-row" aria-hidden="true">
+                  <span className="skeleton-bar skeleton-bar-field" />
+                  <span className="skeleton-bar skeleton-bar-field" />
+                </div>
+                <div className="process-skeleton-row" aria-hidden="true">
+                  <span className="skeleton-bar skeleton-bar-wide" />
+                </div>
+              </div>
+            )}
             {catalog && (
               <form id="process-library" onSubmit={calculate} className="estimator-form">
                 <div className="form-grid two-col">
                   <FormControl fullWidth size="small">
-                    <InputLabel id="family-label">Process family</InputLabel>
+                    <InputLabel id="family-label">Type of step</InputLabel>
                     <Select
                       labelId="family-label"
                       id="family-filter"
                       value={familyFilter}
-                      label="Process family"
+                      label="Type of step"
                       onChange={(event) => {
                         setFamilyFilter(event.target.value);
                         setGeographyFilter('');
@@ -1004,12 +1137,12 @@ function App() {
                   </FormControl>
 
                   <FormControl fullWidth size="small">
-                    <InputLabel id="geography-label">Source geography</InputLabel>
+                    <InputLabel id="geography-label">Where is it made?</InputLabel>
                     <Select
                       labelId="geography-label"
                       id="geography-filter"
                       value={geographyFilter}
-                      label="Source geography"
+                      label="Where is it made?"
                       onChange={(event) => {
                         setGeographyFilter(event.target.value);
                         setSelectedFactor(null);
@@ -1063,7 +1196,7 @@ function App() {
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      label="Process activity"
+                      label="Pick a process"
                       placeholder="Search and select a published activity"
                       size="small"
                     />
@@ -1087,7 +1220,7 @@ function App() {
                   <TextField
                     type="number"
                     size="small"
-                    label="Quantity in source reference units"
+                    label="How much? (in the unit shown)"
                     value={quantityDraft}
                     onChange={(event) => setQuantityDraft(event.target.value)}
                     disabled={!selectedFactor}
@@ -1101,7 +1234,7 @@ function App() {
                     disabled={!selectedFactor || !quantityDraft || selectedProcesses.length >= MAX_PROCESS_LINES || selectedFactorAlreadyAdded}
                     className="add-process-button"
                   >
-                    Add process
+                    Add this step
                   </Button>
                 </div>
 
@@ -1140,12 +1273,12 @@ function App() {
                             {productInputs.length > 0 && (
                               <div className="process-mapping-controls">
                                 <FormControl fullWidth size="small">
-                                  <InputLabel id={`process-input-context-label-${index}`}>Link input</InputLabel>
+                                  <InputLabel id={`process-input-context-label-${index}`}>Goes into which step?</InputLabel>
                                   <Select
                                     labelId={`process-input-context-label-${index}`}
                                     id={`process-input-context-${index}`}
                                     value={line.productInputId ?? ''}
-                                    label="Link input"
+                                    label="Goes into which step?"
                                     onChange={(event) => updateSelectedProductInput(line.key, event.target.value)}
                                   >
                                     <MenuItem value="">No input association</MenuItem>
@@ -1192,18 +1325,18 @@ function App() {
                     startIcon={calculating ? <CircularProgress size={16} color="inherit" /> : <CalculateOutlinedIcon />}
                     disabled={calculating || selectedProcesses.length === 0}
                   >
-                    Calculate selected rows
+                    Calculate my results
                   </Button>
                 </div>
               </form>
             )}
           </Paper>
 
-          <Paper component="section" elevation={0} className="result-card result-panel" aria-labelledby="results-heading">
+          <Paper component="section" elevation={0} className="result-card result-panel ui-art-result" aria-labelledby="results-heading">
             <div className="result-card-top">
               <div>
-                <div className="step-label">02 <span aria-hidden="true">·</span> INDICATORS + SUBTOTAL</div>
-                <Typography id="results-heading" component="h2" variant="h5" className="card-title">Process results.</Typography>
+                <div className="step-label">STEP 3 · RESULTS</div>
+                <Typography id="results-heading" component="h2" variant="h5" className="card-title">Your results.</Typography>
               </div>
               {result && <Chip label="Calculated" size="small" className="calculated-chip" />}
             </div>
@@ -1215,7 +1348,6 @@ function App() {
                 <Typography className="empty-copy">
                   16 environmental indicators for each selected process.
                 </Typography>
-                <div className="result-scope-note"><InfoOutlinedIcon fontSize="small" /> Selected rows only; not a complete product footprint.</div>
               </div>
             )}
 
@@ -1223,63 +1355,76 @@ function App() {
               <div className="catalog-loading calculation-loading" aria-busy="true"><CircularProgress size={24} aria-label="Calculating process indicators and selected-row subtotal" /></div>
             )}
 
-            {result && (
+            {result && resultReport && (
               <div className="results-output">
                 <div className="result-intro">
                   <span className="result-scope-label">Selected rows only</span>
-                  <Button size="small" startIcon={<FileDownloadOutlinedIcon />} onClick={exportResults}>
-                    Download CSV
-                  </Button>
+                  <div className="result-actions">
+                    <Button size="small" variant="contained" startIcon={<FileDownloadOutlinedIcon />} onClick={exportExcel} disabled={exportsLocked} aria-describedby={exportsLocked ? 'exports-locked-note' : undefined}>
+                      Download Excel
+                    </Button>
+                    <Button size="small" startIcon={<FileDownloadOutlinedIcon />} onClick={exportResults} disabled={exportsLocked} aria-describedby={exportsLocked ? 'exports-locked-note' : undefined}>
+                      Download CSV
+                    </Button>
+                    {exportsLocked && (
+                      <span id="exports-locked-note" className="exports-locked-note">Downloads unlock when the Step 2 items are fixed.</span>
+                    )}
+                  </div>
                 </div>
-                {selectedProcessSummary && (
-                  <SelectedProcessSummaryCard
-                    summary={selectedProcessSummary}
-                    inputUseReview={productInputUseReview}
-                    bomMassAssessment={bomMassAssessment}
-                  />
+                <ResultHeadline report={resultReport} subtotalsHidden={productBoundary.verdict === 'blocked'} />
+                <section className="result-processes" aria-labelledby="impact-by-process-heading">
+                  <Typography id="impact-by-process-heading" component="h3" className="output-heading">Impact by process</Typography>
+                  <Stack spacing={2}>
+                    {resultReport.processes.map((row, index) => {
+                      const line = result.results[index];
+                      const selectedProcess = selectedProcesses.find((item) => item.factor.id === line.factor_id);
+                      const productInput = selectedProcess?.productInputId
+                        ? productInputsById.get(selectedProcess.productInputId) ?? null
+                        : null;
+                      const quantityMapping = selectedProcess
+                        ? deriveProcessQuantity(selectedProcess.factor, selectedProcess.quantity, productInput, selectedProcess.quantityBasis)
+                        : null;
+                      return (
+                        <ProcessImpactCard
+                          key={row.key}
+                          row={row}
+                          line={line}
+                          index={index}
+                          productInput={productInput}
+                          quantityBasisLabel={quantityMapping?.basisLabel ?? 'Manual process quantity'}
+                          subtotalsHidden={productBoundary.verdict === 'blocked'}
+                        />
+                      );
+                    })}
+                  </Stack>
+                </section>
+                {selectedProcessSummary && productBoundary.verdict === 'blocked' && (bomMassAssessment.status !== 'scope-not-confirmed' && bomMassAssessment.status !== 'missing-product-mass' || productInputUseReview.inputs.length > 0) && (
+                  <details className="result-details" open>
+                    <summary>Mass and input checks</summary>
+                    <div className="result-checks">
+                      <BomMassAssessmentCard assessment={bomMassAssessment} />
+                      <ProductInputUseCard review={productInputUseReview} />
+                    </div>
+                  </details>
                 )}
-                <Stack spacing={2}>
-                  {result.results.map((line, index) => {
-                    const selectedProcess = selectedProcesses.find((item) => item.factor.id === line.factor_id);
-                    const productInput = selectedProcess?.productInputId
-                      ? productInputsById.get(selectedProcess.productInputId) ?? null
-                      : null;
-                    const quantityMapping = selectedProcess
-                      ? deriveProcessQuantity(selectedProcess.factor, selectedProcess.quantity, productInput, selectedProcess.quantityBasis)
-                      : null;
-                    return (
-                      <ProcessResult
-                        line={line}
-                        index={index}
-                        productInput={productInput}
-                        quantityBasisLabel={quantityMapping?.basisLabel ?? 'Manual process quantity'}
-                        key={`${index}-${line.factor_id}`}
-                      />
-                    );
-                  })}
-                </Stack>
-
+                {selectedProcessSummary && productBoundary.verdict !== 'blocked' && (
+                  <details className="result-details">
+                    <summary>Totals by indicator and EF 3.1 table</summary>
+                    <SelectedProcessSummaryCard
+                      summary={selectedProcessSummary}
+                      inputUseReview={productInputUseReview}
+                      bomMassAssessment={bomMassAssessment}
+                    />
+                  </details>
+                )}
               </div>
             )}
           </Paper>
         </div>
 
-        <footer className="app-footer">
-          <div className="footer-brand">
-            <img src="/brand/mark.svg" alt="" />
-            <div><strong>Environmental Impact Analyzer</strong><span>Apparel & footwear process data</span></div>
-          </div>
-          <nav className="app-footer-links" aria-label="Legal and source links">
-            <a href="/legal/privacy.html">Privacy</a>
-            <a href="/legal/terms.html">Terms</a>
-            <a href="/legal/license.html">Software license</a>
-            <a href="/legal/data-sources.html">Data sources</a>
-            <button type="button" onClick={() => setSourceDialogOpen(true)}>Method details</button>
-          </nav>
-        </footer>
-      </main>
+        </div>
+      </SiteLayout>
 
-      <SourceDialog open={sourceDialogOpen} onClose={() => setSourceDialogOpen(false)} />
       <FactorSuggestionDialog
         open={suggestionInputId !== null}
         input={suggestionInput}
@@ -1288,7 +1433,7 @@ function App() {
         onClose={() => setSuggestionInputId(null)}
         onSelect={addSuggestedFactor}
       />
-    </div>
+    </>
   );
 }
 

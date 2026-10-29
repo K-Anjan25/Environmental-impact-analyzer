@@ -26,11 +26,9 @@ Product-input names, quantities, units, and associations remain in browser memor
 - The source says its full Brightway/Activity Browser inventories use ecoinvent 3.12 and are not distributed. Published scores may reflect those modeled background contributions. This app bundles only the published score files and process-family notes; it does not include, query, or reconstruct the underlying inventories. No ecoinvent acquisition or reconstruction is included without lawful access and redistribution rights.
 - The source's top-level documentation says 304 datasets; the rows from its documented families included here total 302. No placeholder or inferred factors are added to make the count match. The source's non-woven folder is excluded because it is listed as forthcoming and its CSV conflicts with its stated two-record summary.
 
-## Data and licensing
+## Data sources
 
-The included source files are pinned to Carbonfact tag `v.1.1.0`, commit `fa063ecac17ab36691a0d5c7326fedaa2e9d4ab8`, released 2026-07-01. Its published scores and included process-family notes are distributed under **CC BY-SA 4.0**. Attribution, the pinned release link, transformation note, and background-data note are available in the app’s Method, source and reuse dialog; CSV exports include provenance and license details. Dataset-derived results are offered under CC BY-SA 4.0. See [`services/api/data/carbonfact-v1.1.0/SOURCE.md`](services/api/data/carbonfact-v1.1.0/SOURCE.md) and its included `LICENSE`.
-
-The root [`LICENSE`](LICENSE) applies the MIT License to original project code and documentation; it does **not** relicense Carbonfact data, dataset-derived results, or other third-party material. No non-open inventory files are bundled. Review [`data-sources.md`](data-sources.md) for the data license boundary.
+The included source files are pinned to Carbonfact tag `v.1.1.0`, commit `fa063ecac17ab36691a0d5c7326fedaa2e9d4ab8`, released 2026-07-01. Attribution, the pinned release link, and the transformation notes are kept in [`services/api/data/carbonfact-v1.1.0/SOURCE.md`](services/api/data/carbonfact-v1.1.0/SOURCE.md). Review [`data-sources.md`](data-sources.md) for what the data covers and what it does not.
 
 ## Run locally
 
@@ -78,7 +76,6 @@ The standard and Vercel-targeted images pass CI smoke tests. Vercel is the selec
 
 - `GET /api/v1/factors` — versioned factor catalog, optionally filtered with `family`, `q`, `offset`, and `limit`.
 - `POST /api/v1/process-estimates` — accepts 1–25 `{factor_id, quantity}` selections and returns each selected process separately with 16 indicators. It receives no product-input labels, quantities, units, associations, or browser-derived mapped quantities.
-- `GET /api/v1/sources` — active source, license, attribution, dependencies, and scope.
 - `GET /api/v1/methodology` — API calculation, browser subtotal/single-score scope, privacy behavior, and completeness limits.
 - `GET /api/docs` — interactive OpenAPI documentation.
 
@@ -108,11 +105,10 @@ npm test --prefix apps/web
 npm run build --prefix apps/web
 ```
 
-## License, privacy, and contributing
+## Website, privacy, and contributing
 
-The application code/documentation license is separate from the bundled data license. The app footer links to Privacy, Terms, and Software License pages; Vite generates those pages from the root Markdown/license sources during development and production builds. The privacy notice and terms now include the operator details, linked contact page, and a proposed India-law/India-venue clause at the operator's direction; confirm identity, contact monitoring, legal suitability, and live Vercel processing before public Production. See [`roadmap.md`](roadmap.md).
+The app footer links to Privacy, Terms, and Website license pages; Vite generates the Privacy and Terms pages from the root Markdown sources during development and production builds. The privacy notice and terms now include the operator details, linked contact page, and a proposed India-law/India-venue clause at the operator's direction; confirm identity, contact monitoring, legal suitability, and live Vercel processing before public Production. See [`roadmap.md`](roadmap.md).
 
-- [MIT License for original project code and documentation](LICENSE)
 - [Privacy notice](PRIVACY.md)
 - [Terms of use](TERMS.md)
 - [Contributing guide](CONTRIBUTING.md)
@@ -123,6 +119,6 @@ The application code/documentation license is separate from the bundled data lic
 - [Implementation and release record](task.md)
 - [Release readiness and version roadmap](roadmap.md)
 - [v2 product-input discovery and scope record](v2-discovery.md)
-- [v2 open-data and licensing audit](v2-source-audit.md)
+- [v2 open-data and source-terms audit](v2-source-audit.md)
 - [Coding and calculation rules](rules.md)
 - [Project memory](memory.md)

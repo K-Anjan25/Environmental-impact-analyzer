@@ -12,3 +12,7 @@ apps/web/public/legal
 .env
 .env.*
 !.env.example
+# Raw source files the API never reads at runtime (about 154 MB). Provenance stays in the repo;
+# SOURCE-RECORD.md and the CSVs the API loads are still copied into the image.
+services/api/data/carbonfact-v1.1.0/datasets/sources/uslci/
+services/api/data/carbonfact-v1.1.0/datasets/sources/defra-2026/

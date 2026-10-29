@@ -1,8 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
-  <rect width="48" height="48" rx="15" fill="#193E34"/>
-  <path d="M11 29.5C11 18.73 19.73 10 30.5 10H37v6.5C37 27.27 28.27 36 17.5 36H11v-6.5Z" fill="#E5EDD8"/>
-  <path d="M13 34 33.5 13.5" stroke="#426F53" stroke-width="2.6" stroke-linecap="round"/>
-  <path d="M17 30c3.5-4.1 7.4-7.9 11.8-11.4M21.7 25.5l-1.1-7.1M26.3 21.1l7 .9" stroke="#426F53" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="34" cy="33.5" r="6" fill="#D76E4D"/>
-  <path d="M31.6 33.5h4.8M34 31.1v4.8" stroke="#FFF7E9" stroke-width="1.5" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-hidden="true" focusable="false">
+  <defs>
+    <clipPath id="leaf-clip">
+      <path d="M8 56C8 26 26 8 56 8C56 38 38 56 8 56Z" />
+    </clipPath>
+  </defs>
+  <path d="M8 56C8 26 26 8 56 8C56 38 38 56 8 56Z" fill="#17603f" />
+  <g clip-path="url(#leaf-clip)">
+    <polygon points="0,64 64,0 0,0" fill="#5cb24a" />
+  </g>
 </svg>

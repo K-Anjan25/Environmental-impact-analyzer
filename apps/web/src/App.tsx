@@ -59,12 +59,10 @@ import {
   assessProductBoundary,
   FUNCTIONAL_UNIT_BASIS,
   PRODUCT_CATEGORY_LABEL,
-  type LifeCycleStage,
   type ProductBoundaryResult,
   type ProductCategory,
 } from './product-boundary';
 import {
-  DEFRA_2026_SOURCE,
   END_OF_LIFE_FACTORS,
   FREIGHT_FACTORS,
   type EndOfLifeRoute,
@@ -73,34 +71,11 @@ import {
 import { suggestFactorsByInputName } from './factor-suggestions';
 import SiteLayout from './SiteLayout';
 
-const STAGE_STATUS_LABEL: Record<ProductBoundaryResult['stageCoverage'][number]['status'], string> = {
-  covered: 'EF 3.1 covered by linked rows',
-  'ghg-only': 'Climate change (GHG) only',
-  'not-declared': 'Not declared',
-  'required-missing': 'Required, not covered',
-  'no-open-factor': 'Required, no open factor in bundled data',
-  excluded: 'Excluded on purpose',
-};
-
 type GhgFreightDraft = { mode: FreightMode; distanceKm: string };
 const FUNCTIONAL_UNIT_EXAMPLES: Record<ProductCategory, string[]> = {
   footwear: ["one pair of women's boots", 'one pair of sneakers'],
   apparel: ['one knitted t-shirt', 'one pair of trousers'],
 };
-/** Where each scenario stage is entered. Buttons focus these fields; hash links would change the route. */
-const SCENARIO_FIELD_FOR_STAGE: Partial<Record<LifeCycleStage, { id: string; label: string }>> = {
-  A2: { id: 'ghg-inbound-distance', label: 'Enter A2 distance' },
-  A4: { id: 'ghg-distribution-distance', label: 'Enter A4 distance' },
-  C2: { id: 'ghg-to-waste-distance', label: 'Enter C2 distance' },
-  C3: { id: 'ghg-end-of-life', label: 'Choose end-of-life route' },
-  C4: { id: 'ghg-end-of-life', label: 'Choose end-of-life route' },
-};
-function focusField(id: string) {
-  const element = document.getElementById(id);
-  if (!element) return;
-  element.scrollIntoView({ block: 'center' });
-  element.focus({ preventScroll: true });
-}
 const FREIGHT_MODE_OPTIONS = Object.entries(FREIGHT_FACTORS) as Array<[FreightMode, (typeof FREIGHT_FACTORS)[FreightMode]]>;
 const END_OF_LIFE_OPTIONS = Object.entries(END_OF_LIFE_FACTORS) as Array<[EndOfLifeRoute, (typeof END_OF_LIFE_FACTORS)[EndOfLifeRoute]]>;
 
@@ -1031,9 +1006,6 @@ function App() {
                 )}
                 <fieldset className="ghg-inputs">
                   <legend>Transport and end of life (climate change only)</legend>
-                  <p className="ghg-source-note">
-                    Factors: {DEFRA_2026_SOURCE.name}, retrieved {DEFRA_2026_SOURCE.retrieved}. These cover climate change (kg CO2e) only, not the 16 EF 3.1 indicators.
-                  </p>
                   <div className="form-grid two-col">
                     <TextField
                       select
@@ -1098,56 +1070,7 @@ function App() {
                       {END_OF_LIFE_OPTIONS.map(([id, option]) => (<MenuItem key={id} value={id}>{option.label}</MenuItem>))}
                     </TextField>
                   </div>
-                  <p className="ghg-subtotal" aria-live="polite">
-                    <strong>Climate change (GHG) layer, separate from the EF 3.1 subtotal:</strong>{' '}
-                    {productBoundary.ghg.totalKgCo2e === null
-                      ? 'no transport or end-of-life value declared yet.'
-                      : `${numberForDisplay(productBoundary.ghg.totalKgCo2e)} kg CO2e per functional unit for ${productBoundary.ghg.declaredStages.join(', ')} (not a complete footprint).`}
-                  </p>
-                  {productBoundary.ghg.lines.length > 0 && (
-                    <ul className="ghg-lines">
-                      {productBoundary.ghg.lines.map((line) => (
-                        <li key={line.stage}><strong>{line.stage}</strong> {line.label}: {numberForDisplay(line.kgCo2e)} kg CO2e <span className="ghg-detail">({line.detail})</span></li>
-                      ))}
-                    </ul>
-                  )}
                 </fieldset>
-                <div className={`product-boundary product-boundary-${productBoundary.verdict}`} aria-live="polite">
-                  <strong className="product-boundary-title">
-                    {functionalUnitDescription.trim() || 'Functional unit not set'}
-                  </strong>
-                  <p className="product-boundary-verdict">{productBoundary.verdictText}</p>
-                  <p className="product-boundary-subtotal">{productBoundary.subtotalLabel}</p>
-                  <ul className="stage-coverage-list" aria-label="Declared life-cycle stages">
-                    {productBoundary.stageCoverage.filter((item) => item.inBoundary).map((item) => (
-                      <li key={item.stage} className={`stage-coverage-item stage-${item.status}`}>
-                        <span className="stage-code">{item.stage}</span>
-                        <span className="stage-name">{item.label}</span>
-                        <span className="stage-status">{STAGE_STATUS_LABEL[item.status]}</span>
-                        {item.status === 'not-declared' && SCENARIO_FIELD_FOR_STAGE[item.stage] ? (
-                          <button type="button" className="stage-action" onClick={() => focusField(SCENARIO_FIELD_FOR_STAGE[item.stage]!.id)}>
-                            {SCENARIO_FIELD_FOR_STAGE[item.stage]!.label}
-                          </button>
-                        ) : null}
-                        {item.status === 'required-missing' ? (
-                          <button type="button" className="stage-action" onClick={() => focusField('product-inputs')}>
-                            Link a process row
-                          </button>
-                        ) : null}
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="stage-excluded-summary">
-                    Not in scope: {productBoundary.stageCoverage.filter((item) => !item.inBoundary).map((item) => `${item.stage} ${item.label.toLowerCase()}`).join(', ')}
-                  </p>
-                  {[...productBoundary.functionalUnitIssues, ...productBoundary.structureIssues].length > 0 && (
-                    <ul className="boundary-issues" aria-label="Structure issues">
-                      {[...productBoundary.functionalUnitIssues, ...productBoundary.structureIssues].map((issue) => (
-                        <li key={`${issue.code}-${issue.inputIds.join('-')}`} className={`boundary-issue boundary-issue-${issue.severity}`}>{issue.message}</li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
               </details>
             </section>
 

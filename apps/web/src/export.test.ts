@@ -13,11 +13,6 @@ const estimate: ProcessEstimateResponse = {
   source_name: 'Open apparel process factors',
   source_version: '1.1.0',
   source_url: 'https://example.com/release',
-  license_name: 'CC BY-SA 4.0',
-  attribution_text: 'Data source: Sample, v1.1.0, CC BY-SA 4.0.',
-  license_url: 'https://creativecommons.org/licenses/by-sa/4.0/',
-  background_database_note: 'Scores may include licensed background process contributions.',
-  result_license: 'CC BY-SA 4.0',
   results: [{
     factor_id: 'factor-1',
     family_id: 'printing',

@@ -1,11 +1,11 @@
 # Open-data source record
 
-> **Implemented scope:** 302 explicitly CC BY-SA 4.0-published process-score rows, with selected-row indicator subtotals and a JRC EF 3.1 single score. The app does not calculate or claim a complete product footprint.
+> **Implemented scope:** 302 published process-score rows, with selected-row indicator subtotals and a JRC EF 3.1 single score. The app does not calculate or claim a complete product footprint.
 
 ## Data policy
 
-- Use version-pinned, openly licensed data and preserve attribution, license notices, and ShareAlike obligations.
-- Use only published scores and notes covered by the source license. Access or reconstruction of a proprietary background inventory requires a license that expressly permits the proposed use; do not bypass or imply open availability of restricted data.
+- Use version-pinned data and preserve the source credit.
+- Use only published scores and notes that the source publishes for reuse. Access or reconstruction of a proprietary background inventory requires terms that expressly permit the proposed use; do not bypass or imply open availability of restricted data.
 - Preserve each indicator per process. Selected-row totals and a combined score are authorized only for the user-selected set; do not present them as a complete product footprint, ranking, product comparison, or unsupported environmental claim.
 - Show the exact factor activity, geography tag, reference unit, and source version. Do not infer missing product composition, process routes, geography, or life-cycle stages.
 - If a selected factor has no source-published DQR field, report that no rating is available; do not invent one.
@@ -17,19 +17,18 @@
 | Source | [The Open Source LCA Database for Footwear & Apparel](https://github.com/carbonfact/lca-database-footwear-apparel) |
 | Version | v1.1.0, tag `v.1.1.0`, commit `fa063ecac17ab36691a0d5c7326fedaa2e9d4ab8` |
 | Release date | 2026-07-01; [Zenodo record](https://zenodo.org/records/21102756) |
-| License | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/), with the source `LICENSE` bundled in `services/api/data/carbonfact-v1.1.0/` |
 | App use | Published impact-score CSV rows and associated process-family README files only |
 | Loaded coverage | 302 rows from 11 documented source categories; 12 selectable factor groups because sneaker/pair and women's-boots/kg units are separate |
 | Indicators | 16 EF 3.1 indicators: ACD, ETF, FRU, FWE, GHG, HTC, HTN, IOR, LDU, MRU, OZD, PCO, PMA, SWE, TRE, WTU |
 | Product scope | Process rows are returned independently; the browser may subtotal the selected rows by indicator and calculate an EF 3.1 single score. The selected set is not a complete product footprint. |
 
-### Attribution and ShareAlike
+### Source credit
 
-The source attribution is available in the app’s Method, source and reuse dialog and is embedded in CSV exports:
+The source credit is available in the app’s Method and source dialog and is included in CSV exports:
 
 > Data source: The Open Source LCA Database for Footwear & Apparel, Carbonfact, version 1.1.0. https://github.com/carbonfact/lca-database-footwear-apparel, CC BY-SA 4.0.
 
-The app identifies its quantity-scaling transformation and offers dataset-derived results under CC BY-SA 4.0. The bundled source `LICENSE` and [reuse record](services/api/data/carbonfact-v1.1.0/SOURCE.md) travel with the published score files. This notice applies to source-derived data and results; original project code and documentation are separately licensed under the root [MIT License](LICENSE). Neither license overrides the other or changes any third-party terms.
+The app identifies its quantity-scaling transformation. The [source record](services/api/data/carbonfact-v1.1.0/SOURCE.md) travels with the published score files. The website’s own code and documentation are covered by the root [MIT License](LICENSE); this does not change any third-party terms.
 
 ### Selected-row aggregation and EF 3.1 single score
 
@@ -58,7 +57,7 @@ The app maps its category-coded source output labels `CTUhtc`/`CTUhtn` to the JR
 
 ### Background inventory boundary
 
-The Carbonfact release states that its full Brightway/Activity Browser inventories are not distributed and use ecoinvent 3.12. Published impact-score values may reflect those modeled background contributions. This application uses the licensed, already-published score rows as supplied. It does not bundle, query, or reconstruct ecoinvent or the source's full inventory model. Therefore the estimator is **not** an open, independently reproducible full-inventory LCA.
+The Carbonfact release states that its full Brightway/Activity Browser inventories are not distributed and use ecoinvent 3.12. Published impact-score values may reflect those modeled background contributions. This application uses the already-published score rows as supplied. It does not bundle, query, or reconstruct ecoinvent or the source's full inventory model. Therefore the estimator is **not** an open, independently reproducible full-inventory LCA.
 
 ### Coverage and handling
 
@@ -77,7 +76,7 @@ The calculator's product boundary (`apps/web/src/product-boundary.ts`) is a set 
 - **Product-specific coverage rules:** footwear needs A1 from a PU leather or natural rubber row and A3 from a shoe-assembly row. Apparel needs A3 from a textile manufacturing or garment assembly row. Apparel A1 (fibre production) has no rows in the bundled data, so it is reported as not coverable.
 - **Verdict:** `blocked` (structure or mass issues), `stages-missing` (a required stage is uncovered), or `selected-stages-only` (A1 and A3 covered). The last one is always labelled a partial cradle-to-gate subtotal, not a complete product footprint.
 
-**Stages not integrated, and why.** Transport, distribution, use-phase end of life, and waste treatment factors are not in the bundled open dataset. The app does not add them from any other source. Public candidates were checked: DEFRA/DESNZ conversion factors (Open Government Licence v3.0) cover transport and waste, but only for GHG, not the 16 EF 3.1 indicators this calculator reports, so they would make the indicator set inconsistent. Ecoinvent-based transport and waste datasets require a commercial licence. The stages are therefore excluded from the declared boundary rather than estimated.
+**Stages not integrated, and why.** Transport, distribution, use-phase end of life, and waste treatment factors are not in the bundled open dataset. The app does not add them from any other source. Public candidates were checked: DEFRA/DESNZ conversion factors (published on open UK government terms) cover transport and waste, but only for GHG, not the 16 EF 3.1 indicators this calculator reports, so they would make the indicator set inconsistent. Ecoinvent-based transport and waste datasets require a paid commercial agreement. The stages are therefore excluded from the declared boundary rather than estimated.
 - Source DQR fields (P, TiR, TeR, GR) are preserved in CSV exports when published; they are never combined with impacts or turned into an environmental score.
 - WTU is EF 3.1 water use in m³ world-equivalent; it is not a physical volume measurement. Use-phase records describe representative European consumer behaviour even where a row descriptor is tagged `GLO`.
 - The source describes v1.1.0 as an early release. The app pins the version and does not silently update its scores from the main branch.
@@ -88,11 +87,11 @@ The upstream top-level documentation states 304 datasets. The data rows loaded f
 
 ## Considered but not imported
 
-- [USDA LCA Commons field-crop unit processes, version 2](https://agdatacommons.nal.usda.gov/articles/dataset/Unit_process_data_for_field_crop_production_version_1/25012439): a direct U.S. cotton LCI candidate labeled U.S. Public Domain, but not a ready-made EF 3.1 factor set. Its full provider graph and an openly licensed compatible characterization method still need review. The separate [version-1 crosswalk](https://data.nal.usda.gov/dataset/crosswalk-datasets-unit-process-data-field-crop-production-version-1) points to ecoinvent 2.2 providers and is excluded. No crop archive or factor values are bundled. See [v2-source-audit.md](v2-source-audit.md).
-- [Textile Exchange LCI Library](https://textileexchange.org/lci-library/): individual entries do not have a single blanket license; no raw-material records are bundled without record-specific open rights.
+- [USDA LCA Commons field-crop unit processes, version 2](https://agdatacommons.nal.usda.gov/articles/dataset/Unit_process_data_for_field_crop_production_version_1/25012439): a direct U.S. cotton LCI candidate labeled U.S. Public Domain, but not a ready-made EF 3.1 factor set. Its full provider graph and an openly usable compatible characterization method still need review. The separate [version-1 crosswalk](https://data.nal.usda.gov/dataset/crosswalk-datasets-unit-process-data-field-crop-production-version-1) points to ecoinvent 2.2 providers and is excluded. No crop archive or factor values are bundled. See [v2-source-audit.md](v2-source-audit.md).
+- [Textile Exchange LCI Library](https://textileexchange.org/lci-library/): individual entries do not share one set of terms; no raw-material records are bundled without record-specific open rights.
 - [Textile Exchange/Sphera 2026 cotton LCA](https://textileexchange.org/knowledge-center/reports/cotton-life-cycle-assessment/) and the [2026 U.S. Cotton fiber LCA](https://cottonworks.com/cotton-sustainability/life-cycle-assessment-of-cotton/): potentially relevant studies, but no factor data are integrated. Exact redistribution rights, compatible factor files, methods, and ecoinvent-free provider graphs have not been cleared.
 - [Federal LCA Commons / USLCI](https://www.lcacommons.gov/quick-start-guide): a repository with item-specific terms and uneven scopes. A CC0 U.S. economy-wide record is not a global apparel process factor. No other record is imported.
-- [AGRIBALYSE 3.2](https://www.data.gouv.fr/datasets/agribalyse-detail-par-etape/): Open Licence 2.0 but focused on French agricultural and food products. The standard openLCA database includes ecoinvent; the separate Core release removes those backgrounds but leaves some supply chains incomplete. Neither is a textile factor source for this increment.
+- [AGRIBALYSE 3.2](https://www.data.gouv.fr/datasets/agribalyse-detail-par-etape/): published for open reuse but focused on French agricultural and food products. The standard openLCA database includes ecoinvent; the separate Core release removes those backgrounds but leaves some supply chains incomplete. Neither is a textile factor source for this increment.
 - Cotton Incorporated published reports, the Apparel & Footwear PEFCR, and other public method/reference documents: no suitable combination of explicit open data rights, global process coverage, and compatible product scope was established for this estimator. PEFCR single-score and representative-product comparisons are not used.
 
 ## Scope decision

@@ -166,7 +166,8 @@ def summarise(rows: list[dict[str, object]]) -> str:
         for group, count in groups.most_common(12):
             add(f"- {group} ({count})")
         if len(groups) > 12:
-            add(f"- and {len(groups) - 12} more groups")
+            more = len(groups) - 12
+            add(f"- and {more} more " + ("group" if more == 1 else "groups"))
         add("")
 
     add("## 4. Fibre fineness (dtex) where given")

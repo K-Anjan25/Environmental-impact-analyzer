@@ -45,11 +45,6 @@ export interface FactorCatalog {
   source_name: string;
   source_version: string;
   source_url: string;
-  license_name: string;
-  attribution_text: string;
-  license_url: string;
-  result_license: string;
-  background_database_note: string;
   total_records: number;
   offset: number;
   limit: number;
@@ -95,40 +90,7 @@ export interface ProcessEstimateResponse {
   source_name: string;
   source_version: string;
   source_url: string;
-  license_name: string;
-  attribution_text: string;
-  license_url: string;
-  background_database_note: string;
-  result_license: string;
   results: ProcessEstimateLine[];
-}
-
-export interface ActiveDataSource {
-  id: string;
-  name: string;
-  version: string;
-  release_date: string;
-  publisher: string;
-  source_url: string;
-  repository_url: string;
-  changelog_url: string;
-  license_name: string;
-  license_url: string;
-  license_terms_url: string;
-  license_status: 'applied';
-  method_basis: string;
-  use_terms_summary: string;
-  attribution_text: string;
-  attribution_links: Array<{ label: string; url: string }>;
-  share_alike_required: true;
-  result_license: string;
-  background_database_note: string;
-  scope_summary: string;
-  factor_count: number;
-  family_count: number;
-  impact_indicators: string[];
-  limitations: string[];
-  active_for_process_estimates: true;
 }
 
 async function postJson<T>(path: string, body: unknown): Promise<T> {
@@ -156,12 +118,6 @@ export async function getFactorCatalog(): Promise<FactorCatalog> {
   const response = await fetch('/api/v1/factors?limit=500');
   if (!response.ok) throw new Error(`Could not load process factors (${response.status}).`);
   return (await response.json()) as FactorCatalog;
-}
-
-export async function getActiveSources(): Promise<ActiveDataSource[]> {
-  const response = await fetch('/api/v1/sources');
-  if (!response.ok) throw new Error(`Could not load the data source details (${response.status}).`);
-  return (await response.json()) as ActiveDataSource[];
 }
 
 export function calculateProcessEstimates(processes: ProcessSelection[]) {

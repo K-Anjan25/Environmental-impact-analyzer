@@ -2,8 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { assessGhgSupplement, DEFRA_2026_SOURCE, END_OF_LIFE_FACTORS, FREIGHT_FACTORS } from './ghg-supplement';
 
 describe('DEFRA 2026 GHG supplement', () => {
-  it('records the source, licence, and retrieval date', () => {
-    expect(DEFRA_2026_SOURCE.licence).toBe('Open Government Licence v3.0');
+  it('records the source and retrieval date', () => {
     expect(DEFRA_2026_SOURCE.retrieved).toBe('2026-10-22');
     expect(DEFRA_2026_SOURCE.scope).toContain('not one of the 16 EF 3.1 indicators');
   });

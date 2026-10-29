@@ -1,4 +1,4 @@
-"""Load the pinned, openly licensed Carbonfact v1.1.0 score files."""
+"""Load the pinned Carbonfact v1.1.0 process factor files."""
 
 from __future__ import annotations
 
@@ -27,19 +27,6 @@ SOURCE_NAME: Final = "The Open Source LCA Database for Footwear & Apparel"
 SOURCE_VERSION: Final = "1.1.0"
 SOURCE_URL: Final = (
     "https://github.com/carbonfact/lca-database-footwear-apparel/releases/tag/v.1.1.0"
-)
-SOURCE_LICENSE: Final = "Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)"
-LICENSE_URL: Final = "https://creativecommons.org/licenses/by-sa/4.0/"
-ATTRIBUTION: Final = (
-    "Data source: The Open Source LCA Database for Footwear & Apparel, Carbonfact, "
-    "version 1.1.0. https://github.com/carbonfact/lca-database-footwear-apparel, CC BY-SA 4.0."
-)
-RESULT_LICENSE: Final = "CC BY-SA 4.0"
-BACKGROUND_DATABASE_NOTE: Final = (
-    "The source states that its full Brightway / Activity Browser inventories are not "
-    "distributed and use ecoinvent 3.12. Published impact-score values may reflect those "
-    "modeled background contributions. This application includes, queries, and reconstructs "
-    "none of the underlying inventory files."
 )
 METHODOLOGY_VERSION: Final = "published-process-factor-scaling-v1.0"
 DATA_ROOT: Final = Path(__file__).resolve().parents[1] / "data" / "carbonfact-v1.1.0"
@@ -241,7 +228,7 @@ def _geography(descriptor: str) -> tuple[str | None, str | None]:
 def _load_spec(spec: DatasetSpec) -> list[ProcessFactor]:
     path = DATA_ROOT / spec.path
     if not path.is_file():
-        raise FileNotFoundError(f"Required licensed factor file is missing: {path}")
+        raise FileNotFoundError(f"Required factor file is missing: {path}")
 
     factors: list[ProcessFactor] = []
     with path.open("r", encoding="utf-8-sig", newline="") as source_file:
@@ -382,11 +369,6 @@ def query_factors(
         source_name=SOURCE_NAME,
         source_version=SOURCE_VERSION,
         source_url=SOURCE_URL,
-        license_name=SOURCE_LICENSE,
-        attribution_text=ATTRIBUTION,
-        license_url=LICENSE_URL,
-        result_license=RESULT_LICENSE,
-        background_database_note=BACKGROUND_DATABASE_NOTE,
         total_records=len(matches),
         offset=offset,
         limit=limit,
@@ -444,10 +426,5 @@ def build_process_estimate(request: ProcessEstimateRequest) -> ProcessEstimateRe
         source_name=SOURCE_NAME,
         source_version=SOURCE_VERSION,
         source_url=SOURCE_URL,
-        license_name=SOURCE_LICENSE,
-        attribution_text=ATTRIBUTION,
-        license_url=LICENSE_URL,
-        background_database_note=BACKGROUND_DATABASE_NOTE,
-        result_license=RESULT_LICENSE,
         results=result_lines,
     )

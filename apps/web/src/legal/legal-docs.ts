@@ -1,5 +1,5 @@
 // Legal documents, built from the repository's own files at deploy time.
-// The Dockerfile copies the root LICENSE, PRIVACY.md and TERMS.md, and the dataset LICENSE and SOURCE.md,
+// The Dockerfile copies the root LICENSE, PRIVACY.md and TERMS.md, and the dataset SOURCE.md,
 // so these relative paths resolve both in local builds and in the container build.
 import terms from '../../../../TERMS.md?raw';
 import privacy from '../../../../PRIVACY.md?raw';

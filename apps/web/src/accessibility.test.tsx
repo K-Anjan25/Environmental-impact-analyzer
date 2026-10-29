@@ -6,7 +6,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
 import LandingPage from './LandingPage';
 import type {
-  ActiveDataSource,
   FactorCatalog,
   ProcessEstimateResponse,
   ProcessFactor,
@@ -38,11 +37,6 @@ const catalog: FactorCatalog = {
   source_name: 'The Open Source LCA Database for Footwear & Apparel',
   source_version: '1.1.0',
   source_url: 'https://example.com/release',
-  license_name: 'CC BY-SA 4.0',
-  attribution_text: 'Data source: Carbonfact Open Source LCA Database v1.1.0, CC BY-SA 4.0.',
-  license_url: 'https://creativecommons.org/licenses/by-sa/4.0/',
-  result_license: 'CC BY-SA 4.0',
-  background_database_note: 'Full background inventories are not included or reconstructed.',
   total_records: 1,
   offset: 0,
   limit: 500,
@@ -54,37 +48,6 @@ const catalog: FactorCatalog = {
     reference_unit_note: 'Per 1 kg yarn.',
   }],
   factors: [factor],
-};
-
-const source: ActiveDataSource = {
-  id: 'carbonfact-apparel-footwear-v1.1.0',
-  name: 'The Open Source LCA Database for Footwear & Apparel',
-  version: '1.1.0',
-  release_date: '2026-07-01',
-  publisher: 'Carbonfact',
-  source_url: 'https://zenodo.org/records/21102756',
-  repository_url: 'https://github.com/carbonfact/lca-database-footwear-apparel/releases/tag/v.1.1.0',
-  changelog_url: 'https://github.com/carbonfact/lca-database-footwear-apparel/blob/v.1.1.0/CHANGELOG.md',
-  license_name: 'Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)',
-  license_url: 'https://creativecommons.org/licenses/by-sa/4.0/',
-  license_terms_url: 'https://github.com/carbonfact/lca-database-footwear-apparel/blob/v.1.1.0/README.md#license',
-  license_status: 'applied',
-  method_basis: 'Published EF 3.1 process factors scaled by the entered reference-unit quantity.',
-  use_terms_summary: 'Attribution is provided in the Method/source dialog and CSV; ShareAlike applies to derived results.',
-  attribution_text: catalog.attribution_text,
-  attribution_links: [
-    { label: 'Pinned source release', url: catalog.source_url },
-    { label: 'CC BY-SA 4.0 license', url: 'https://creativecommons.org/licenses/by-sa/4.0/' },
-  ],
-  share_alike_required: true,
-  result_license: 'CC BY-SA 4.0',
-  background_database_note: 'Full background inventories are not included or reconstructed.',
-  scope_summary: 'Published process factors; each selected process is returned separately.',
-  factor_count: 302,
-  family_count: 11,
-  impact_indicators: ['16 EF 3.1 indicators'],
-  limitations: ['Outputs are not a whole-product footprint.'],
-  active_for_process_estimates: true,
 };
 
 const indicatorDefinitions = [
@@ -111,15 +74,10 @@ const estimate: ProcessEstimateResponse = {
   methodology_version: 'published-process-factor-scaling-v1.0',
   scope: 'The API scales each selected factor independently and returns separate process rows. The browser may summarize selected rows, but no complete product boundary is established.',
   aggregation: 'none',
-  source_id: source.id,
-  source_name: source.name,
-  source_version: source.version,
-  source_url: source.repository_url,
-  license_name: source.license_name,
-  attribution_text: source.attribution_text,
-  license_url: source.license_url,
-  background_database_note: source.background_database_note,
-  result_license: 'CC BY-SA 4.0',
+  source_id: catalog.source_id,
+  source_name: catalog.source_name,
+  source_version: catalog.source_version,
+  source_url: catalog.source_url,
   results: [{
     factor_id: factor.id,
     family_id: factor.family_id,
@@ -147,7 +105,6 @@ function stubApi(catalogResponse: FactorCatalog = catalog): ReturnType<typeof vi
   const fetchMock = vi.fn().mockImplementation(async (input: RequestInfo | URL) => {
     const path = String(input);
     if (path === '/api/v1/factors?limit=500') return { ok: true, json: async () => catalogResponse };
-    if (path === '/api/v1/sources') return { ok: true, json: async () => [source] };
     if (path === '/api/v1/process-estimates') return { ok: true, json: async () => estimate };
     return { ok: false, status: 404, json: async () => ({ detail: 'Not found.' }) };
   });

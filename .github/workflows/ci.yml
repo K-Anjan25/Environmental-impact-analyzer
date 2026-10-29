@@ -60,10 +60,8 @@ jobs:
               legal_pages = {
                   "/legal/privacy.html": "Privacy notice",
                   "/legal/terms.html": "Terms of use",
-                  "/legal/license.html": "Software license",
                   "/legal/data-sources.html": "Open-data source record",
                   "/legal/source-record.html": "Carbonfact source record",
-                  "/legal/source-license.html": "Carbonfact dataset license",
               }
               for route, marker in legal_pages.items():
                   with urlopen(f"{base_url}{route}", timeout=5) as response:
@@ -83,7 +81,6 @@ jobs:
               with urlopen(request, timeout=10) as response:
                   estimate = json.load(response)
               assert len(estimate["results"][0]["indicators"]) == 16
-              assert estimate["license_url"] == "https://creativecommons.org/licenses/by-sa/4.0/"
           PY
       - name: Stop containers
         if: always()

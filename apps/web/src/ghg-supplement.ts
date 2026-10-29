@@ -2,15 +2,13 @@
  * Climate-change (GHG) supplement for transport and end-of-life stages.
  *
  * Source: UK Government GHG Conversion Factors for Company Reporting, 2026 edition (DEFRA/DESNZ),
- * published under the Open Government Licence v3.0. These factors are GHG only (kg CO2e, IPCC AR5
+ * published by the UK government. These factors are GHG only (kg CO2e, IPCC AR5
  * GWP-100, embedded). They are not EF 3.1 indicators, so they are never added to the 16-indicator
  * subtotal; the report shows them as a separate climate-change line.
  */
 
 export const DEFRA_2026_SOURCE = {
   name: 'UK Government GHG Conversion Factors for Company Reporting, 2026 (DEFRA/DESNZ)',
-  licence: 'Open Government Licence v3.0',
-  licenceUrl: 'https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/',
   publisherUrl: 'https://www.gov.uk/government/collections/government-conversion-factors-for-company-reporting',
   transcriptionNote:
     'Values transcribed from the DEFRA 2026 workbook as reproduced by GreenCalculus (greencalculus.com/standards/uk-defra-emission-factors/, sections 4.5 and 4.6, MasterBrain v2026.264). Re-verify against the gov.uk workbook before audit-grade disclosure.',

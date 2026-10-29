@@ -35,7 +35,6 @@ export const FALLBACK_GROUP_COUNT = 12;
 export const SOURCE_RELEASE_URL = 'https://github.com/carbonfact/lca-database-footwear-apparel';
 export const JRC_NORMALISATION_URL = 'https://eplca.jrc.ec.europa.eu/permalink/EF3_1/Normalisation_Weighting_Factors_EF_3.1.xlsx';
 export const JRC_WEIGHTING_URL = 'https://eplca.jrc.ec.europa.eu/permalink/2018_JRC_Weighting_EF.pdf';
-export const CC_BY_SA_URL = 'https://creativecommons.org/licenses/by-sa/4.0/';
 
 export const HERO = {
   eyebrow: 'Environmental Impact Analyzer',
@@ -107,7 +106,7 @@ export const SCOPE_ROWS: ScopeRow[] = [
   },
   {
     item: 'Textile fibre production (A1)',
-    covered: 'Nothing. No openly licensed A1 textile-fibre dataset is bundled.',
+    covered: 'Nothing. No A1 textile-fibre dataset is bundled.',
     notCovered: 'Any A1 claim. Results do not include fibre production unless a row says so.',
   },
   {
@@ -212,7 +211,7 @@ export const FAQS: Faq[] = [
   {
     question: 'Why does textile fibre production not appear?',
     answer:
-      'The bundled data has no openly licensed textile-fibre (A1) dataset, so the app does not present A1 as covered. Rows show only the stages their source documents.',
+      'The bundled data has no textile-fibre (A1) dataset, so the app does not present A1 as covered. Rows show only the stages their source documents.',
   },
 ];
 

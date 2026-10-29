@@ -22,17 +22,12 @@ renderer.html = ({ text }) => escapeHtml(text);
 const pageLinks = {
   'PRIVACY.md': '/legal/privacy.html',
   'TERMS.md': '/legal/terms.html',
-  'LICENSE': '/legal/license.html',
   'data-sources.md': '/legal/data-sources.html',
-  'services/api/data/carbonfact-v1.1.0/LICENSE': '/legal/source-license.html',
   'services/api/data/carbonfact-v1.1.0/SOURCE.md': '/legal/source-record.html',
 };
 
 function rewriteDocumentLinks(html, sourcePath) {
   const links = { ...pageLinks };
-  if (sourcePath === 'services/api/data/carbonfact-v1.1.0/SOURCE.md') {
-    links.LICENSE = '/legal/source-license.html';
-  }
   for (const [target, destination] of Object.entries(links)) {
     html = html.replaceAll(`href="${target}"`, `href="${destination}"`);
   }
@@ -74,7 +69,6 @@ function wrapPage(title, content) {
       <a href="/">Calculator</a>
       <a href="/legal/privacy.html">Privacy</a>
       <a href="/legal/terms.html">Terms</a>
-      <a href="/legal/license.html">Software license</a>
       <a href="/legal/data-sources.html">Data sources</a>
     </nav>
     ${content}
@@ -106,21 +100,3 @@ for (const page of markdownPages) {
   await writeFile(resolve(outputDirectory, page.output), wrapPage(page.title, content));
 }
 
-const licenseText = await readFile(resolve(repositoryDirectory, 'LICENSE'), 'utf8');
-const sourceLicenseText = await readFile(
-  resolve(repositoryDirectory, 'services/api/data/carbonfact-v1.1.0/LICENSE'),
-  'utf8',
-);
-
-const softwareLicensePage = `<h1>Software license</h1>
-<p>The MIT License below applies to original application code and project documentation only. It does not relicense the Carbonfact dataset or other third-party material. See the <a href="/legal/data-sources.html">data-source record</a> and <a href="/legal/source-license.html">dataset license</a>.</p>
-<pre>${escapeHtml(licenseText)}</pre>`;
-const datasetLicensePage = `<h1>Carbonfact dataset license</h1>
-<p>The following license applies to the bundled Carbonfact v1.1.0 dataset materials and dataset-derived results as described in the <a href="/legal/source-record.html">source record</a>.</p>
-<pre>${escapeHtml(sourceLicenseText)}</pre>`;
-
-await writeFile(resolve(outputDirectory, 'license.html'), wrapPage('Software license', softwareLicensePage));
-await writeFile(
-  resolve(outputDirectory, 'source-license.html'),
-  wrapPage('Carbonfact dataset license', datasetLicensePage),
-);

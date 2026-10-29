@@ -46,11 +46,6 @@ export function calculateFromCatalog(
     source_name: catalog.source_name,
     source_version: catalog.source_version,
     source_url: catalog.source_url,
-    license_name: catalog.license_name,
-    attribution_text: catalog.attribution_text,
-    license_url: catalog.license_url,
-    background_database_note: catalog.background_database_note,
-    result_license: catalog.result_license,
     results,
   };
 }

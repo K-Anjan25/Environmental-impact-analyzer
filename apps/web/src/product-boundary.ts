@@ -6,8 +6,8 @@ import { assessGhgSupplement, type GhgDeclarations, type GhgSupplementResult } f
  * Product boundary, functional unit, component hierarchy, and stage-coverage rules.
  *
  * Two layers are reported separately and never added together:
- * - EF 3.1 (16 indicators): only A1 and A3, from the bundled, openly licensed Carbonfact rows.
- * - Climate change (GHG) only: A2, A4, C2, C3 and C4, from DEFRA 2026 factors (OGL v3.0).
+ * - EF 3.1 (16 indicators): only A1 and A3, from the bundled Carbonfact rows.
+ * - Climate change (GHG) only: A2, A4, C2, C3 and C4, from DEFRA 2026 factors.
  * Use phase (B) and deconstruction (C1) are excluded on purpose and listed in every report.
  * A stage subtotal is never labelled complete; the best verdict is "partial-boundary".
  */
@@ -407,7 +407,7 @@ export function assessStageCoverage(
         covered: false,
         linkedProcessCount,
         status: 'no-open-factor',
-        note: rule?.reason ?? 'No licensed factor rows for this stage in the bundled data.',
+        note: rule?.reason ?? 'No factor rows for this stage in the bundled data.',
       };
     }
     const acceptedHit = [...(familiesByStage.get(stage) ?? [])].some((family) => acceptedFamilies.includes(family));

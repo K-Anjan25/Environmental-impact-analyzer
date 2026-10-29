@@ -182,7 +182,7 @@ describe('process estimator accessibility', () => {
     expect(legalNavigation).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Privacy policy' }).getAttribute('href')).toBe('#/legal/privacy');
     expect(screen.getByRole('link', { name: 'Terms of use' }).getAttribute('href')).toBe('#/legal/terms');
-    expect(screen.getByRole('link', { name: 'Website license' }).getAttribute('href')).toBe('#/legal/website-license');
+    expect(screen.queryByRole('link', { name: 'Website license' })).toBeNull();
     expect(screen.queryByRole('link', { name: 'Data sources' })).toBeNull();
   });
 
@@ -221,7 +221,7 @@ describe('process estimator accessibility', () => {
 
     const inputWorkspace = container.querySelector('.product-input-workspace');
     expect(inputWorkspace?.textContent).not.toMatch(/context only|not sent to the API|manual association|not calculated, not zero/i);
-    expect(screen.getByRole('heading', { name: 'Product inputs' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /Product inputs/ })).toBeTruthy();
 
     fireEvent.change(screen.getByRole('textbox', { name: 'Name (for example, cotton yarn)' }), {
       target: { value: 'Upper cotton fabric' },
@@ -337,7 +337,7 @@ describe('process estimator accessibility', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Add material' }));
     }
 
-    fireEvent.click(screen.getByText('Product mass check'));
+    fireEvent.click(screen.getByText('Optional checks: mass, transport, and life-cycle stages'));
     fireEvent.click(screen.getByRole('checkbox', { name: 'All declared lines are product components for one functional unit' }));
     fireEvent.change(screen.getByRole('spinbutton', { name: 'Finished product mass per functional unit (kg)' }), {
       target: { value: '0.35' },

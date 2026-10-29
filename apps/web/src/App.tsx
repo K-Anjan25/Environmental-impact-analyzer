@@ -43,7 +43,10 @@ import {
   type ProcessEstimateResponse,
   type ProcessFactor,
 } from './api';
-import { formatProcessEstimatesCsv, downloadProcessEstimatesCsv } from './export';
+import { formatProcessEstimatesCsv, downloadProcessEstimatesCsv, downloadBlob } from './export';
+import { buildResultReport, formatCompact, formatShare, type ProcessImpactRow, type ResultReport } from './result-report';
+import { buildResultWorkbook, workbookFilename } from './result-workbook';
+import { makeWatermarkPng } from './watermark';
 import { calculateFromCatalog } from './local-estimates';
 import {
   describeBomMassStatus,
@@ -139,75 +142,130 @@ function factorLabel(factor: ProcessFactor): string {
   return `${factor.activity} · ${geographyFor(factor)} · ${factor.reference_unit}`;
 }
 
-function ProcessResult({
+function IndicatorTable({ line }: { line: ProcessEstimateLine }) {
+  const water = line.indicators.find((item) => item.code === 'WTU');
+  return (
+    <TableContainer className="indicator-table-wrap">
+      <Table size="small" aria-label={`Separate environmental indicators for ${line.activity}`}>
+        <TableHead>
+          <TableRow>
+            <TableCell>Indicator</TableCell>
+            <TableCell align="right">Published factor</TableCell>
+            <TableCell align="right">Scaled result</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {line.indicators.map((indicator) => (
+            <TableRow key={indicator.code}>
+              <TableCell>
+                <strong className="indicator-code">{indicator.code}</strong>
+                <span className="indicator-name">{indicator.name}</span>
+              </TableCell>
+              <TableCell align="right">
+                <span className="numeric-value">{numberForDisplay(indicator.factor_value)}</span>
+                <span className="unit-note">{indicator.factor_unit}</span>
+              </TableCell>
+              <TableCell align="right">
+                <span className="numeric-value result-value">{numberForDisplay(indicator.result_value)}</span>
+                <span className="unit-note">{indicator.result_unit}</span>
+                {indicator.code === 'WTU' && water && (
+                  <Tooltip title="EF 3.1 water-use impact, not a physical water volume in litres.">
+                    <InfoOutlinedIcon className="unit-info-icon" aria-label="Water impact unit note" fontSize="small" />
+                  </Tooltip>
+                )}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+}
+
+function ResultHeadline({ report }: { report: ResultReport }) {
+  return (
+    <section className="result-headline" aria-labelledby="result-headline-heading">
+      <Typography id="result-headline-heading" component="h3" className="output-heading">Summary</Typography>
+      <div className="result-stat-grid">
+        <div className="result-stat result-stat-yellow">
+          <span>EF 3.1 total</span>
+          <strong>{formatCompact(report.efPointsTotal)}</strong>
+          <small>points · higher means more impact</small>
+        </div>
+        <div className="result-stat result-stat-pink">
+          <span>Climate change</span>
+          <strong>{formatCompact(report.ghgTotal)}</strong>
+          <small>{report.ghgUnit ?? 'GHG not available'}</small>
+        </div>
+        <div className="result-stat result-stat-green">
+          <span>Processes</span>
+          <strong>{report.processCount}</strong>
+          <small>selected rows</small>
+        </div>
+      </div>
+      <p className="result-sentence">{report.sentence}</p>
+      <p className="summary-scope-copy">Selected rows only. Not a complete product footprint.</p>
+    </section>
+  );
+}
+
+function ProcessImpactCard({
+  row,
   line,
   index,
   productInput,
   quantityBasisLabel,
 }: {
+  row: ProcessImpactRow;
   line: ProcessEstimateLine;
   index: number;
   productInput: ProductInput | null;
   quantityBasisLabel: string;
 }) {
-  const water = line.indicators.find((item) => item.code === 'WTU');
-  const headingId = `result-${index}-${line.factor_id}`;
-
+  const headingId = `impact-${index}-${line.factor_id}`;
+  const share = row.sharePercent;
   return (
-    <article className="process-result" aria-labelledby={headingId}>
-      <div className="process-result-heading">
-        <div>
-          <div className="result-overline">{line.family_label}</div>
-          <Typography id={headingId} component="h3" className="process-result-title">
-            {line.activity}
-          </Typography>
-          <div className="process-result-meta">
-            <Chip size="small" label={geographyFor(line)} className="geo-chip" />
-            <span>{numberForDisplay(line.quantity)} × {line.reference_unit}</span>
-          </div>
-          {productInput && (
-            <p className="product-input-result-context">
-              <strong>Input mapping:</strong> {productInput.name} · {productInput.quantity} {productInput.unit} · {quantityBasisLabel}
-            </p>
-          )}
+    <article className="process-impact-card" aria-labelledby={headingId}>
+      <div className="process-impact-top">
+        <span className="process-impact-index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+        <div className="process-impact-name">
+          <Typography id={headingId} component="h4" className="process-impact-title">{row.activity}</Typography>
+          <span className="process-impact-meta">
+            {row.familyLabel} · {row.geography} · {numberForDisplay(row.quantity)} × {row.referenceUnit}
+          </span>
         </div>
       </div>
-
-      <TableContainer className="indicator-table-wrap">
-        <Table size="small" aria-label={`Separate environmental indicators for ${line.activity}`}>
-          <TableHead>
-            <TableRow>
-              <TableCell>Indicator</TableCell>
-              <TableCell align="right">Published factor</TableCell>
-              <TableCell align="right">Scaled result</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {line.indicators.map((indicator) => (
-              <TableRow key={indicator.code}>
-                <TableCell>
-                  <strong className="indicator-code">{indicator.code}</strong>
-                  <span className="indicator-name">{indicator.name}</span>
-                </TableCell>
-                <TableCell align="right">
-                  <span className="numeric-value">{numberForDisplay(indicator.factor_value)}</span>
-                  <span className="unit-note">{indicator.factor_unit}</span>
-                </TableCell>
-                <TableCell align="right">
-                  <span className="numeric-value result-value">{numberForDisplay(indicator.result_value)}</span>
-                  <span className="unit-note">{indicator.result_unit}</span>
-                  {indicator.code === 'WTU' && water && (
-                    <Tooltip title="EF 3.1 water-use impact, not a physical water volume in litres.">
-                      <InfoOutlinedIcon className="unit-info-icon" aria-label="Water impact unit note" fontSize="small" />
-                    </Tooltip>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
+      <dl className="process-impact-figures">
+        <div>
+          <dt>EF 3.1 points</dt>
+          <dd>{formatCompact(row.efPoints)}</dd>
+        </div>
+        <div>
+          <dt>Share of total</dt>
+          <dd>{formatShare(share)}</dd>
+        </div>
+        <div>
+          <dt>Climate change</dt>
+          <dd>{row.ghgValue === null ? '—' : `${formatCompact(row.ghgValue)} ${row.ghgUnit ?? ''}`}</dd>
+        </div>
+      </dl>
+      {share !== null && (
+        <div className="share-bar" aria-hidden="true"><span style={{ width: `${Math.min(100, Math.max(0, share))}%` }} /></div>
+      )}
+      {row.driver && (
+        <p className="process-driver">
+          Biggest driver: <strong>{row.driver.name}</strong> ({row.driver.code}), {formatShare(row.driver.sharePercent)} of this row.
+        </p>
+      )}
+      {productInput && (
+        <p className="product-input-result-context">
+          <strong>Input mapping:</strong> {productInput.name} · {productInput.quantity} {productInput.unit} · {quantityBasisLabel}
+        </p>
+      )}
+      <details className="indicator-disclosure">
+        <summary>Show all 16 indicators</summary>
+        <IndicatorTable line={line} />
+      </details>
     </article>
   );
 }
@@ -720,6 +778,38 @@ function App() {
     }
   };
 
+  const resultReport = useMemo(() => (result ? buildResultReport(result.results) : null), [result]);
+
+  const exportExcel = async () => {
+    if (!result || !resultReport) return;
+    const now = new Date();
+    const blob = await buildResultWorkbook({
+      result,
+      report: resultReport,
+      summary: selectedProcessSummary,
+      inputs: selectedProcesses.map((line) => {
+        const linkedInput = line.productInputId ? productInputsById.get(line.productInputId) ?? null : null;
+        const mapping = deriveProcessQuantity(line.factor, line.quantity, linkedInput, line.quantityBasis);
+        const calculated = result.results.find((item) => item.factor_id === line.factor.id);
+        return {
+          activity: line.factor.activity,
+          familyLabel: line.factor.family_label,
+          geography: geographyFor(line.factor),
+          referenceUnit: line.factor.reference_unit,
+          quantity: calculated?.quantity ?? Number(line.quantity),
+          basis: line.quantityBasis,
+          basisLabel: mapping.basisLabel,
+          productInputName: linkedInput?.name ?? null,
+        };
+      }),
+      functionalUnitLabel: functionalUnitDescription.trim() || 'Not given',
+      categoryLabel: PRODUCT_CATEGORY_LABEL[functionalUnitCategory],
+      generatedAt: now,
+      watermarkPng: await makeWatermarkPng(),
+    });
+    downloadBlob(blob, workbookFilename(now));
+  };
+
   const exportResults = () => {
     if (!result) return;
     const csv = formatProcessEstimatesCsv(result, {
@@ -762,7 +852,7 @@ function App() {
           <Paper component="section" elevation={0} className="form-card estimator-card ui-art-form" aria-labelledby="calculator-heading">
             <div className="card-heading-row">
               <div>
-                <div className="step-label">SELECT PROCESS DATA</div>
+                <div className="step-label">STEP 2 · ADD PROCESSES</div>
                 <Typography id="calculator-heading" component="h2" variant="h5" className="card-title">Build a process estimate.</Typography>
               </div>
                           </div>
@@ -776,7 +866,7 @@ function App() {
             <section id="product-inputs" className="product-input-workspace" aria-labelledby="product-input-heading">
               <div className="product-input-heading-row">
                 <Typography id="product-input-heading" component="h3" className="product-input-title">
-                  Product inputs
+                  Step 1 · Product inputs (optional)
                 </Typography>
                 <Chip label={`${productInputs.length} / ${MAX_PRODUCT_INPUTS}`} size="small" className="soft-chip" />
               </div>
@@ -857,7 +947,7 @@ function App() {
                 </Stack>
               )}
               <details className="bom-mass-check-workspace">
-                <summary>Product mass check</summary>
+                <summary>Optional checks: mass, transport, and life-cycle stages</summary>
                 <div className="functional-unit-fields">
                   <FormControl size="small" fullWidth>
                     <InputLabel id="functional-unit-category-label">Product category</InputLabel>
@@ -1294,8 +1384,8 @@ function App() {
           <Paper component="section" elevation={0} className="result-card result-panel ui-art-result" aria-labelledby="results-heading">
             <div className="result-card-top">
               <div>
-                <div className="step-label">INDICATORS + SUBTOTAL</div>
-                <Typography id="results-heading" component="h2" variant="h5" className="card-title">Process results.</Typography>
+                <div className="step-label">STEP 3 · RESULTS</div>
+                <Typography id="results-heading" component="h2" variant="h5" className="card-title">Your results.</Typography>
               </div>
               {result && <Chip label="Calculated" size="small" className="calculated-chip" />}
             </div>
@@ -1315,42 +1405,55 @@ function App() {
               <div className="catalog-loading calculation-loading" aria-busy="true"><CircularProgress size={24} aria-label="Calculating process indicators and selected-row subtotal" /></div>
             )}
 
-            {result && (
+            {result && resultReport && (
               <div className="results-output">
                 <div className="result-intro">
                   <span className="result-scope-label">Selected rows only</span>
-                  <Button size="small" startIcon={<FileDownloadOutlinedIcon />} onClick={exportResults}>
-                    Download CSV
-                  </Button>
+                  <div className="result-actions">
+                    <Button size="small" variant="contained" startIcon={<FileDownloadOutlinedIcon />} onClick={exportExcel}>
+                      Download Excel
+                    </Button>
+                    <Button size="small" startIcon={<FileDownloadOutlinedIcon />} onClick={exportResults}>
+                      Download CSV
+                    </Button>
+                  </div>
                 </div>
+                <ResultHeadline report={resultReport} />
+                <section className="result-processes" aria-labelledby="impact-by-process-heading">
+                  <Typography id="impact-by-process-heading" component="h3" className="output-heading">Impact by process</Typography>
+                  <Stack spacing={2}>
+                    {resultReport.processes.map((row, index) => {
+                      const line = result.results[index];
+                      const selectedProcess = selectedProcesses.find((item) => item.factor.id === line.factor_id);
+                      const productInput = selectedProcess?.productInputId
+                        ? productInputsById.get(selectedProcess.productInputId) ?? null
+                        : null;
+                      const quantityMapping = selectedProcess
+                        ? deriveProcessQuantity(selectedProcess.factor, selectedProcess.quantity, productInput, selectedProcess.quantityBasis)
+                        : null;
+                      return (
+                        <ProcessImpactCard
+                          key={row.key}
+                          row={row}
+                          line={line}
+                          index={index}
+                          productInput={productInput}
+                          quantityBasisLabel={quantityMapping?.basisLabel ?? 'Manual process quantity'}
+                        />
+                      );
+                    })}
+                  </Stack>
+                </section>
                 {selectedProcessSummary && (
-                  <SelectedProcessSummaryCard
-                    summary={selectedProcessSummary}
-                    inputUseReview={productInputUseReview}
-                    bomMassAssessment={bomMassAssessment}
-                  />
+                  <details className="result-details">
+                    <summary>Totals by indicator and EF 3.1 table</summary>
+                    <SelectedProcessSummaryCard
+                      summary={selectedProcessSummary}
+                      inputUseReview={productInputUseReview}
+                      bomMassAssessment={bomMassAssessment}
+                    />
+                  </details>
                 )}
-                <Stack spacing={2}>
-                  {result.results.map((line, index) => {
-                    const selectedProcess = selectedProcesses.find((item) => item.factor.id === line.factor_id);
-                    const productInput = selectedProcess?.productInputId
-                      ? productInputsById.get(selectedProcess.productInputId) ?? null
-                      : null;
-                    const quantityMapping = selectedProcess
-                      ? deriveProcessQuantity(selectedProcess.factor, selectedProcess.quantity, productInput, selectedProcess.quantityBasis)
-                      : null;
-                    return (
-                      <ProcessResult
-                        line={line}
-                        index={index}
-                        productInput={productInput}
-                        quantityBasisLabel={quantityMapping?.basisLabel ?? 'Manual process quantity'}
-                        key={`${index}-${line.factor_id}`}
-                      />
-                    );
-                  })}
-                </Stack>
-
               </div>
             )}
           </Paper>

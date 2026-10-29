@@ -109,7 +109,6 @@ npm run build --prefix apps/web
 
 The app footer links to Privacy, Terms, and Website license pages; Vite generates the Privacy and Terms pages from the root Markdown sources during development and production builds. The privacy notice and terms now include the operator details, linked contact page, and a proposed India-law/India-venue clause at the operator's direction; confirm identity, contact monitoring, legal suitability, and live Vercel processing before public Production. See [`roadmap.md`](roadmap.md).
 
-- [Website license (MIT)](LICENSE)
 - [Privacy notice](PRIVACY.md)
 - [Terms of use](TERMS.md)
 - [Contributing guide](CONTRIBUTING.md)

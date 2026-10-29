@@ -53,7 +53,6 @@ export default function LandingFooter() {
           <ul>
             <li><a href="#/legal/terms">Terms of use</a></li>
             <li><a href="#/legal/privacy">Privacy policy</a></li>
-            <li><a href="#/legal/website-license">Website license</a></li>
           </ul>
         </nav>
       </div>

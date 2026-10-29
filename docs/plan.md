@@ -121,17 +121,17 @@ mindmap
 
 Each item is written so it can be answered without knowing the terms.
 
-- **D1. Required credit for the source data.** The source data asks for a credit line and "share-alike" (derived results must carry the same openness). The app shows the credit in the method dialog and CSV, and the source record is kept. Question: keep the credit line visible everywhere, or only in the export and source record? Removing it entirely needs a legal review first.
-- **D2. Process coverage.** Current proposal: all 12 process families. Confirm, or name the families to hide.
+- **D1. Required credit for the source data (decided: CSV and source record only).** The source data asks for a credit line and "share-alike" (derived results must carry the same openness). The app shows the credit in the method dialog and CSV, and the source record is kept. Decision: the credit line is in every CSV row (`source_credit`) and in the source record, not on the calculator. Removing it entirely needs a legal review first.
+- **D2. Process coverage (decided: all 12 families).**
 - **D3. Who checks process names and the dtex assumption?** Process names come from the source descriptions and may be hard to read. The cotton report assumes a 330 dtex spinning-to-knitting match. Confirm who reviews these before launch.
-- **D4. Show data-quality ratings?** The ratings tell users how reliable each factor is. They are kept in the data but hidden. Show them as a simple label, or keep them hidden?
+- **D4. Show data-quality ratings? (decided: keep hidden for now).** The ratings are kept in the clean data file. Revisit once the audience is confirmed.
 - **D5. Which EF 3.1 file version is official?** The normalisation and weighting values are transcribed from JRC files. Confirm the version to cite.
 - **D6. Production deployment.** Vercel push was denied. Confirm the hosting target before launch.
 - **D7. Legal pages.** Privacy, terms, and website licence pages are drafts. Confirm the operator name, contact, governing law, and jurisdiction.
 
 ## 7. Next moves (proposed order)
 
-1. Answer D1 to D7 (above). Then update the legal text and the source-credit placement to match.
+1. Confirm D3, D5, D6, and D7 (still open). Confirm the legal text matches D1.
 2. Resolve deployment (D6) and confirm the production route serves the calculator.
 3. Measure the Docker image instead of estimating it.
 4. Add a short walkthrough for students and a "how to read the result" note for designers.

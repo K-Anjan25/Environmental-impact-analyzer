@@ -8,6 +8,10 @@ import {
 import { describeBomMassStatus } from './product-bom';
 import { assessProductBoundary, type FunctionalUnitDefinition } from './product-boundary';
 import { DEFRA_2026_SOURCE, type GhgDeclarations } from './ghg-supplement';
+
+// Required credit for the bundled source data, carried in every CSV export row.
+const SOURCE_CREDIT =
+  'Data source: The Open Source LCA Database for Footwear & Apparel, Carbonfact, version 1.1.0. https://github.com/carbonfact/lca-database-footwear-apparel, CC BY-SA 4.0.';
 import type { ProcessQuantityBasis } from './product-quantity';
 import type { SelectedProcessSummary } from './product-summary';
 
@@ -82,6 +86,7 @@ const columns = [
   'dqr_geographical_representativeness',
   'source_version',
   'source_url',
+  'source_credit',
   'aggregation',
   'bom_scope_confirmed',
   'bom_mass_status',
@@ -144,6 +149,7 @@ export function formatProcessEstimatesCsv(
         weighting_source_url: factor ? EF31_WEIGHTING_SOURCE : '',
         source_version: result.source_version,
         source_url: result.source_url,
+        source_credit: SOURCE_CREDIT,
         aggregation: 'sum of selected process rows only; not a completeness claim',
       });
     }
@@ -159,6 +165,7 @@ export function formatProcessEstimatesCsv(
         weighting_source_url: context.summary.singleScore.weightingSourceUrl,
         source_version: result.source_version,
         source_url: result.source_url,
+        source_credit: SOURCE_CREDIT,
         aggregation: 'sum of 16 normalised and weighted selected-row indicator totals',
       });
     }
@@ -275,6 +282,7 @@ export function formatProcessEstimatesCsv(
         dqr_geographical_representativeness: line.data_quality?.geographical_representativeness,
         source_version: result.source_version,
         source_url: result.source_url,
+        source_credit: SOURCE_CREDIT,
         aggregation: 'separate process row; included in selected-row subtotal when available',
       });
     }

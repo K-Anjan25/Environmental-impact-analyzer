@@ -24,7 +24,7 @@
 
 ### Source credit
 
-The source credit is available in the app’s Method and source dialog and is included in CSV exports:
+The source credit is included in every CSV export (column `source_credit`) and in the source record. It is not shown on the calculator screen. The credit line reads:
 
 > Data source: The Open Source LCA Database for Footwear & Apparel, Carbonfact, version 1.1.0. https://github.com/carbonfact/lca-database-footwear-apparel, CC BY-SA 4.0.
 

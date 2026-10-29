@@ -382,26 +382,17 @@ describe('process estimator accessibility', () => {
     await expectNoAxeViolations();
   });
 
-  it('downloads the calculated CSV from the results panel', async () => {
+  it('holds the CSV and Excel downloads until the boundary issues are fixed', async () => {
     stubApi();
     render(<App />);
     await calculateExample();
 
-    const createObjectURL = vi.fn().mockReturnValue('blob:csv-download');
-    const revokeObjectURL = vi.fn();
-    vi.stubGlobal('URL', { createObjectURL, revokeObjectURL });
-    const downloadClick = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
-      expect(this.download).toBe('environmental-process-estimates.csv');
-      expect(this.href).toBe('blob:csv-download');
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: 'Download CSV' }));
-
-    expect(createObjectURL).toHaveBeenCalledOnce();
-    expect(createObjectURL.mock.calls[0][0]).toBeInstanceOf(Blob);
-    expect((createObjectURL.mock.calls[0][0] as Blob).type).toBe('text/csv;charset=utf-8');
-    expect(downloadClick).toHaveBeenCalledOnce();
-    expect(revokeObjectURL).toHaveBeenCalledWith('blob:csv-download');
+    const csv = screen.getByRole('button', { name: 'Download CSV' });
+    const excel = screen.getByRole('button', { name: 'Download Excel' });
+    expect(csv.hasAttribute('disabled')).toBe(true);
+    expect(excel.hasAttribute('disabled')).toBe(true);
+    expect(csv.getAttribute('aria-describedby')).toBe('exports-locked-note');
+    expect(screen.getByText('Downloads unlock when the Step 2 items are fixed.')).toBeTruthy();
   });
 
 });

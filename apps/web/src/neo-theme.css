@@ -626,3 +626,15 @@ summary {
 
 /* Summary tiles while subtotals are held back */
 .result-stat-hidden { font-size: 1.25rem; font-weight: 800; letter-spacing: 0.02em; }
+
+/* Download buttons are held while subtotals are hidden */
+.exports-locked-note { font-size: 13px; font-weight: 700; color: #000; }
+
+/* Visible keyboard focus (WCAG 2.4.7): the neo borders are forced black, so focus needs its own ring. */
+:where(input, textarea, select, [role="combobox"], button, a, summary, [tabindex]):focus-visible {
+  outline: 3px solid #000 !important;
+  outline-offset: 2px;
+}
+.MuiOutlinedInput-root.Mui-focused {
+  box-shadow: 0 0 0 3px #FFD23F;
+}

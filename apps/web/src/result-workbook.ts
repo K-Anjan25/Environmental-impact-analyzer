@@ -1,5 +1,6 @@
 import type { ProcessEstimateResponse } from './api';
 import type { ProcessQuantityBasis } from './product-quantity';
+import { BRAND_MARK_PNG_BASE64 } from './brand-mark';
 import type { ResultReport } from './result-report';
 import type { SelectedProcessSummary } from './product-summary';
 import { EF31_NORMALISATION_SOURCE, EF31_WEIGHTING_SOURCE } from './ef31-score';
@@ -11,7 +12,7 @@ import { EF31_NORMALISATION_SOURCE, EF31_WEIGHTING_SOURCE } from './ef31-score';
  * viewers that do not recalculate still show values.
  */
 
-export const BRAND_NAME = 'Environmental Impact Analyzer';
+export const BRAND_NAME = 'EcoImpact Lab';
 export const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 export const SOURCE_CREDIT =
   'Data source: The Open Source LCA Database for Footwear & Apparel, Carbonfact, version 1.1.0. https://github.com/carbonfact/lca-database-footwear-apparel, CC BY-SA 4.0.';
@@ -312,8 +313,13 @@ export async function buildResultWorkbook(input: WorkbookInput): Promise<Blob> {
   impactsSheet.views = [{ state: 'frozen', xSplit: 2, ySplit: firstRow - 1, showGridLines: false }];
 
   // ── Summary: formulas point at the sheets above ─────────────────────────────
-  cover.getCell('A1').value = BRAND_NAME;
-  cover.getCell('A1').font = { name: 'Arial', size: 18, bold: true };
+  // Brand mark and wordmark replace the old text title in row 1.
+  const logoId = workbook.addImage({ base64: BRAND_MARK_PNG_BASE64, extension: 'png' });
+  cover.addImage(logoId, { tl: { col: 0, row: 0 }, ext: { width: 44, height: 44 } });
+  cover.getRow(1).height = 52;
+  cover.getCell('B1').value = BRAND_NAME;
+  cover.getCell('B1').font = { name: 'Arial', size: 20, bold: true };
+  cover.getCell('B1').alignment = { vertical: 'middle' };
   cover.getCell('A2').value = 'Process impact report (estimate)';
   cover.getCell('A2').font = { name: 'Arial', size: 12, italic: true };
   const top = input.report.biggestProcess;
@@ -359,7 +365,8 @@ export async function buildResultWorkbook(input: WorkbookInput): Promise<Blob> {
     rows: summaryTable as (string | number)[][],
   });
   headerRow(cover, 4);
-  cover.getCell('B9').numFmt = '#,##0.000000E+00';
+  const EF_FORMAT = '[<0.001]0.000E+00;#,##0.000';
+  cover.getCell('B9').numFmt = EF_FORMAT;
   cover.getCell('B10').numFmt = '#,##0.000';
   cover.getCell('B12').numFmt = '0.0%';
   cover.getCell('A14').value = 'Scope';
@@ -374,6 +381,40 @@ export async function buildResultWorkbook(input: WorkbookInput): Promise<Blob> {
   cover.mergeCells('A18:C18');
   cover.getCell('A18').alignment = { wrapText: true, vertical: 'top' };
   cover.getRow(18).height = 32;
+
+  // Calculated processes live on the Summary too, linked to the Impacts sheet.
+  if (n > 0) {
+    const ghgUnitLabel = input.report.ghgUnit ?? 'GHG';
+    cover.getCell('A20').value = 'Calculated processes';
+    cover.getCell('A20').font = { name: 'Arial', bold: true, size: 12 };
+    const processCells: Cell[][] = input.report.processes.map((process, index) => {
+      const src = firstRow + index;
+      return [
+        { formula: `Impacts!B${src}`, result: process.activity },
+        `${process.familyLabel} · ${process.geography} · ${process.quantity} × ${process.referenceUnit}`,
+        { formula: `Impacts!E${src}`, result: process.efPoints ?? 'n/a' },
+        { formula: `Impacts!F${src}`, result: process.sharePercent === null ? 'n/a' : process.sharePercent / 100 },
+        ghgOffset >= 0
+          ? { formula: `Impacts!${indicatorLetter(ghgOffset)}${src}`, result: process.ghgValue ?? 'n/a' }
+          : 'n/a',
+      ];
+    });
+    cover.addTable({
+      name: 'tblProcesses',
+      ref: 'A21',
+      headerRow: true,
+      style: { theme: 'TableStyleMedium2', showRowStripes: true },
+      columns: ['Process', 'Details', 'EF 3.1 points', 'Share of total', `Climate change (${ghgUnitLabel})`].map((name) => ({ name })),
+      rows: processCells as (string | number)[][],
+    });
+    headerRow(cover, 21);
+    for (let i = 0; i < n; i++) {
+      const r = 22 + i;
+      cover.getCell(`C${r}`).numFmt = EF_FORMAT;
+      cover.getCell(`D${r}`).numFmt = '0.0%';
+      cover.getCell(`E${r}`).numFmt = '#,##0.000';
+    }
+  }
 
   // ── Method and source ──────────────────────────────────────────────────────
   writeTitle(method, 'Method and source', 'How the numbers are made and where the factors come from.');

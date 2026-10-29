@@ -286,7 +286,7 @@ button, input, textarea { font: inherit; }
 }
 
 /* Cohesive focus: no heavy boxes on inputs, the field border carries the state */
-.MuiInputBase-input:focus, .MuiInputBase-input:focus-visible { outline: none !important; }
+/* Focus rings for inputs come from neo-theme.css (outline removed here so keyboard focus stays visible). */
 .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline { border-color: #3f7f93 !important; border-width: 1.5px; box-shadow: 0 0 0 3px rgba(169, 224, 241, 0.14); }
 .MuiOutlinedInput-root { transition: box-shadow 200ms ease; }
 
@@ -359,7 +359,7 @@ body { background: #F7F9E1; }
 .post-card-link { color: inherit; text-decoration: none; }
 .post-card-link::after { content: ''; position: absolute; inset: 0; }
 .post-card-link:hover { text-decoration: underline; }
-.post-card-link:focus-visible { outline: none; }
+.post-card-link:focus-visible { outline: 3px solid #000; outline-offset: 2px; }
 .post-card:focus-within { outline: 2px solid #5a6fd6; outline-offset: 2px; }
 .post-card-summary { margin: 0; color: #2f4650; font-size: 15px; line-height: 1.55; }
 .post-card-source { margin: auto 0 0; color: #4a5f68; font-size: 13px; }

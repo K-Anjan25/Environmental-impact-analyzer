@@ -42,7 +42,8 @@ describe('buildResultWorkbook', () => {
       'Summary', 'Inputs', 'Impacts', 'EF 3.1 score', 'Method and source',
     ]);
     const summary = workbook.getWorksheet('Summary');
-    expect(summary?.getCell('A1').value).toBe(BRAND_NAME);
+    expect(summary?.getCell('B1').value).toBe(BRAND_NAME);
+    expect(summary?.getImages().length).toBe(1);
     expect(summary?.getCell('B5').value).toBe('One T-shirt');
     expect(String(summary?.getCell('B7').value)).toContain('IST');
   });
@@ -65,7 +66,8 @@ describe('buildResultWorkbook', () => {
       expect(sheet.headerFooter.oddFooter).toContain('Page &P of &N');
     }
     const raw = new TextDecoder('latin1').decode(new Uint8Array(await blob.arrayBuffer()));
-    expect(raw).not.toContain('xl/media/');
+    // The only image is the EcoImpact Lab leaf mark; no watermark image.
+    expect(raw.split('xl/media/').length - 1).toBeGreaterThan(0);
   });
 
   it('stores each table as a real Excel table with live formulas', async () => {

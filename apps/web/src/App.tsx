@@ -788,6 +788,7 @@ function App() {
 
   const resultReport = useMemo(() => (result ? buildResultReport(result.results) : null), [result]);
 
+  const exportsLocked = productBoundary.verdict === 'blocked';
   const exportExcel = async () => {
     if (!result || !resultReport) return;
     const now = new Date();
@@ -1415,12 +1416,15 @@ function App() {
                 <div className="result-intro">
                   <span className="result-scope-label">Selected rows only</span>
                   <div className="result-actions">
-                    <Button size="small" variant="contained" startIcon={<FileDownloadOutlinedIcon />} onClick={exportExcel}>
+                    <Button size="small" variant="contained" startIcon={<FileDownloadOutlinedIcon />} onClick={exportExcel} disabled={exportsLocked} aria-describedby={exportsLocked ? 'exports-locked-note' : undefined}>
                       Download Excel
                     </Button>
-                    <Button size="small" startIcon={<FileDownloadOutlinedIcon />} onClick={exportResults}>
+                    <Button size="small" startIcon={<FileDownloadOutlinedIcon />} onClick={exportResults} disabled={exportsLocked} aria-describedby={exportsLocked ? 'exports-locked-note' : undefined}>
                       Download CSV
                     </Button>
+                    {exportsLocked && (
+                      <span id="exports-locked-note" className="exports-locked-note">Downloads unlock when the Step 2 items are fixed.</span>
+                    )}
                   </div>
                 </div>
                 <ResultHeadline report={resultReport} subtotalsHidden={productBoundary.verdict === 'blocked'} />

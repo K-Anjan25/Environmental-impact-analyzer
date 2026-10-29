@@ -1004,8 +1004,8 @@ function App() {
                     <strong>{describeBomMassStatus(bomMassAssessment)}</strong>
                   </div>
                 )}
-                <fieldset className="ghg-inputs">
-                  <legend>Transport and end of life (climate change only)</legend>
+                <details className="ghg-inputs ghg-accordion">
+                  <summary>Transport and end of life (climate change only)</summary>
                   <div className="form-grid two-col">
                     <TextField
                       select
@@ -1070,7 +1070,7 @@ function App() {
                       {END_OF_LIFE_OPTIONS.map(([id, option]) => (<MenuItem key={id} value={id}>{option.label}</MenuItem>))}
                     </TextField>
                   </div>
-                </fieldset>
+                </details>
               </details>
             </section>
 

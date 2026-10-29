@@ -638,3 +638,54 @@ summary {
 .MuiOutlinedInput-root.Mui-focused {
   box-shadow: 0 0 0 3px #FFD23F;
 }
+
+/* ---- Calculator layout: tab-style navigation, 12-column grid, accordion, button hierarchy ---- */
+
+/* Top navigation: the current page is marked by an underline tab, not a filled block. */
+.site-nav a,
+.site-nav a[aria-current="page"],
+.site-nav a:hover {
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 6px 2px 4px !important;
+}
+.site-nav a[aria-current="page"] { border-bottom: 4px solid #000 !important; }
+.site-nav a:hover { text-decoration: underline !important; text-underline-offset: 4px; }
+
+/* 12-column grid on desktop: the form takes 7 columns, the results 5. Stacked below 1100px. */
+@media (min-width: 1100px) {
+  .estimator-grid { grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 24px; }
+  .estimator-grid > .estimator-card { grid-column: span 7; min-width: 0; }
+  .estimator-grid > .result-panel { grid-column: span 5; min-width: 0; }
+}
+
+/* Accordion for the transport and end-of-life inputs (climate change only). */
+.ghg-accordion > summary {
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 14px;
+  padding: 8px 2px;
+  color: #000;
+  list-style-position: inside;
+}
+.ghg-accordion > summary:focus-visible { outline: 3px solid #000 !important; outline-offset: 2px; }
+.ghg-accordion[open] > summary { border-bottom: 2px solid #000; margin-bottom: 10px; }
+
+/* Button hierarchy: one filled primary action (yellow), secondary actions outlined, one size. */
+.calculator-page .MuiButton-root { min-height: 44px; font-weight: 800; }
+.calculator-page .MuiButton-contained {
+  background: #FFD23F !important;
+  color: #000 !important;
+  border: 3px solid #000 !important;
+  box-shadow: 4px 4px 0 #000 !important;
+}
+.calculator-page .MuiButton-outlined,
+.calculator-page .MuiButton-text {
+  background: #FFFFFF !important;
+  color: #000 !important;
+  border: 3px solid #000 !important;
+  box-shadow: none !important;
+}
+.calculator-page .MuiButton-root.Mui-disabled { opacity: 0.55; box-shadow: none !important; }

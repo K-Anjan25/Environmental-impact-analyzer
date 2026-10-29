@@ -500,3 +500,68 @@ summary {
 }
 .site-nav a[aria-current="page"] { border: 3px solid #000 !important; background: #FFD23F !important; }
 .site-nav a::after, .site-nav a::before { content: none !important; display: none !important; }
+
+/* ---- No glows: focus and hover use hard black offset shadows only ---- */
+.MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline,
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline,
+.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  box-shadow: none !important;
+}
+.MuiOutlinedInput-root.Mui-focused {
+  box-shadow: 4px 4px 0 #000000 !important;
+}
+.post-card:hover,
+.post-card:focus-within,
+.story-card:hover,
+.visual-index-card:hover,
+.journal-post,
+.guide-figure,
+.form-card.MuiPaper-root,
+.result-card.MuiPaper-root,
+.ef-score-card:hover {
+  box-shadow: 4px 4px 0 #000000 !important;
+}
+.story-card,
+.visual-index-card,
+.post-card,
+.journal-post {
+  transform: none !important;
+}
+.visual-index-card:hover,
+.story-card:hover {
+  transform: translate(-2px, -2px) !important;
+}
+
+/* Focused fields: black 3px outline and black label, never the older teal */
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline,
+.MuiOutlinedInput-root.Mui-focused:hover .MuiOutlinedInput-notchedOutline {
+  border-color: #000000 !important;
+  border-width: 3px !important;
+}
+.MuiInputLabel-root.Mui-focused,
+.MuiFormLabel-root.Mui-focused {
+  color: #000000 !important;
+}
+
+/* Blog post: back link on its own line, black ink, tag below it */
+.post-back {
+  display: block !important;
+  width: max-content;
+  margin-bottom: 20px !important;
+  padding: 6px 10px;
+  border: 3px solid #000;
+  background: #FFFFFF;
+  color: #000000 !important;
+  font-weight: 800 !important;
+  text-decoration: none;
+  box-shadow: 4px 4px 0 #000;
+}
+.post-back:hover { background: #FFD23F; }
+.post-page .landing-eyebrow { margin-top: 4px; }
+
+/* Tables on phones: columns fit the screen width; text wraps instead of scrolling sideways */
+@media (max-width: 700px) {
+  .scope-table, .pricing-table { min-width: 0 !important; }
+  .scope-table th, .scope-table td, .pricing-table th, .pricing-table td { padding: 10px 8px !important; font-size: 14px; line-height: 1.4; overflow-wrap: break-word; }
+  .scope-table tbody th { width: 30%; }
+}

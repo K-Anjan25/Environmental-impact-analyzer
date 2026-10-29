@@ -536,7 +536,7 @@ summary {
 }
 .result-stat-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   margin: 12px 0;
 }
@@ -550,7 +550,8 @@ summary {
   color: #000;
 }
 .result-stat span { font-weight: 800; text-transform: uppercase; font-size: 12px; letter-spacing: 0.02em; }
-.result-stat strong { font-size: clamp(1.6rem, 3.5vw, 2.4rem); font-weight: 900; line-height: 1.05; overflow-wrap: anywhere; }
+.result-stat { min-width: 0; }
+.result-stat strong { font-size: clamp(1.2rem, 2vw, 1.8rem); font-weight: 900; line-height: 1.1; overflow-wrap: anywhere; }
 .result-stat small { font-size: 13px; }
 .result-stat-yellow { background: #FFD23F; }
 .result-stat-pink { background: #FF8FC7; }
@@ -579,13 +580,14 @@ summary {
 .process-impact-meta { font-size: 13px; color: #000; }
 .process-impact-figures {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   margin: 0;
 }
 .process-impact-figures > div { border: 2px solid #000; background: #FFF; padding: 8px; }
 .process-impact-figures dt { font-size: 12px; font-weight: 800; text-transform: uppercase; }
-.process-impact-figures dd { margin: 2px 0 0; font-size: 1.2rem; font-weight: 900; overflow-wrap: anywhere; }
+.process-impact-figures dd { margin: 2px 0 0; font-size: clamp(0.95rem, 1.6vw, 1.15rem); font-weight: 900; white-space: nowrap; }
+.process-impact-figures dt { line-height: 1.25; }
 .share-bar { border: 3px solid #000; height: 18px; background: #FFF; }
 .share-bar > span { display: block; height: 100%; background: #FF8FC7; border-right: 3px solid #000; }
 .process-driver { margin: 0; font-size: 14px; color: #000; }
@@ -607,7 +609,10 @@ summary {
 .result-details[open] > summary { border-bottom: 3px solid #000; }
 .indicator-disclosure > .indicator-table-wrap,
 .result-details > .selected-process-summary { margin: 0; padding: 12px; }
+@media (max-width: 720px) {
+  .result-stat-grid { grid-template-columns: minmax(0, 1fr); }
+}
 @media (max-width: 560px) {
-  .process-impact-figures { grid-template-columns: 1fr 1fr; }
+  .process-impact-figures { grid-template-columns: minmax(0, 1fr); }
   .result-headline, .result-processes { padding: 12px; }
 }

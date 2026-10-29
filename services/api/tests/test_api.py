@@ -74,7 +74,6 @@ def test_openapi_exposes_only_the_process_estimator_api() -> None:
     assert not any("product" in path or "assessment" in path for path in paths)
 
 
-
 def test_factor_catalog_contains_only_loaded_rows_and_all_16_separate_indicators() -> None:
     response = _send("GET", "/api/v1/factors?limit=500")
     assert response.status_code == 200

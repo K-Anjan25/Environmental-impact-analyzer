@@ -616,6 +616,9 @@ summary {
 .result-details[open] > summary { border-bottom: 3px solid #000; }
 .indicator-disclosure > .indicator-table-wrap,
 .result-details > .selected-process-summary { margin: 0; padding: 12px; }
+/* Indicator table sits inside the disclosure: border-box keeps it within the panel width (no overflow past the right border). */
+.indicator-disclosure > .indicator-table-wrap { box-sizing: border-box; width: 100%; max-width: 100%; min-width: 0; border: 0; border-radius: 0; }
+.result-panel .indicator-disclosure, .result-panel .result-details { max-width: 100%; min-width: 0; box-sizing: border-box; }
 @media (max-width: 720px) {
   .result-stat-grid { grid-template-columns: minmax(0, 1fr); }
 }

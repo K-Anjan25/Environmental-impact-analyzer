@@ -375,8 +375,10 @@ describe('process estimator accessibility', () => {
     expect(container.querySelector('.process-result-details')).toBeNull();
     expect(container.querySelector('.summary-method-link')).toBeNull();
     expect(container.querySelector('.result-attribution')).toBeNull();
-    expect(screen.getByText('Selected-process total')).toBeTruthy();
-    expect(screen.getByText('EF 3.1 single score')).toBeTruthy();
+    // The example has no functional-unit description, so its subtotals are held back until it is fixed.
+    expect(screen.queryByText('Selected-process total')).toBeNull();
+    expect(screen.queryByText('EF 3.1 single score')).toBeNull();
+    expect(screen.getAllByText('Hidden').length).toBeGreaterThan(0);
     await expectNoAxeViolations();
   });
 

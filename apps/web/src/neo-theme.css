@@ -623,3 +623,6 @@ summary {
   .process-impact-figures { grid-template-columns: minmax(0, 1fr); }
   .result-headline, .result-processes { padding: 12px; }
 }
+
+/* Summary tiles while subtotals are held back */
+.result-stat-hidden { font-size: 1.25rem; font-weight: 800; letter-spacing: 0.02em; }

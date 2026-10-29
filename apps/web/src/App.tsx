@@ -181,20 +181,28 @@ function IndicatorTable({ line }: { line: ProcessEstimateLine }) {
   );
 }
 
-function ResultHeadline({ report }: { report: ResultReport }) {
+function ResultHeadline({ report, subtotalsHidden }: { report: ResultReport; subtotalsHidden: boolean }) {
   return (
     <section className="result-headline" aria-labelledby="result-headline-heading">
       <Typography id="result-headline-heading" component="h3" className="output-heading">Summary</Typography>
       <div className="result-stat-grid">
         <div className="result-stat result-stat-yellow">
           <span>EF 3.1 total</span>
-          <strong>{formatCompact(report.efPointsTotal)}</strong>
-          <small>points · higher means more impact</small>
+          {subtotalsHidden ? (
+            <strong className="result-stat-hidden">Hidden</strong>
+          ) : (
+            <strong>{formatCompact(report.efPointsTotal)}</strong>
+          )}
+          <small>{subtotalsHidden ? 'Fix the items in Step 2' : 'points · higher means more impact'}</small>
         </div>
         <div className="result-stat result-stat-pink">
           <span>Climate change</span>
-          <strong>{formatCompact(report.ghgTotal)}</strong>
-          <small>{report.ghgUnit ?? 'GHG not available'}</small>
+          {subtotalsHidden ? (
+            <strong className="result-stat-hidden">Hidden</strong>
+          ) : (
+            <strong>{formatCompact(report.ghgTotal)}</strong>
+          )}
+          <small>{subtotalsHidden ? 'GHG layer waits for Step 2' : (report.ghgUnit ?? 'GHG not available')}</small>
         </div>
         <div className="result-stat result-stat-green">
           <span>Processes</span>
@@ -202,7 +210,7 @@ function ResultHeadline({ report }: { report: ResultReport }) {
           <small>selected rows</small>
         </div>
       </div>
-      <p className="result-sentence">{report.sentence}</p>
+      {!subtotalsHidden && <p className="result-sentence">{report.sentence}</p>}
     </section>
   );
 }
@@ -213,15 +221,17 @@ function ProcessImpactCard({
   index,
   productInput,
   quantityBasisLabel,
+  subtotalsHidden,
 }: {
   row: ProcessImpactRow;
   line: ProcessEstimateLine;
   index: number;
   productInput: ProductInput | null;
   quantityBasisLabel: string;
+  subtotalsHidden: boolean;
 }) {
   const headingId = `impact-${index}-${line.factor_id}`;
-  const share = row.sharePercent;
+  const share = subtotalsHidden ? null : row.sharePercent;
   return (
     <article className="process-impact-card" aria-labelledby={headingId}>
       <div className="process-impact-top">
@@ -240,7 +250,7 @@ function ProcessImpactCard({
         </div>
         <div>
           <dt>Share of total</dt>
-          <dd>{formatShare(share)}</dd>
+          <dd>{subtotalsHidden ? 'Hidden' : formatShare(share)}</dd>
         </div>
         <div>
           <dt>Climate change</dt>
@@ -1413,7 +1423,7 @@ function App() {
                     </Button>
                   </div>
                 </div>
-                <ResultHeadline report={resultReport} />
+                <ResultHeadline report={resultReport} subtotalsHidden={productBoundary.verdict === 'blocked'} />
                 <section className="result-processes" aria-labelledby="impact-by-process-heading">
                   <Typography id="impact-by-process-heading" component="h3" className="output-heading">Impact by process</Typography>
                   <Stack spacing={2}>
@@ -1434,12 +1444,22 @@ function App() {
                           index={index}
                           productInput={productInput}
                           quantityBasisLabel={quantityMapping?.basisLabel ?? 'Manual process quantity'}
+                          subtotalsHidden={productBoundary.verdict === 'blocked'}
                         />
                       );
                     })}
                   </Stack>
                 </section>
-                {selectedProcessSummary && (
+                {selectedProcessSummary && productBoundary.verdict === 'blocked' && (bomMassAssessment.status !== 'scope-not-confirmed' && bomMassAssessment.status !== 'missing-product-mass' || productInputUseReview.inputs.length > 0) && (
+                  <details className="result-details" open>
+                    <summary>Mass and input checks</summary>
+                    <div className="result-checks">
+                      <BomMassAssessmentCard assessment={bomMassAssessment} />
+                      <ProductInputUseCard review={productInputUseReview} />
+                    </div>
+                  </details>
+                )}
+                {selectedProcessSummary && productBoundary.verdict !== 'blocked' && (
                   <details className="result-details">
                     <summary>Totals by indicator and EF 3.1 table</summary>
                     <SelectedProcessSummaryCard

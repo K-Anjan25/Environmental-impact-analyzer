@@ -113,8 +113,6 @@
 .marketing .mkt-eyebrow { margin: 0 0 14px; font-size: 13px; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent-primary); }
 .marketing .mkt-title { margin: 0 0 18px; font-size: clamp(2.3rem, 5vw, 3.8rem); line-height: 1.04; letter-spacing: -0.045em; font-weight: 800; color: var(--ink); }
 .marketing .mkt-lede { font-size: 1.1rem; line-height: 1.6; color: var(--muted); }
-.hero-trust { display: flex; flex-wrap: wrap; gap: 8px 18px; list-style: none; padding: 0; margin: 22px 0 0; font-size: 14px; color: var(--text-muted); }
-.hero-trust li::before { content: '✓'; margin-right: 6px; color: var(--forest); font-weight: 700; }
 .marketing .mkt-art { margin: 0; padding: clamp(16px, 2.5vw, 28px); border-radius: 20px; background: var(--bg-surface); box-shadow: var(--shadow-lift); }
 .mkt-botanical { display: block; width: 100%; height: auto; overflow: visible; }
 
@@ -156,18 +154,8 @@
 @keyframes bot-sway { 0%, 100% { transform: rotate(-1.2deg); } 50% { transform: rotate(1.2deg); } }
 
 /* Stats */
-.stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: 32px 0 0; }
-.stat-card { margin: 0; padding: var(--space-3); border-radius: 16px; background: var(--paper); box-shadow: var(--shadow-card); border-top: 4px solid var(--accent-primary); }
-.stat-card dt { font-size: 14px; color: var(--ink-soft); font-weight: 600; }
-.stat-value { margin: var(--space-1) 0; font-size: clamp(2.25rem, 4.4vw, 3rem); font-weight: 800; letter-spacing: -0.04em; color: var(--forest-dark); font-variant-numeric: tabular-nums; }
-.stat-note { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.45; }
 
 /* Feature rows: illustration and copy alternate sides; each collapses to one column on small screens */
-.feature-row { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
-.feature-row-reverse .feature-copy { order: 2; }
-.feature-row-reverse .feature-visual { order: 1; }
-.feature-list { margin: 16px 0 0; padding-left: 20px; color: var(--ink); line-height: 1.7; }
-.feature-visual { padding: clamp(8px, 2vw, 16px) 0; }
 
 /* Side visuals (SideVisuals.tsx): product-style cards with a hard offset shadow and an overlapping summary card */
 .sv { position: relative; max-width: 520px; margin: 0 auto; padding: 0 0 96px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
@@ -207,12 +195,6 @@
 }
 
 /* Latest posts: a plain list, no images */
-.latest-section { padding-top: 56px; }
-.latest-list { list-style: none; margin: 20px 0 0; padding: 0; display: grid; gap: 14px; }
-.latest-item { padding: 20px 24px; border-radius: 14px; background: var(--surface); border-left: 4px solid var(--accent-primary); }
-.latest-type { display: block; margin-bottom: 4px; font-size: 12px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
-.latest-item a { font-size: 1.15rem; font-weight: 700; color: var(--forest-dark); text-decoration: none; }
-.latest-item a:hover { text-decoration: underline; }
 
 /* Reveal on scroll */
 .marketing .mkt-reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.7s var(--ease, ease), transform 0.7s var(--ease, ease); }
@@ -313,19 +295,17 @@
 
 /* Responsive */
 @media (max-width: 1024px) {
-  .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .step-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .landing-footer-grid { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 860px) {
-  .marketing .mkt-hero, .feature-row, .contact-layout { grid-template-columns: 1fr; }
+  .marketing .mkt-hero, .contact-layout { grid-template-columns: 1fr; }
   .marketing .mkt-hero { min-height: 0; }
-  .feature-row-reverse .feature-copy, .feature-row-reverse .feature-visual { order: initial; }
   .mkt-form-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 560px) {
   .marketing { padding: 0 18px; }
-  .stat-grid, .step-list { grid-template-columns: 1fr; }
+  .step-list { grid-template-columns: 1fr; }
   .carousel-slide { padding: 26px; }
   .landing-footer-grid { grid-template-columns: 1fr; }
   .sticky-cta span { display: none; }

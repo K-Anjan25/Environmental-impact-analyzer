@@ -46,7 +46,6 @@ import {
 import { formatProcessEstimatesCsv, downloadProcessEstimatesCsv, downloadBlob } from './export';
 import { buildResultReport, formatCompact, formatShare, type ProcessImpactRow, type ResultReport } from './result-report';
 import { buildResultWorkbook, workbookFilename } from './result-workbook';
-import { makeWatermarkPng } from './watermark';
 import { calculateFromCatalog } from './local-estimates';
 import {
   describeBomMassStatus,
@@ -805,7 +804,6 @@ function App() {
       functionalUnitLabel: functionalUnitDescription.trim() || 'Not given',
       categoryLabel: PRODUCT_CATEGORY_LABEL[functionalUnitCategory],
       generatedAt: now,
-      watermarkPng: await makeWatermarkPng(),
     });
     downloadBlob(blob, workbookFilename(now));
   };

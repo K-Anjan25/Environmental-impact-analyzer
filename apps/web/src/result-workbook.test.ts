@@ -28,7 +28,6 @@ async function build() {
     functionalUnitLabel: 'One T-shirt',
     categoryLabel: 'Apparel',
     generatedAt: new Date('2026-10-29T08:35:00Z'),
-    watermarkPng: null,
   });
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.load(await blob.arrayBuffer());
@@ -44,27 +43,44 @@ describe('buildResultWorkbook', () => {
     ]);
     const summary = workbook.getWorksheet('Summary');
     expect(summary?.getCell('A1').value).toBe(BRAND_NAME);
-    expect(summary?.getCell('B4').value).toBe('One T-shirt');
-    expect(String(summary?.getCell('B6').value)).toContain('IST');
+    expect(summary?.getCell('B5').value).toBe('One T-shirt');
+    expect(String(summary?.getCell('B7').value)).toContain('IST');
   });
 
   it('keeps only calculation parameters on the Inputs sheet', async () => {
     const { workbook } = await build();
-    const headers = workbook.getWorksheet('Inputs')?.getRow(1).values as unknown[];
+    const headers = workbook.getWorksheet('Inputs')?.getRow(4).values as unknown[];
     expect(headers).toContain('Quantity');
     expect(headers).toContain('Reference unit');
     expect(headers).not.toContain('Source URL');
     expect(headers.join(' ')).not.toMatch(/licen|attribution|retriev/i);
   });
 
-  it('adds brand header, watermark text and page footer to every sheet', async () => {
-    const { workbook } = await build();
+  it('adds brand header with timestamp and page footer to every sheet, with no watermark', async () => {
+    const { blob, workbook } = await build();
     for (const sheet of workbook.worksheets) {
       expect(sheet.headerFooter.oddHeader).toContain(BRAND_NAME);
-      expect(sheet.headerFooter.oddHeader).toContain('ESTIMATE');
       expect(sheet.headerFooter.oddHeader).toContain('&D &T');
+      expect(sheet.headerFooter.oddHeader).not.toMatch(/ESTIMATE|watermark/i);
       expect(sheet.headerFooter.oddFooter).toContain('Page &P of &N');
     }
+    const raw = new TextDecoder('latin1').decode(new Uint8Array(await blob.arrayBuffer()));
+    expect(raw).not.toContain('xl/media/');
+  });
+
+  it('stores each table as a real Excel table with live formulas', async () => {
+    const { workbook } = await build();
+    expect(workbook.getWorksheet('Impacts')?.getTable('tblImpacts')).toBeTruthy();
+    expect(workbook.getWorksheet('Inputs')?.getTable('tblInputs')).toBeTruthy();
+    expect(workbook.getWorksheet('EF 3.1 score')?.getTable('tblScore')).toBeTruthy();
+    const impacts = workbook.getWorksheet('Impacts');
+    const efFormula = impacts?.getCell('E8').value as { formula: string; result: number };
+    expect(efFormula.formula).toContain('SUMPRODUCT');
+    expect(efFormula.formula).toContain('$G$4');
+    expect(typeof efFormula.result).toBe('number');
+    const summary = workbook.getWorksheet('Summary');
+    expect((summary?.getCell('B9').value as { formula: string }).formula).toBe("'EF 3.1 score'!H21");
+    expect((summary?.getCell('B8').value as { formula: string }).formula).toBe('COUNTA(Impacts!B8:B9)');
   });
 
   it('does not show the MIT licence anywhere in the workbook', async () => {

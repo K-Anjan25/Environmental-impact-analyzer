@@ -795,3 +795,47 @@ summary {
   .indicator-table-wrap .numeric-value { font-size: 13px; }
   .indicator-table-wrap .unit-note { font-size: 11px; }
 }
+
+/* ---- Calculator flow: visible Step 1 / Step 2 / Step 3 connections and the round lab icon. ---- */
+.round-lab-icon.empty-illustration {
+  width: 88px;
+  height: 88px;
+  margin: 0 auto 14px;
+  border: 3px solid #000;
+  border-radius: 50%;
+  background: #FFD23F;
+  box-shadow: 4px 4px 0 #000;
+  color: #000;
+}
+.round-lab-icon.empty-illustration svg { width: 40px; height: 40px; }
+.step-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 22px 0 12px;
+  padding-top: 14px;
+  border-top: 3px solid #000;
+  scroll-margin-top: 88px;
+}
+.step-heading-row .product-input-title { margin: 0; font-weight: 900; }
+.step-required-chip { background: #000 !important; color: #FFD23F !important; font-weight: 900 !important; }
+.subtotal-hold { margin-top: 8px; }
+.hold-blocker-list { margin: 6px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.hold-blocker-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  padding: 8px 10px;
+  border: 2px solid #000;
+  background: #FFFFFF;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.hold-blocker-list .MuiButton-root { color: #000; font-weight: 900; text-decoration: underline; text-underline-offset: 3px; min-height: 0; padding: 2px 6px; }
+#step-2, #product-inputs { scroll-margin-top: 88px; }
+
+.step-required-tag { display: inline-block; padding: 4px 9px; border: 2px solid #000; background: #000; color: #FFD23F; font-size: 12px; font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.2; }

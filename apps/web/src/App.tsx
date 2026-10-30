@@ -156,7 +156,22 @@ function IndicatorTable({ line }: { line: ProcessEstimateLine }) {
   );
 }
 
-function ResultHeadline({ report, subtotalsHidden }: { report: ResultReport; subtotalsHidden: boolean }) {
+interface HoldBlocker {
+  text: string;
+  target: string;
+}
+
+function jumpToSection(id: string) {
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function holdTargetLabel(target: string): string {
+  if (target === 'step-2') return 'Step 2';
+  if (target === 'transport-end-of-life') return 'transport and end of life';
+  return 'Step 1';
+}
+
+function ResultHeadline({ report, subtotalsHidden, blockers }: { report: ResultReport; subtotalsHidden: boolean; blockers: HoldBlocker[] }) {
   return (
     <section className="result-headline" aria-labelledby="result-headline-heading">
       <Typography id="result-headline-heading" component="h3" className="output-heading">Summary</Typography>
@@ -168,7 +183,7 @@ function ResultHeadline({ report, subtotalsHidden }: { report: ResultReport; sub
           ) : (
             <strong>{formatCompact(report.efPointsTotal)}</strong>
           )}
-          <small>{subtotalsHidden ? 'Fix the items in Step 2' : 'points · higher means more impact'}</small>
+          <small>{subtotalsHidden ? 'Complete Steps 1 and 2' : 'points · higher means more impact'}</small>
         </div>
         <div className="result-stat result-stat-pink">
           <span>Climate change</span>
@@ -177,7 +192,7 @@ function ResultHeadline({ report, subtotalsHidden }: { report: ResultReport; sub
           ) : (
             <strong>{formatCompact(report.ghgTotal)}</strong>
           )}
-          <small>{subtotalsHidden ? 'GHG layer waits for Step 2' : (report.ghgUnit ?? 'GHG not available')}</small>
+          <small>{subtotalsHidden ? 'GHG layer waits for Steps 1 and 2' : (report.ghgUnit ?? 'GHG not available')}</small>
         </div>
         <div className="result-stat result-stat-green">
           <span>Processes</span>
@@ -186,7 +201,21 @@ function ResultHeadline({ report, subtotalsHidden }: { report: ResultReport; sub
         </div>
       </div>
       {subtotalsHidden && (
-        <p className="subtotal-hold-note">Totals are hidden until the Step 2 items are fixed: functional unit, required process rows and mass check.</p>
+        <div className="subtotal-hold">
+          <p className="subtotal-hold-note">Totals stay hidden until these are fixed:</p>
+          {blockers.length > 0 && (
+            <ul className="hold-blocker-list">
+              {blockers.map((blocker, index) => (
+                <li key={`${index}-${blocker.target}`}>
+                  <span>{blocker.text}</span>
+                  <Button size="small" variant="text" onClick={() => jumpToSection(blocker.target)}>
+                    Go to {holdTargetLabel(blocker.target)}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       )}
       {!subtotalsHidden && <p className="result-sentence">{report.sentence}</p>}
     </section>
@@ -556,6 +585,14 @@ function App() {
     },
   }), [productInputs, selectedProcesses, finishedProductMassDraft, flatBomScopeConfirmed, functionalUnitCategory, functionalUnitDescription, inboundDraft, distributionDraft, toWasteKmDraft, endOfLifeDraft]);
   const bomMassAssessment = productBoundary.massAssessment;
+  const holdBlockers: HoldBlocker[] = productBoundary.verdict !== 'blocked' ? [] : [
+    ...productBoundary.functionalUnitIssues.map((issue) => ({ text: issue.message, target: 'product-inputs' })),
+    ...productBoundary.structureIssues
+      .filter((issue) => issue.severity === 'error')
+      .map((issue) => ({ text: issue.message, target: issue.code === 'scenario-input' ? 'transport-end-of-life' : 'product-inputs' })),
+    ...(bomMassAssessment.status === 'balanced' ? [] : [{ text: describeBomMassStatus(bomMassAssessment), target: 'product-inputs' }]),
+    ...(selectedProcesses.length === 0 ? [{ text: 'Add at least one process row.', target: 'step-2' }] : []),
+  ];
   const massBalanced = bomMassAssessment.status === 'balanced';
   const scenarioHint = (value: string) => (!massBalanced && value.trim() !== '' ? 'Not counted until the product mass check balances.' : undefined);
   const selectedProcessSummary = useMemo(
@@ -838,7 +875,7 @@ function App() {
           <Paper component="section" elevation={0} className="form-card estimator-card ui-art-form" aria-labelledby="calculator-heading">
             <div className="card-heading-row">
               <div>
-                <div className="step-label">STEP 2 · ADD PROCESSES</div>
+                <div className="step-label">STEPS 1 AND 2 · BUILD THE ESTIMATE</div>
                 <Typography id="calculator-heading" component="h2" variant="h5" className="card-title">Build a process estimate.</Typography>
               </div>
                           </div>
@@ -852,8 +889,9 @@ function App() {
             <section id="product-inputs" className="product-input-workspace" aria-labelledby="product-input-heading">
               <div className="product-input-heading-row">
                 <Typography id="product-input-heading" component="h3" className="product-input-title">
-                  Step 1 · Product inputs (optional)
+                  Step 1 · Describe the product
                 </Typography>
+                <span className="step-required-tag">Required</span>
                 <Chip label={`${productInputs.length} / ${MAX_PRODUCT_INPUTS}`} size="small" className="soft-chip" />
               </div>
               <div className="product-input-entry-grid">
@@ -932,8 +970,7 @@ function App() {
                   ))}
                 </Stack>
               )}
-              <details className="bom-mass-check-workspace">
-                <summary>Optional checks: mass, transport, and life-cycle stages</summary>
+              <div className="bom-mass-check-workspace">
                 <div className="functional-unit-fields">
                   <FormControl size="small" fullWidth>
                     <InputLabel id="functional-unit-category-label">Product category</InputLabel>
@@ -1007,8 +1044,8 @@ function App() {
                     <strong>{describeBomMassStatus(bomMassAssessment)}</strong>
                   </div>
                 )}
-                <details className="ghg-inputs ghg-accordion">
-                  <summary>Transport and end of life (climate change only)</summary>
+                <details id="transport-end-of-life" className="ghg-inputs ghg-accordion">
+                  <summary>Optional: transport and end of life (climate change only)</summary>
                   <details className="ghg-stage-accordion">
                     <summary>A2 · Transport to factory</summary>
                     <div className="form-grid two-col">
@@ -1092,7 +1129,7 @@ function App() {
                     </div>
                   </details>
                 </details>
-              </details>
+              </div>
             </section>
 
             {!catalog && !catalogError && (
@@ -1111,6 +1148,10 @@ function App() {
                 </div>
               </div>
             )}
+            <div id="step-2" className="step-heading-row">
+              <Typography component="h3" className="product-input-title">Step 2 · Add processes</Typography>
+              <span className="step-required-tag">Required</span>
+            </div>
             {catalog && (
               <form id="process-library" onSubmit={calculate} className="estimator-form">
                 <div className="form-grid two-col">
@@ -1343,8 +1384,8 @@ function App() {
 
             {!result && !calculating && (
               <div className="empty-result process-empty">
-                <div className="empty-illustration" aria-hidden="true"><ScienceOutlinedIcon /></div>
-                <Typography component="h3" className="empty-title">Choose the source activity and its quantity.</Typography>
+                <div className="empty-illustration round-lab-icon" aria-hidden="true"><ScienceOutlinedIcon /></div>
+                <Typography component="h3" className="empty-title">Complete Steps 1 and 2 to see your results.</Typography>
                 <Typography className="empty-copy">
                   16 environmental indicators for each selected process.
                 </Typography>
@@ -1367,11 +1408,11 @@ function App() {
                       Download CSV
                     </Button>
                     {exportsLocked && (
-                      <span id="exports-locked-note" className="exports-locked-note">Downloads unlock when the Step 2 items are fixed.</span>
+                      <span id="exports-locked-note" className="exports-locked-note">Downloads unlock when Steps 1 and 2 are complete.</span>
                     )}
                   </div>
                 </div>
-                <ResultHeadline report={resultReport} subtotalsHidden={productBoundary.verdict === 'blocked'} />
+                <ResultHeadline report={resultReport} subtotalsHidden={productBoundary.verdict === 'blocked'} blockers={holdBlockers} />
                 <section className="result-processes" aria-labelledby="impact-by-process-heading">
                   <Typography id="impact-by-process-heading" component="h3" className="output-heading">Impact by process</Typography>
                   <Stack spacing={2}>

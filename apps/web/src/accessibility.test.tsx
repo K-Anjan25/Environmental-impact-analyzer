@@ -221,7 +221,7 @@ describe('process estimator accessibility', () => {
 
     const inputWorkspace = container.querySelector('.product-input-workspace');
     expect(inputWorkspace?.textContent).not.toMatch(/context only|not sent to the API|manual association|not calculated, not zero/i);
-    expect(screen.getByRole('heading', { name: /Product inputs/ })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /Describe the product/ })).toBeTruthy();
 
     fireEvent.change(screen.getByRole('textbox', { name: 'Name (for example, cotton yarn)' }), {
       target: { value: 'Upper cotton fabric' },
@@ -337,7 +337,6 @@ describe('process estimator accessibility', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Add material' }));
     }
 
-    fireEvent.click(screen.getByText('Optional checks: mass, transport, and life-cycle stages'));
     fireEvent.click(screen.getByRole('checkbox', { name: 'All declared lines are product components for one functional unit' }));
     fireEvent.change(screen.getByRole('spinbutton', { name: 'Finished product mass per functional unit (kg)' }), {
       target: { value: '0.35' },
@@ -392,7 +391,7 @@ describe('process estimator accessibility', () => {
     expect(csv.hasAttribute('disabled')).toBe(true);
     expect(excel.hasAttribute('disabled')).toBe(true);
     expect(csv.getAttribute('aria-describedby')).toBe('exports-locked-note');
-    expect(screen.getByText('Downloads unlock when the Step 2 items are fixed.')).toBeTruthy();
+    expect(screen.getByText('Downloads unlock when Steps 1 and 2 are complete.')).toBeTruthy();
   });
 
 });

@@ -1,5 +1,5 @@
 :root {
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   color: #17231f;
   background: #F7F9E1;
   font-synthesis: none;
@@ -33,7 +33,7 @@ button, input, textarea { font: inherit; }
 .main-content { width: min(1320px, calc(100% - 64px)); margin: 0 auto; padding: 32px 0 26px; }
 .eyebrow, .step-label { color: #587163; font-size: 10px; font-weight: 800; letter-spacing: 0.14em; line-height: 1.5; }
 .eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
-.hero-title.MuiTypography-root { font-family: ui-sans-serif, system-ui, sans-serif; font-size: clamp(45px, 5.15vw, 72px); line-height: 0.99; font-weight: 760; letter-spacing: -0.072em; color: #183228; margin: 0 0 18px; text-wrap: balance; }
+.hero-title.MuiTypography-root { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: clamp(45px, 5.15vw, 72px); line-height: 0.99; font-weight: 760; letter-spacing: -0.072em; color: #183228; margin: 0 0 18px; text-wrap: balance; }
 .landscape-scene { display: block; width: 100%; height: 390px; overflow: hidden; border-radius: 28px; box-shadow: 0 16px 34px rgba(36, 79, 66, 0.1); }
 .form-card.MuiPaper-root, .result-card.MuiPaper-root {
   border: 1px solid rgba(36, 71, 55, 0.12); border-radius: 20px; background: rgba(255, 254, 250, 0.96);
@@ -45,7 +45,7 @@ button, input, textarea { font: inherit; }
 .card-heading-row { margin-bottom: 24px; }
 .step-label { color: #5a7063; font-size: 9px; letter-spacing: 0.15em; margin-bottom: 9px; }
 .step-label span { color: #bac7bf; padding: 0 3px; }
-.card-title.MuiTypography-root { font-family: ui-sans-serif, system-ui, sans-serif; color: #223c2f; font-size: 22px; font-weight: 700; letter-spacing: -0.045em; }
+.card-title.MuiTypography-root { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #223c2f; font-size: 22px; font-weight: 700; letter-spacing: -0.045em; }
 
 .form-card form { display: flex; flex-direction: column; gap: 17px; }
 .form-grid { display: grid; gap: 12px; }
@@ -60,12 +60,12 @@ button, input, textarea { font: inherit; }
 .landscape-glyph { display: block; width: 100%; height: 100%; overflow: hidden; border-radius: 20px; }
 .soft-chip.MuiChip-root { background: #edf4ef; color: #557361; font-size: 9px; font-weight: 700; border-radius: 8px; }
 .soft-chip .MuiChip-icon { color: #577160; font-size: 15px; }
-.empty-title.MuiTypography-root { font-family: ui-sans-serif, system-ui, sans-serif; color: #294534; font-weight: 700; font-size: 21px; letter-spacing: -0.04em; margin-top: 14px; }
+.empty-title.MuiTypography-root { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #294534; font-weight: 700; font-size: 21px; letter-spacing: -0.04em; margin-top: 14px; }
 .empty-copy.MuiTypography-root { max-width: 385px; color: #636d68; font-size: 12px; line-height: 1.65; margin-top: 7px; }
 .result-overline { color: #88652c; font-size: 9px; font-weight: 800; letter-spacing: 0.13em; margin: 1px 0 4px; }
-.result-headline.MuiTypography-root { color: #57421e; font-family: ui-sans-serif, system-ui, sans-serif; font-size: 20px; font-weight: 750; letter-spacing: -0.04em; }
+.result-headline.MuiTypography-root { color: #57421e; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 20px; font-weight: 750; letter-spacing: -0.04em; }
 .output-heading.MuiTypography-root { color: #344b3c; font-size: 12px; font-weight: 750; }
-.dialog-title.MuiDialogTitle-root { color: #284231; font-family: ui-sans-serif, system-ui, sans-serif; font-weight: 750; letter-spacing: -0.03em; }
+.dialog-title.MuiDialogTitle-root { color: #284231; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-weight: 750; letter-spacing: -0.03em; }
 .dialog-section-title.MuiTypography-root { color: #344c3c; font-size: 13px; font-weight: 750; margin-bottom: 5px; }
 
 @media (max-width: 1000px) {

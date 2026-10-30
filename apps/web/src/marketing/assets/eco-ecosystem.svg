@@ -146,32 +146,32 @@
     <g class="eco-float">
       <rect x="40" y="60" width="168" height="50" rx="12" fill="rgba(22, 42, 34, 0.6)" stroke="rgba(128, 255, 213, 0.2)" stroke-width="1"/>
       <circle class="eco-pulse" cx="60" cy="85" r="4" fill="#80FFD5"/>
-      <text x="76" y="82" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="700" letter-spacing="2" fill="#F4F7F6">PROCESS</text>
-      <text x="76" y="97" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#A3B18A">Input stage</text>
+      <text x="76" y="82" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="700" letter-spacing="2" fill="#F4F7F6">PROCESS</text>
+      <text x="76" y="97" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="11" fill="#A3B18A">Input stage</text>
     </g>
 
     <!-- Glass callout: BOUNDARY. -->
     <g class="eco-float-delayed">
       <rect x="592" y="60" width="168" height="50" rx="12" fill="rgba(22, 42, 34, 0.6)" stroke="rgba(128, 255, 213, 0.2)" stroke-width="1"/>
       <circle class="eco-pulse" cx="612" cy="85" r="4" fill="#E07A5F"/>
-      <text x="628" y="82" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="700" letter-spacing="2" fill="#F4F7F6">BOUNDARY</text>
-      <text x="628" y="97" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#A3B18A">Scope shown</text>
+      <text x="628" y="82" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="700" letter-spacing="2" fill="#F4F7F6">BOUNDARY</text>
+      <text x="628" y="97" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="11" fill="#A3B18A">Scope shown</text>
     </g>
 
     <!-- Glass callout: CARBON CYCLE. -->
     <g class="eco-float-delayed">
       <rect x="40" y="490" width="168" height="50" rx="12" fill="rgba(22, 42, 34, 0.6)" stroke="rgba(128, 255, 213, 0.2)" stroke-width="1"/>
       <circle class="eco-pulse" cx="60" cy="515" r="4" fill="#00E699"/>
-      <text x="76" y="512" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="700" letter-spacing="2" fill="#F4F7F6">CARBON CYCLE</text>
-      <text x="76" y="527" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#A3B18A">Flow network</text>
+      <text x="76" y="512" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="700" letter-spacing="2" fill="#F4F7F6">CARBON CYCLE</text>
+      <text x="76" y="527" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="11" fill="#A3B18A">Flow network</text>
     </g>
 
     <!-- Glass callout: SUBTOTAL. -->
     <g class="eco-float">
       <rect x="592" y="490" width="168" height="50" rx="12" fill="rgba(22, 42, 34, 0.6)" stroke="rgba(128, 255, 213, 0.2)" stroke-width="1"/>
       <circle class="eco-pulse" cx="612" cy="515" r="4" fill="#80FFD5"/>
-      <text x="628" y="512" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="700" letter-spacing="2" fill="#F4F7F6">SUBTOTAL</text>
-      <text x="628" y="527" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#A3B18A">Selected rows</text>
+      <text x="628" y="512" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="700" letter-spacing="2" fill="#F4F7F6">SUBTOTAL</text>
+      <text x="628" y="527" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="11" fill="#A3B18A">Selected rows</text>
     </g>
   </g>
 </svg>

@@ -857,13 +857,53 @@ summary {
 .worked-example-row .MuiButton-root { border: 3px solid #000; border-radius: 0; background: #FFD23F; color: #000; font-weight: 900; box-shadow: 3px 3px 0 #000; }
 @media (max-width: 900px) { .how-it-works-grid { grid-template-columns: 1fr; } }
 
-/* ---- Footer links: no underline on hover; a colour change with a soft glow instead. ---- */
+/* ---- Footer links: hover changes colour only. No underline, no glow, no lift. ---- */
 .landing-footer a:hover,
 .landing-footer a:focus-visible {
   text-decoration: none !important;
   transform: none !important;
   color: #FFD23F !important;
-  text-shadow: 0 0 6px rgba(255, 210, 63, 0.85), 0 0 14px rgba(255, 210, 63, 0.55);
-  transition: color 180ms ease, text-shadow 180ms ease;
 }
-.landing-footer a { transition: color 180ms ease, text-shadow 180ms ease; }
+.landing-footer a { transition: color 150ms ease; }
+
+
+/* ---- Simple calculator: one product block, one materials list, one results panel. ---- */
+.calc-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+  margin-top: 24px;
+}
+.calc-card,
+.calc-layout .result-card { padding: 24px; }
+.calc-card .card-title,
+.calc-layout .result-card .card-title { margin: 0 0 16px; font-size: 20px; font-weight: 800; color: #000; }
+.calc-section-title { margin-top: 8px !important; }
+.calc-form { display: flex; flex-direction: column; gap: 20px; }
+.calc-product-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+.calc-material-list { display: flex; flex-direction: column; gap: 16px; }
+.calc-material-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  padding: 16px 48px 16px 16px;
+  border: 2px solid #000;
+  background: #fff;
+}
+.calc-material-row .MuiAutocomplete-root { grid-column: 1 / -1; }
+.calc-remove { position: absolute !important; top: 8px; right: 8px; }
+.calc-form .MuiFormHelperText-root { margin: 4px 0 0; font-size: 12px; }
+.calc-form .MuiFormLabel-root { font-size: 14px; }
+.calc-scope { margin: 0 !important; }
+.calc-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.calc-empty { margin: 0; padding: 24px 0; color: #000; font-size: 15px; }
+.calc-layout .result-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+.calc-layout .hold-blocker-list { margin: 12px 0 0; padding-left: 20px; }
+.calc-layout .hold-blocker-list li { font-size: 14px; margin-bottom: 6px; }
+@media (max-width: 900px) {
+  .calc-layout { grid-template-columns: 1fr; }
+  .calc-material-row { grid-template-columns: 1fr; padding-right: 16px; padding-top: 40px; }
+  .calc-remove { top: 4px; right: 4px; }
+}

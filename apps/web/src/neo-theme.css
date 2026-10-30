@@ -856,3 +856,14 @@ summary {
 .worked-example-row span { font-size: 13px; color: #000; line-height: 1.4; }
 .worked-example-row .MuiButton-root { border: 3px solid #000; border-radius: 0; background: #FFD23F; color: #000; font-weight: 900; box-shadow: 3px 3px 0 #000; }
 @media (max-width: 900px) { .how-it-works-grid { grid-template-columns: 1fr; } }
+
+/* ---- Footer links: no underline on hover; a colour change with a soft glow instead. ---- */
+.landing-footer a:hover,
+.landing-footer a:focus-visible {
+  text-decoration: none !important;
+  transform: none !important;
+  color: #FFD23F !important;
+  text-shadow: 0 0 6px rgba(255, 210, 63, 0.85), 0 0 14px rgba(255, 210, 63, 0.55);
+  transition: color 180ms ease, text-shadow 180ms ease;
+}
+.landing-footer a { transition: color 180ms ease, text-shadow 180ms ease; }

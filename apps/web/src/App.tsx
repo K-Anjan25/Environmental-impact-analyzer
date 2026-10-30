@@ -129,6 +129,13 @@ function factorLabel(factor: ProcessFactor): string {
   return `${factor.activity} · ${geographyFor(factor)} · ${factor.reference_unit}`;
 }
 
+// A balanced check is exact to floating-point precision, so show 0 kg rather than a rounding residue such as -5.5511e-17.
+function massDifferenceLabel(assessment: BomMassAssessment): string {
+  if (assessment.differenceKg === null) return 'Not available';
+  if (assessment.status === 'balanced') return '0 kg';
+  return `${numberForDisplay(assessment.differenceKg)} kg`;
+}
+
 function IndicatorTable({ line }: { line: ProcessEstimateLine }) {
   const water = line.indicators.find((item) => item.code === 'WTU');
   return (
@@ -310,7 +317,7 @@ function BomMassAssessmentCard({ assessment }: { assessment: BomMassAssessment }
       <dl className="bom-mass-values">
         <div><dt>Declared input mass</dt><dd>{assessment.declaredInputMassKg === null ? 'Incomplete' : `${numberForDisplay(assessment.declaredInputMassKg)} kg`}</dd></div>
         <div><dt>Finished product mass</dt><dd>{assessment.finishedProductMassKg === null ? 'Not available' : `${numberForDisplay(assessment.finishedProductMassKg)} kg`}</dd></div>
-        <div><dt>Mass difference (output − inputs)</dt><dd>{assessment.differenceKg === null ? 'Not available' : `${numberForDisplay(assessment.differenceKg)} kg`}</dd></div>
+        <div><dt>Mass difference (output − inputs)</dt><dd>{massDifferenceLabel(assessment)}</dd></div>
         <div><dt>Declared mass share</dt><dd>{assessment.massCoveragePercent === null ? 'Not available' : `${numberForDisplay(assessment.massCoveragePercent)}%`}</dd></div>
       </dl>
       <Alert severity={severity} className="bom-mass-status">{describeBomMassStatus(assessment)}</Alert>
@@ -1132,7 +1139,7 @@ function App() {
                       ? bomMassAssessment.status === 'no-declared-inputs' ? 'No declared inputs' : 'Input mass incomplete'
                       : `Inputs ${numberForDisplay(bomMassAssessment.declaredInputMassKg)} kg`}</span>
                     {bomMassAssessment.differenceKg !== null && (
-                      <span>Difference {numberForDisplay(bomMassAssessment.differenceKg)} kg</span>
+                      <span>Difference {massDifferenceLabel(bomMassAssessment)}</span>
                     )}
                     <strong>{describeBomMassStatus(bomMassAssessment)}</strong>
                   </div>

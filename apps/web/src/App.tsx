@@ -21,6 +21,7 @@ import {
   Typography,
 } from '@mui/material';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import ScienceOutlinedIcon from '@mui/icons-material/ScienceOutlined';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
@@ -82,6 +83,12 @@ const WORKED_EXAMPLE = {
   ],
   assemblyFactorId: 'PRODUCT_PROCESS_STEP:FOOTWEAR_ASSEMBLY/WOMENS_BOOTS#GLO@WORLD',
 };
+
+function suggestedCategoryForProductName(name: string): ProductCategory | null {
+  if (/\b(boot|boots|shoe|shoes|sneaker|sneakers|trainer|trainers|sandals?)\b/i.test(name)) return 'footwear';
+  if (/\b(t-?shirts?|tees?|shirts?|dresses?|trousers|pants|skirts?|jackets?|coats?)\b/i.test(name)) return 'apparel';
+  return null;
+}
 
 function numberForDisplay(value: number): string {
   if (!Number.isFinite(value)) return 'Not available';
@@ -234,7 +241,7 @@ function BomMassAssessmentCard({ assessment }: { assessment: BomMassAssessment }
   return (
     <section className="bom-mass-assessment" aria-labelledby="bom-mass-assessment-heading">
       <Typography id="bom-mass-assessment-heading" component="h4" className="dialog-section-title">
-        Flat BOM mass diagnostic
+        Mass check
       </Typography>
       <dl className="bom-mass-values">
         <div><dt>Declared input mass</dt><dd>{assessment.declaredInputMassKg === null ? 'Incomplete' : `${numberForDisplay(assessment.declaredInputMassKg)} kg`}</dd></div>
@@ -526,7 +533,7 @@ function App() {
     setError('');
   };
 
-  const loadWorkedExample = () => {
+  const loadWorkedExample = (suggestion = false) => {
     if (!catalog) {
       setError('Processes are still loading. Try again in a moment.');
       return;
@@ -536,10 +543,12 @@ function App() {
       setError('The example processes are not in this catalogue.');
       return;
     }
-    setProductName("Women's boots");
-    setProductType('footwear');
+    if (!suggestion) setProductName("Women's boots");
+    setProductType(WORKED_EXAMPLE.category);
     setFinishedMass(WORKED_EXAMPLE.finishedMassKg);
-    setScopeConfirmed(true);
+    // A name-based suggestion must not certify that the suggested bill of materials is complete.
+    if (suggestion) setScopeConfirmed(false);
+    else setScopeConfirmed(true);
     setMaterials(WORKED_EXAMPLE.parts.map((part, index) => ({
       id: `example-${index + 1}`,
       name: part.name,
@@ -634,6 +643,11 @@ function App() {
     downloadProcessEstimatesCsv(csv, 'environmental-process-estimates.csv');
   };
 
+  const suggestedCategory = suggestedCategoryForProductName(productName);
+  const hasBootExampleMatch = suggestedCategory === 'footwear';
+  const showCategorySuggestion = suggestedCategory === 'apparel' && productType !== 'apparel';
+  const hasExistingInputs = Boolean(finishedMass || scopeConfirmed || materials.some((item) => item.name.trim() || item.kg.trim() || item.factor));
+
   return (
     <SiteLayout current="calculator" sourceVersion={catalog?.source_version ?? '1.1.0'} totalRecords={catalog?.total_records ?? '302'}>
       <div className="calculator-page">
@@ -643,10 +657,12 @@ function App() {
 
         <div className="calc-layout">
           <Paper component="section" elevation={0} className="form-card calc-card" aria-labelledby="calculator-heading">
-            <Typography id="calculator-heading" component="h2" className="card-title">Product</Typography>
+            <Typography id="calculator-heading" component="h2" className="card-title">Inputs</Typography>
             <form className="calc-form" onSubmit={calculate} noValidate>
+              <p className="calc-required-note">Fields marked * are required.</p>
               <div className="calc-product-grid">
                 <TextField
+                  required
                   label="Product name"
                   size="small"
                   value={productName}
@@ -656,6 +672,7 @@ function App() {
                   fullWidth
                 />
                 <TextField
+                  required
                   select
                   label="Sold as"
                   size="small"
@@ -667,6 +684,7 @@ function App() {
                   <MenuItem value="apparel">Piece (apparel)</MenuItem>
                 </TextField>
                 <TextField
+                  required
                   label="Finished weight (kg)"
                   size="small"
                   type="number"
@@ -678,6 +696,24 @@ function App() {
                   fullWidth
                 />
               </div>
+              {hasBootExampleMatch && (
+                <div className="calc-profile-suggestion" aria-live="polite">
+                  <strong>Example suggestion: women’s boots</strong>
+                  <span>These sample materials and weights are not inferred from your product. Review them and confirm the whole product before calculating.</span>
+                  <Button type="button" variant="outlined" onClick={() => loadWorkedExample(true)} disabled={!catalog}>
+                    {hasExistingInputs ? 'Replace inputs with example' : 'Use example as a starting point'}
+                  </Button>
+                </div>
+              )}
+              {showCategorySuggestion && (
+                <div className="calc-profile-suggestion" aria-live="polite">
+                  <strong>Suggested category: piece (apparel)</strong>
+                  <span>Check this against your product.</span>
+                  <Button type="button" variant="outlined" onClick={() => changeGeneral(() => setProductType('apparel'))}>
+                    Use category suggestion
+                  </Button>
+                </div>
+              )}
 
               <Typography component="h2" className="card-title calc-section-title">Materials</Typography>
               <div className="calc-material-list">
@@ -686,6 +722,7 @@ function App() {
                   return (
                     <div className="calc-material-row" key={item.id}>
                       <TextField
+                        required
                         label="Material name"
                         size="small"
                         value={item.name}
@@ -695,6 +732,7 @@ function App() {
                         fullWidth
                       />
                       <TextField
+                        required
                         label="Weight (kg)"
                         size="small"
                         type="number"
@@ -714,6 +752,7 @@ function App() {
                         renderInput={(params) => (
                           <TextField
                             {...params}
+                            required
                             label="Process"
                             size="small"
                             error={Boolean(rowError.factor)}
@@ -743,8 +782,9 @@ function App() {
               {errors.noMaterials && <Alert severity="error">{errors.noMaterials}</Alert>}
 
               <FormControlLabel
+                required
                 className="calc-scope"
-                control={<Checkbox checked={scopeConfirmed} onChange={(event) => changeGeneral(() => setScopeConfirmed(event.target.checked))} />}
+                control={<Checkbox required checked={scopeConfirmed} onChange={(event) => changeGeneral(() => setScopeConfirmed(event.target.checked))} />}
                 label="These materials make up the whole product"
               />
               {errors.scope && <Alert severity="error">{errors.scope}</Alert>}
@@ -754,7 +794,7 @@ function App() {
 
               <div className="calc-actions">
                 <Button type="submit" variant="contained" disabled={!catalog || calculating}>Calculate</Button>
-                <Button type="button" variant="text" onClick={loadWorkedExample} disabled={!catalog}>Load example</Button>
+                <Button type="button" variant="text" onClick={() => loadWorkedExample()} disabled={!catalog}>Load example</Button>
               </div>
             </form>
           </Paper>
@@ -763,7 +803,10 @@ function App() {
             <Typography id="results-heading" component="h2" className="card-title">Results</Typography>
 
             {!result && !calculating && (
-              <p className="calc-empty">Results appear here after you calculate.</p>
+              <div className="calc-empty">
+                <div className="round-lab-icon empty-illustration" aria-hidden="true"><ScienceOutlinedIcon /></div>
+                <p>Results appear here after you calculate.</p>
+              </div>
             )}
 
             {calculating && (

@@ -708,13 +708,33 @@ summary {
   }
 }
 
-/* Green scrollbars wherever results scroll. */
-.result-panel,
-.indicator-table-wrap,
-.summary-table-wrap,
-.results-output {
+/* Results scrollbars use the calculator palette, not the retired sage-green theme. */
+.calculator-page .result-panel,
+.calculator-page .indicator-table-wrap,
+.calculator-page .summary-table-wrap,
+.calculator-page .results-output {
   scrollbar-width: thin;
-  scrollbar-color: #2f8f5b #e6f3ea;
+  scrollbar-color: #000000 #FFF6E0;
+}
+.calculator-page .result-panel::-webkit-scrollbar,
+.calculator-page .indicator-table-wrap::-webkit-scrollbar,
+.calculator-page .summary-table-wrap::-webkit-scrollbar,
+.calculator-page .results-output::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.calculator-page .result-panel::-webkit-scrollbar-track,
+.calculator-page .indicator-table-wrap::-webkit-scrollbar-track,
+.calculator-page .summary-table-wrap::-webkit-scrollbar-track,
+.calculator-page .results-output::-webkit-scrollbar-track {
+  background: #FFF6E0;
+}
+.calculator-page .result-panel::-webkit-scrollbar-thumb,
+.calculator-page .indicator-table-wrap::-webkit-scrollbar-thumb,
+.calculator-page .summary-table-wrap::-webkit-scrollbar-thumb,
+.calculator-page .results-output::-webkit-scrollbar-thumb {
+  background: #000000;
+  border: 2px solid #FFF6E0;
 }
 
 /* Hover on top navigation and footer links: a small lift, no text underline.
@@ -870,7 +890,7 @@ summary {
 /* ---- Simple calculator: one product block, one materials list, one results panel. ---- */
 .calc-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 24px;
   align-items: start;
   margin-top: 24px;
@@ -881,7 +901,11 @@ summary {
 .calc-layout .result-card .card-title { margin: 0 0 16px; font-size: 20px; font-weight: 800; color: #000; }
 .calc-section-title { margin-top: 8px !important; }
 .calc-form { display: flex; flex-direction: column; gap: 20px; }
+.calc-required-note { margin: -8px 0 -8px; font-size: 13px; font-weight: 700; }
 .calc-product-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+.calc-profile-suggestion { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 14px; border: 2px solid #000; background: #fff3bd; }
+.calc-profile-suggestion span { font-size: 13px; line-height: 1.45; }
+.calc-profile-suggestion .MuiButton-root { margin-top: 2px; }
 .calc-material-list { display: flex; flex-direction: column; gap: 16px; }
 .calc-material-row {
   position: relative;
@@ -898,10 +922,47 @@ summary {
 .calc-form .MuiFormLabel-root { font-size: 14px; }
 .calc-scope { margin: 0 !important; }
 .calc-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
-.calc-empty { margin: 0; padding: 24px 0; color: #000; font-size: 15px; }
+.calc-empty { display: flex; min-height: 220px; flex-direction: column; align-items: center; justify-content: center; margin: 0; padding: 24px 0; color: #000; font-size: 15px; text-align: center; }
+.calc-empty p { margin: 0; }
 .calc-layout .result-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
 .calc-layout .hold-blocker-list { margin: 12px 0 0; padding-left: 20px; }
 .calc-layout .hold-blocker-list li { font-size: 14px; margin-bottom: 6px; }
+
+/* Bring the detailed result checks and tables out of the retired soft-green card styling. */
+.calculator-page .product-input-use-review,
+.calculator-page .bom-mass-assessment {
+  margin-bottom: 16px;
+  padding: 14px;
+  border: 3px solid #000 !important;
+  border-radius: 0 !important;
+  background: #FFFFFF !important;
+  box-shadow: 4px 4px 0 #000 !important;
+  color: #000 !important;
+}
+.calculator-page .dialog-section-title,
+.calculator-page .input-use-counts,
+.calculator-page .bom-mass-values dt,
+.calculator-page .bom-mass-values dd,
+.calculator-page .bom-unconvertible-inputs {
+  color: #000 !important;
+}
+.calculator-page .dialog-section-title { font-weight: 900 !important; }
+.calculator-page .bom-mass-values > div { border-bottom: 1px solid #000; }
+.calculator-page .bom-mass-status,
+.calculator-page .input-use-warning,
+.calculator-page .summary-data-warning,
+.calculator-page .score-unavailable {
+  border-radius: 0 !important;
+  color: #000 !important;
+  box-shadow: 3px 3px 0 #000 !important;
+}
+.calculator-page .summary-scope-copy,
+.calculator-page .numeric-value,
+.calculator-page .unit-note,
+.calculator-page .catalog-loading { color: #000 !important; }
+.calculator-page .indicator-table-wrap .MuiTableCell-root { border-color: #000 !important; }
+.calculator-page .summary-table-wrap .MuiTable-root { min-width: 540px; }
+
 @media (max-width: 900px) {
   .calc-layout { grid-template-columns: 1fr; }
   .calc-material-row { grid-template-columns: 1fr; padding-right: 16px; padding-top: 40px; }

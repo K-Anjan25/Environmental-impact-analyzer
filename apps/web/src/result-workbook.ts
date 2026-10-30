@@ -143,7 +143,7 @@ export async function buildResultWorkbook(input: WorkbookInput): Promise<Blob> {
   const firstIndicatorColumn = 7; // column G
   const indicatorLetter = (offset: number) => columnLetter(firstIndicatorColumn + offset);
   // Sheets are created in reading order: Summary, Inputs, Impacts, EF 3.1 score, Method and source.
-  const cover = newSheet('Summary', 'Summary', [34, 70, 24]);
+  const cover = newSheet('Summary', 'Summary', [34, 70, 24, 24]);
   const inputsSheet = newSheet('Inputs', 'Inputs', [6, 40, 22, 24, 16, 14, 40, 30]);
   const impactsSheet = newSheet('Impacts', 'Impacts by process', [6, 40, 12, 14, 16, 14, ...codes.map(() => 16)]);
   const scoreSheet = newSheet('EF 3.1 score', 'EF 3.1 score', [10, 32, 18, 18, 18, 18, 14, 18]);
@@ -369,24 +369,51 @@ export async function buildResultWorkbook(input: WorkbookInput): Promise<Blob> {
   cover.getCell('B9').numFmt = EF_FORMAT;
   cover.getCell('B10').numFmt = '#,##0.000';
   cover.getCell('B12').numFmt = '0.0%';
-  cover.getCell('A14').value = 'Scope';
+
+  // Put every separate category result on the first sheet in a vertical, phone-friendly table.
+  cover.getCell('A14').value = 'All 16 environmental indicators';
   cover.getCell('A14').font = { name: 'Arial', bold: true, size: 12 };
-  cover.getCell('A15').value = 'Covers only the process rows on the Inputs sheet. Cultivation, ginning, transport, distribution, and use phase are not included unless listed.';
-  cover.mergeCells('A15:C15');
-  cover.getCell('A15').alignment = { wrapText: true, vertical: 'top' };
-  cover.getRow(15).height = 32;
-  cover.getCell('A17').value = 'How to read it';
-  cover.getCell('A17').font = { name: 'Arial', bold: true, size: 12 };
-  cover.getCell('A18').value = 'EF 3.1 points combine 16 impact categories into one number. Higher means more impact. Compare processes only at the same reference unit.';
-  cover.mergeCells('A18:C18');
-  cover.getCell('A18').alignment = { wrapText: true, vertical: 'top' };
-  cover.getRow(18).height = 32;
+  const indicatorRows: Cell[][] = codes.map((code, offset) => {
+    const scoreRow = scoreFirstRow + offset;
+    const item = summaryByCode.get(code);
+    return [
+      code,
+      item?.name ?? indicators[offset]?.name ?? code,
+      { formula: `'EF 3.1 score'!D${scoreRow}`, result: item?.value ?? 'n/a' },
+      item?.unit ?? indicators[offset]?.result_unit ?? '',
+    ];
+  });
+  cover.addTable({
+    name: 'tblIndicators',
+    ref: 'A15',
+    headerRow: true,
+    style: { theme: 'TableStyleMedium2', showRowStripes: true },
+    columns: ['Code', 'Indicator', 'Calculated result', 'Unit'].map((name) => ({ name })),
+    rows: indicatorRows as (string | number)[][],
+  });
+  headerRow(cover, 15);
+  for (let row = 16; row < 16 + codes.length; row += 1) {
+    cover.getCell(`C${row}`).numFmt = '#,##0.000000E+00';
+  }
+
+  cover.getCell('A34').value = 'Scope';
+  cover.getCell('A34').font = { name: 'Arial', bold: true, size: 12 };
+  cover.getCell('A35').value = 'Covers only the process rows on the Inputs sheet. Cultivation, ginning, transport, distribution, and use phase are not included unless listed.';
+  cover.mergeCells('A35:D35');
+  cover.getCell('A35').alignment = { wrapText: true, vertical: 'top' };
+  cover.getRow(35).height = 32;
+  cover.getCell('A37').value = 'How to read it';
+  cover.getCell('A37').font = { name: 'Arial', bold: true, size: 12 };
+  cover.getCell('A38').value = 'EF 3.1 points combine 16 impact categories into one score. The separate results are listed above. Compare processes only at the same reference unit.';
+  cover.mergeCells('A38:D38');
+  cover.getCell('A38').alignment = { wrapText: true, vertical: 'top' };
+  cover.getRow(38).height = 32;
 
   // Calculated processes live on the Summary too, linked to the Impacts sheet.
   if (n > 0) {
     const ghgUnitLabel = input.report.ghgUnit ?? 'GHG';
-    cover.getCell('A20').value = 'Calculated processes';
-    cover.getCell('A20').font = { name: 'Arial', bold: true, size: 12 };
+    cover.getCell('A40').value = 'Calculated processes';
+    cover.getCell('A40').font = { name: 'Arial', bold: true, size: 12 };
     const processCells: Cell[][] = input.report.processes.map((process, index) => {
       const src = firstRow + index;
       return [
@@ -401,15 +428,15 @@ export async function buildResultWorkbook(input: WorkbookInput): Promise<Blob> {
     });
     cover.addTable({
       name: 'tblProcesses',
-      ref: 'A21',
+      ref: 'A41',
       headerRow: true,
       style: { theme: 'TableStyleMedium2', showRowStripes: true },
       columns: ['Process', 'Details', 'EF 3.1 points', 'Share of total', `Climate change (${ghgUnitLabel})`].map((name) => ({ name })),
       rows: processCells as (string | number)[][],
     });
-    headerRow(cover, 21);
+    headerRow(cover, 41);
     for (let i = 0; i < n; i++) {
-      const r = 22 + i;
+      const r = 42 + i;
       cover.getCell(`C${r}`).numFmt = EF_FORMAT;
       cover.getCell(`D${r}`).numFmt = '0.0%';
       cover.getCell(`E${r}`).numFmt = '#,##0.000';

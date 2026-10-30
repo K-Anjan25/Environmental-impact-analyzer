@@ -156,6 +156,9 @@ describe('process estimator accessibility', () => {
 
     const { container } = render(<App />);
     const dashboardText = container.textContent ?? '';
+    expect(container.querySelector('.site-menu-list a[href="#/method"]')).toBeNull();
+    expect(container.querySelector('.round-lab-icon.empty-illustration')).toBeTruthy();
+    expect(dashboardText).not.toContain('Method and scope');
     expect(dashboardText).not.toContain('Source factors, not a product score');
     expect(dashboardText).not.toContain('Separate indicators. No combined score.');
     expect(dashboardText).not.toContain('Each selected process is reported on its own; this is not a whole-product footprint.');
@@ -176,15 +179,15 @@ describe('process estimator accessibility', () => {
 
 async function fillCalculator(options: { productName?: string; finishedKg?: string; materialKg?: string; scope?: boolean } = {}): Promise<void> {
   await screen.findByRole('heading', { name: 'Calculator' });
-  fireEvent.change(screen.getByRole('textbox', { name: 'Product name' }), { target: { value: options.productName ?? 'Cotton tote' } });
-  fireEvent.change(screen.getByRole('spinbutton', { name: 'Finished weight (kg)' }), { target: { value: options.finishedKg ?? '0.18' } });
-  fireEvent.change(screen.getByRole('textbox', { name: 'Material name' }), { target: { value: 'Cotton yarn' } });
-  fireEvent.change(screen.getByRole('spinbutton', { name: 'Weight (kg)' }), { target: { value: options.materialKg ?? '0.18' } });
-  const processBox = screen.getByRole('combobox', { name: 'Process' });
+  fireEvent.change(screen.getByRole('textbox', { name: /Product name/ }), { target: { value: options.productName ?? 'Cotton tote' } });
+  fireEvent.change(screen.getByRole('spinbutton', { name: /Finished weight \(kg\)/ }), { target: { value: options.finishedKg ?? '0.18' } });
+  fireEvent.change(screen.getByRole('textbox', { name: /Material name/ }), { target: { value: 'Cotton yarn' } });
+  fireEvent.change(screen.getByRole('spinbutton', { name: /Weight \(kg\)/ }), { target: { value: options.materialKg ?? '0.18' } });
+  const processBox = screen.getByRole('combobox', { name: /Process/ });
   fireEvent.change(processBox, { target: { value: 'Spinning cotton to yarn' } });
   fireEvent.click(await screen.findByRole('option', { name: /Spinning cotton to yarn/ }));
   if (options.scope !== false) {
-    fireEvent.click(screen.getByRole('checkbox', { name: 'These materials make up the whole product' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: /These materials make up the whole product/ }));
   }
 }
 
@@ -201,6 +204,37 @@ async function fillCalculator(options: { productName?: string; finishedKg?: stri
     expect(screen.getByText('Choose a process.')).toBeTruthy();
     expect(screen.getByText('Tick this box to confirm.')).toBeTruthy();
     expect(screen.queryByText(/Pick a process|Name \(for example/)).toBeNull();
+  });
+
+  it('marks every required entry and asks users to confirm name-based example suggestions', async () => {
+    const exampleIds = [
+      'MATERIAL_PROCESS_STEP:YARN_FORMATION/SPINNING/RING#SYNTHETIC_FIBERS/POLYESTER?DTEX=120@WORLD',
+      'MATERIAL_PROCESS_STEP:YARN_FORMATION/SPINNING/OPEN_END#PLANT_FIBERS/COTTON?DTEX=70@WORLD',
+      'MATERIAL:NATURAL_RUBBER/STR#ANY@TH',
+    ];
+    const exampleCatalog = {
+      ...catalog,
+      factors: exampleIds.map((id, index) => ({ ...factor, id, activity: `Example process ${index + 1}` })),
+    };
+    stubApi(exampleCatalog);
+    render(<App />);
+    await screen.findByRole('heading', { name: 'Calculator' });
+
+    expect(screen.getByText('Fields marked * are required.')).toBeTruthy();
+    expect(screen.getByRole('textbox', { name: /Product name/ }).hasAttribute('required')).toBe(true);
+    expect(screen.getByRole('spinbutton', { name: /Finished weight \(kg\)/ }).hasAttribute('required')).toBe(true);
+    expect(screen.getByRole('textbox', { name: /Material name/ }).hasAttribute('required')).toBe(true);
+    expect(screen.getByRole('spinbutton', { name: /Weight \(kg\)/ }).hasAttribute('required')).toBe(true);
+    expect(screen.getByRole('combobox', { name: /Process/ }).hasAttribute('required')).toBe(true);
+    expect(screen.getByRole('checkbox', { name: /These materials make up the whole product/ }).hasAttribute('required')).toBe(true);
+
+    fireEvent.change(screen.getByRole('textbox', { name: /Product name/ }), { target: { value: 'Rain boots' } });
+    expect(await screen.findByText('Example suggestion: women’s boots')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Use example as a starting point' }));
+    expect((screen.getByRole('textbox', { name: /Product name/ }) as HTMLInputElement).value).toBe('Rain boots');
+    expect((screen.getAllByRole('textbox', { name: /Material name/ })[0] as HTMLInputElement).value).toBe('Polyester upper (textile)');
+    expect((screen.getByRole('spinbutton', { name: /Finished weight \(kg\)/ }) as HTMLInputElement).value).toBe('0.42');
+    expect((screen.getByRole('checkbox', { name: /These materials make up the whole product/ }) as HTMLInputElement).checked).toBe(false);
   });
 
   it('calculates locally, without sending anything to the calculation API', async () => {
@@ -225,13 +259,14 @@ async function fillCalculator(options: { productName?: string; finishedKg?: stri
 
   it('unlocks downloads once the mass balances, and has no axe violations', async () => {
     stubApi();
-    render(<App />);
+    const { container } = render(<App />);
     await fillCalculator();
     fireEvent.click(screen.getByRole('button', { name: 'Calculate' }));
     await screen.findByRole('heading', { name: 'Results' });
     const excel = await screen.findByRole('button', { name: 'Download Excel' });
     expect(excel.hasAttribute('disabled')).toBe(false);
     expect(screen.getByRole('button', { name: 'Download CSV' }).hasAttribute('disabled')).toBe(false);
+    expect(container.querySelector('#bom-mass-assessment-heading')?.textContent).toBe('Mass check');
     await expectNoAxeViolations();
   });
 });

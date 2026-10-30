@@ -99,7 +99,7 @@ button, input, textarea { font: inherit; }
 .estimator-grid { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr); gap: 22px; align-items: start; }
 .estimator-card.MuiPaper-root, .result-panel.MuiPaper-root { min-width: 0; }
 .estimator-card.MuiPaper-root { padding-bottom: 28px; }
-.result-panel.MuiPaper-root { scrollbar-color: #b6c9bf transparent; }
+.result-panel.MuiPaper-root { scrollbar-color: #000000 #FFF6E0; }
 .estimator-form { display: flex; flex-direction: column; gap: 17px; }
 .estimator-form .MuiFormControl-root, .estimator-form .MuiTextField-root { min-width: 0; }
 .estimator-form .MuiFormHelperText-root { color: #63716b; font-size: 10.5px; }

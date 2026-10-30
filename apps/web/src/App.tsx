@@ -97,6 +97,19 @@ type SelectedProcess = {
 };
 
 const MAX_PROCESS_LINES = 25;
+
+// A complete, valid example: three parts add up to the finished mass, and each part is linked to its process.
+const WORKED_EXAMPLE = {
+  category: 'footwear' as ProductCategory,
+  description: "One pair of women's boots",
+  finishedMassKg: '0.42',
+  parts: [
+    { name: 'Polyester upper (textile)', quantity: '0.30', factorId: 'MATERIAL_PROCESS_STEP:YARN_FORMATION/SPINNING/RING#SYNTHETIC_FIBERS/POLYESTER?DTEX=120@WORLD' },
+    { name: 'Cotton lining', quantity: '0.02', factorId: 'MATERIAL_PROCESS_STEP:YARN_FORMATION/SPINNING/OPEN_END#PLANT_FIBERS/COTTON?DTEX=70@WORLD' },
+    { name: 'Natural rubber sole', quantity: '0.10', factorId: 'MATERIAL:NATURAL_RUBBER/STR#ANY@TH' },
+  ],
+  assemblyFactorId: 'PRODUCT_PROCESS_STEP:FOOTWEAR_ASSEMBLY/WOMENS_BOOTS#GLO@WORLD',
+};
 const MAX_PRODUCT_INPUTS = 25;
 const UNSPECIFIED_GEOGRAPHY = '__not_stated__';
 
@@ -742,6 +755,57 @@ function App() {
     setError('');
   };
 
+  const loadWorkedExample = () => {
+    if (!catalog) {
+      setError('The factor catalogue is still loading. Try again in a moment.');
+      return;
+    }
+    const factorFor = (id: string) => catalog.factors.find((factor) => factor.id === id) ?? null;
+    const assembly = factorFor(WORKED_EXAMPLE.assemblyFactorId);
+    const partFactors = WORKED_EXAMPLE.parts.map((part) => factorFor(part.factorId));
+    if (!assembly || partFactors.some((factor) => factor === null)) {
+      setError('The worked example needs factors that are not in this catalogue. Add the rows yourself with Find factor.');
+      return;
+    }
+    const parts: ProductInput[] = WORKED_EXAMPLE.parts.map((part) => {
+      productInputSequence.current += 1;
+      return {
+        id: `product-input-${productInputSequence.current}`,
+        name: part.name,
+        quantity: part.quantity,
+        unit: 'kg',
+        parentId: null,
+      };
+    });
+    setProductInputs(parts);
+    setFunctionalUnitCategory(WORKED_EXAMPLE.category);
+    setFunctionalUnitDescription(WORKED_EXAMPLE.description);
+    setFinishedProductMassDraft(WORKED_EXAMPLE.finishedMassKg);
+    setSelectedProcesses([
+      ...parts.map((part, index) => ({
+        key: `example-${part.id}`,
+        factor: partFactors[index] as ProcessFactor,
+        quantity: '',
+        productInputId: part.id,
+        quantityBasis: 'declared-output' as const,
+      })),
+      {
+        key: 'example-assembly',
+        factor: assembly,
+        quantity: WORKED_EXAMPLE.finishedMassKg,
+        productInputId: null,
+        quantityBasis: 'manual' as const,
+      },
+    ]);
+    clearProductInputDraft();
+    setSelectedFactor(null);
+    setSuggestionInputId(null);
+    setFlatBomScopeConfirmed(true);
+    setResult(null);
+    setError('');
+    setProductInputError('');
+  };
+
   const addSuggestedFactor = (factor: ProcessFactor) => {
     if (!suggestionInput) return;
     if (selectedProcesses.some((line) => line.factor.id === factor.id)) {
@@ -871,6 +935,29 @@ function App() {
             <h1 className="page-title">Calculate a process estimate.</h1>
             <p className="page-lede">Choose published apparel and footwear processes, enter quantities, and read the 16 EF 3.1 indicators for each selected row.</p>
           </header>
+        <section className="how-it-works" aria-labelledby="how-it-works-heading">
+          <h2 id="how-it-works-heading" className="how-it-works-title">How the calculator fits together</h2>
+          <ol className="how-it-works-grid">
+            <li className="how-card how-card-product">
+              <span className="how-card-label">Product</span>
+              <strong>What you make</strong>
+              <p>One item, such as one pair of boots, and the parts it is made from. Each part has a mass in kg, and the parts must add up to the finished product&apos;s mass.</p>
+            </li>
+            <li className="how-card how-card-process">
+              <span className="how-card-label">Process</span>
+              <strong>A step that makes or assembles a part</strong>
+              <p>Each process comes from the published factor library, for example natural rubber or boot assembly. Its footprint is per kg of output.</p>
+            </li>
+            <li className="how-card how-card-link">
+              <span className="how-card-label">Connection</span>
+              <strong>Link each process to the part it makes</strong>
+              <p>The part&apos;s mass sets how much of that process is used. The results add up across all linked processes.</p>
+            </li>
+          </ol>
+          <p className="how-it-works-steps">
+            Quick start: press <strong>Load the worked example</strong>, then <strong>Calculate my results</strong>. Downloads unlock once the results show.
+          </p>
+        </section>
         <div className="estimator-grid">
           <Paper component="section" elevation={0} className="form-card estimator-card ui-art-form" aria-labelledby="calculator-heading">
             <div className="card-heading-row">
@@ -887,6 +974,12 @@ function App() {
             )}
 
             <section id="product-inputs" className="product-input-workspace" aria-labelledby="product-input-heading">
+              <div className="worked-example-row">
+                <Button type="button" variant="outlined" onClick={loadWorkedExample} disabled={!catalog}>
+                  Load the worked example
+                </Button>
+                <span>Fills in a boots example that is ready to calculate. You can edit any field afterwards.</span>
+              </div>
               <div className="product-input-heading-row">
                 <Typography id="product-input-heading" component="h3" className="product-input-title">
                   Step 1 · Describe the product
@@ -1408,7 +1501,10 @@ function App() {
                       Download CSV
                     </Button>
                     {exportsLocked && (
-                      <span id="exports-locked-note" className="exports-locked-note">Downloads unlock when Steps 1 and 2 are complete.</span>
+                      <>
+                        <span id="exports-locked-note" className="exports-locked-note">Downloads unlock when Steps 1 and 2 are complete.</span>
+                        <Button type="button" size="small" variant="text" onClick={loadWorkedExample} disabled={!catalog}>Load the worked example</Button>
+                      </>
                     )}
                   </div>
                 </div>

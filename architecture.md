@@ -18,11 +18,10 @@ docker-compose.yml          Local same-origin container acceptance setup
 Dockerfile.vercel            Vercel Container Runtime image entrypoint (Beta)
 roadmap.md                  Release readiness and future-version flow
 apps/web/
-  src/App.tsx              Factor search, v2 input organizer, calculation UI, results, source dialog
+  src/App.tsx              Factor search, user-confirmed suggestions, input organizer, results
   src/api.ts               API/data contracts and same-origin fetch functions
   src/product-quantity.ts  Browser-local unit, feed, and process-mass diagnostic rules
   src/product-bom.ts       Flat-BOM mass check and local input-use review
-  src/factor-suggestions.ts User-confirmed word-overlap factor suggestions
   src/ef31-score.ts        JRC EF 3.1 normalisation/weighting factors and score formula
   src/product-summary.ts  Compatible selected-row indicator totals
   src/local-estimates.ts   Browser-local estimates for mapped input quantities

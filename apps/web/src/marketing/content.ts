@@ -4,8 +4,7 @@
  * Every factual claim here is traceable to the repository:
  *  - 302 factor rows, 11 source categories, 12 selectable groups: README.md, data-sources.md
  *  - 25 selections per estimate: services/api/app/factor_schemas.py (max_length=25)
- *  - USLCI mapping is climate change only; N2O uses GWP 273 (IPCC AR6 Table 7.15);
- *    textile fibre production (A1) is not in the bundled data: datasets/sources/SOURCE-RECORD.md
+ *  - Textile fibre production (A1) is not in the bundled data: data-sources.md
  *  - Privacy: no analytics, no third-party trackers, inputs stay in the browser: PRIVACY.md
  *
  * Items marked PLACEHOLDER need a business decision before launch.
@@ -98,11 +97,6 @@ export const SCOPE_ROWS: ScopeRow[] = [
     item: 'EF 3.1 single score',
     covered: 'The selected rows, normalised with JRC factors and weighted with the recommended final weights.',
     notCovered: 'A ranking or an environmental claim about a product.',
-  },
-  {
-    item: 'USLCI climate-change mapping',
-    covered: 'Climate change (GHG) only. N2O is converted with GWP 273 from IPCC AR6 Table 7.15, a documented assumption.',
-    notCovered: 'The other 15 EF 3.1 categories. They are not mapped for these rows.',
   },
   {
     item: 'Textile fibre production (A1)',

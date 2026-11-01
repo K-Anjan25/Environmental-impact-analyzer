@@ -12,7 +12,6 @@ import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 export const MENU_ITEMS: { href: string; label: string }[] = [
   { href: '#/', label: 'Home' },
   { href: '#/calculator', label: 'Calculator' },
-  { href: '#/method', label: 'Method and scope' },
   { href: '#/pricing', label: 'Plans' },
   { href: '#/blogs', label: 'Blogs' },
   { href: '#/contact', label: 'Contact' },

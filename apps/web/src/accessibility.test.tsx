@@ -128,19 +128,6 @@ async function expectNoAxeViolations(): Promise<void> {
   expect(report.violations).toEqual([]);
 }
 
-async function calculateExample(): Promise<void> {
-  await screen.findByText('Build a process estimate.');
-  const factorInput = screen.getByRole('combobox', { name: 'Pick a process' });
-  fireEvent.change(factorInput, { target: { value: 'Spinning cotton to yarn' } });
-  fireEvent.click(await screen.findByRole('option', { name: /Spinning cotton to yarn/ }));
-  fireEvent.change(screen.getByRole('spinbutton', { name: 'How much? (in the unit shown)' }), {
-    target: { value: '0.18' },
-  });
-  fireEvent.click(screen.getByRole('button', { name: 'Add this step' }));
-  fireEvent.click(screen.getByRole('button', { name: 'Calculate my results' }));
-  await screen.findByRole('table', { name: /Separate environmental indicators for Spinning cotton to yarn/ });
-}
-
 describe('process estimator accessibility', () => {
   it('uses accessible theme colors and names imagery while keeping the brand mark decorative', () => {
     const background = '#f4f1e9';
@@ -169,6 +156,9 @@ describe('process estimator accessibility', () => {
 
     const { container } = render(<App />);
     const dashboardText = container.textContent ?? '';
+    expect(container.querySelector('.site-menu-list a[href="#/method"]')).toBeNull();
+    expect(container.querySelector('.round-lab-icon.empty-illustration')).toBeTruthy();
+    expect(dashboardText).not.toContain('Method and scope');
     expect(dashboardText).not.toContain('Source factors, not a product score');
     expect(dashboardText).not.toContain('Separate indicators. No combined score.');
     expect(dashboardText).not.toContain('Each selected process is reported on its own; this is not a whole-product footprint.');
@@ -186,213 +176,97 @@ describe('process estimator accessibility', () => {
     expect(screen.queryByRole('link', { name: 'Data sources' })).toBeNull();
   });
 
-  it('filters source factors by an exact source geography', async () => {
-    const vietnamFactor: ProcessFactor = {
-      ...factor,
-      id: factor.id.replace('@WORLD', '@VN'),
-      source_descriptor: factor.source_descriptor.replace('@WORLD', '@VN'),
-      activity: 'Spinning cotton to yarn in Vietnam',
-      geography_code: 'VN',
-      geography_label: 'Vietnam',
-    };
-    const geographyCatalog: FactorCatalog = {
+
+async function fillCalculator(options: { productName?: string; finishedKg?: string; materialKg?: string; scope?: boolean } = {}): Promise<void> {
+  await screen.findByRole('heading', { name: 'Calculator' });
+  fireEvent.change(screen.getByRole('textbox', { name: /Product name/ }), { target: { value: options.productName ?? 'Cotton tote' } });
+  fireEvent.change(screen.getByRole('spinbutton', { name: /Finished weight \(kg\)/ }), { target: { value: options.finishedKg ?? '0.18' } });
+  fireEvent.change(screen.getByRole('textbox', { name: /Material name/ }), { target: { value: 'Cotton yarn' } });
+  fireEvent.change(screen.getByRole('spinbutton', { name: /Weight \(kg\)/ }), { target: { value: options.materialKg ?? '0.18' } });
+  const processBox = screen.getByRole('combobox', { name: /Process/ });
+  fireEvent.change(processBox, { target: { value: 'Spinning cotton to yarn' } });
+  fireEvent.click(await screen.findByRole('option', { name: /Spinning cotton to yarn/ }));
+  if (options.scope !== false) {
+    fireEvent.click(screen.getByRole('checkbox', { name: /These materials make up the whole product/ }));
+  }
+}
+
+  it('shows errors only after Calculate and names each field plainly', async () => {
+    stubApi();
+    render(<App />);
+    await screen.findByRole('heading', { name: 'Calculator' });
+    expect(screen.queryByText('Enter the product name.')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Calculate' }));
+    expect(screen.getByText('Enter the product name.')).toBeTruthy();
+    expect(screen.getByText('Enter the finished weight in kg.')).toBeTruthy();
+    expect(screen.getByText('Enter a name.')).toBeTruthy();
+    expect(screen.getByText('Choose a process.')).toBeTruthy();
+    expect(screen.getByText('Tick this box to confirm.')).toBeTruthy();
+    expect(screen.queryByText(/Pick a process|Name \(for example/)).toBeNull();
+  });
+
+  it('marks every required entry and asks users to confirm name-based example suggestions', async () => {
+    const exampleIds = [
+      'MATERIAL_PROCESS_STEP:YARN_FORMATION/SPINNING/RING#SYNTHETIC_FIBERS/POLYESTER?DTEX=120@WORLD',
+      'MATERIAL_PROCESS_STEP:YARN_FORMATION/SPINNING/OPEN_END#PLANT_FIBERS/COTTON?DTEX=70@WORLD',
+      'MATERIAL:NATURAL_RUBBER/STR#ANY@TH',
+    ];
+    const exampleCatalog = {
       ...catalog,
-      total_records: 2,
-      families: catalog.families.map((family) => ({ ...family, record_count: 2 })),
-      factors: [factor, vietnamFactor],
+      factors: exampleIds.map((id, index) => ({ ...factor, id, activity: `Example process ${index + 1}` })),
     };
-    stubApi(geographyCatalog);
+    stubApi(exampleCatalog);
     render(<App />);
-    await screen.findByText('Build a process estimate.');
+    await screen.findByRole('heading', { name: 'Calculator' });
 
-    fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Where is it made?' }));
-    fireEvent.click(await screen.findByRole('option', { name: 'Vietnam (VN) (1)' }));
+    expect(screen.getByText('Fields marked * are required.')).toBeTruthy();
+    expect(screen.getByRole('textbox', { name: /Product name/ }).hasAttribute('required')).toBe(true);
+    expect(screen.getByRole('spinbutton', { name: /Finished weight \(kg\)/ }).hasAttribute('required')).toBe(true);
+    expect(screen.getByRole('textbox', { name: /Material name/ }).hasAttribute('required')).toBe(true);
+    expect(screen.getByRole('spinbutton', { name: /Weight \(kg\)/ }).hasAttribute('required')).toBe(true);
+    expect(screen.getByRole('combobox', { name: /Process/ }).hasAttribute('required')).toBe(true);
+    expect(screen.getByRole('checkbox', { name: /These materials make up the whole product/ }).hasAttribute('required')).toBe(true);
 
-    const factorInput = screen.getByRole('combobox', { name: 'Pick a process' });
-    fireEvent.change(factorInput, { target: { value: 'Spinning cotton' } });
-    expect(await screen.findByRole('option', { name: /Spinning cotton to yarn in Vietnam/ })).toBeTruthy();
-    expect(screen.queryByRole('option', { name: /Spinning cotton to yarn · World/ })).toBeNull();
+    fireEvent.change(screen.getByRole('textbox', { name: /Product name/ }), { target: { value: 'Rain boots' } });
+    expect(await screen.findByText('Example suggestion: women’s boots')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Use example as a starting point' }));
+    expect((screen.getByRole('textbox', { name: /Product name/ }) as HTMLInputElement).value).toBe('Rain boots');
+    expect((screen.getAllByRole('textbox', { name: /Material name/ })[0] as HTMLInputElement).value).toBe('Polyester upper (textile)');
+    expect((screen.getByRole('spinbutton', { name: /Finished weight \(kg\)/ }) as HTMLInputElement).value).toBe('0.42');
+    expect((screen.getByRole('checkbox', { name: /These materials make up the whole product/ }) as HTMLInputElement).checked).toBe(false);
   });
 
-  it('keeps the input area concise and declared product inputs local', async () => {
+  it('calculates locally, without sending anything to the calculation API', async () => {
     const fetchMock = stubApi();
-    const { container } = render(<App />);
-    await screen.findByText('Build a process estimate.');
-
-    const inputWorkspace = container.querySelector('.product-input-workspace');
-    expect(inputWorkspace?.textContent).not.toMatch(/context only|not sent to the API|manual association|not calculated, not zero/i);
-    expect(screen.getByRole('heading', { name: /Product inputs/ })).toBeTruthy();
-
-    fireEvent.change(screen.getByRole('textbox', { name: 'Name (for example, cotton yarn)' }), {
-      target: { value: 'Upper cotton fabric' },
-    });
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'Amount' }), {
-      target: { value: '0.35' },
-    });
-    fireEvent.change(screen.getByRole('textbox', { name: 'Unit (for example, kg)' }), {
-      target: { value: 'kg' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Add material' }));
-    expect(screen.getByText('Upper cotton fabric')).toBeTruthy();
-
-    const factorInput = screen.getByRole('combobox', { name: 'Pick a process' });
-    fireEvent.change(factorInput, { target: { value: 'Spinning cotton to yarn' } });
-    fireEvent.click(await screen.findByRole('option', { name: /Spinning cotton to yarn/ }));
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'How much? (in the unit shown)' }), {
-      target: { value: '0.18' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Add this step' }));
-
-    const inputContext = screen.getByRole('combobox', { name: 'Goes into which step?' });
-    fireEvent.mouseDown(inputContext);
-    fireEvent.click(await screen.findByRole('option', { name: 'Upper cotton fabric — 0.35 kg' }));
-
-    fireEvent.click(screen.getByRole('button', { name: 'Calculate my results' }));
-    await screen.findByRole('table', { name: /Separate environmental indicators for Spinning cotton to yarn/ });
-    const inputContextText = screen.getByText('Input mapping:').closest('p')?.textContent ?? '';
-    expect(inputContextText).toContain('0.35 kg');
-    expect(inputContextText).toMatch(/Manual process quantity/);
-    expect(screen.getByText(/0\.18 × 1 kg yarn/)).toBeTruthy();
-
-    const calculationCall = fetchMock.mock.calls.find(([path]) => String(path) === '/api/v1/process-estimates');
-    const request = calculationCall?.[1] as RequestInit | undefined;
-    expect(JSON.parse(String(request?.body))).toEqual({
-      processes: [{ factor_id: factor.id, quantity: 0.18 }],
-    });
-    await expectNoAxeViolations();
+    render(<App />);
+    await fillCalculator();
+    fireEvent.click(screen.getByRole('button', { name: 'Calculate' }));
+    expect(await screen.findByRole('heading', { name: 'Results' })).toBeTruthy();
+    expect(await screen.findByText('Spinning cotton to yarn')).toBeTruthy();
+    const apiCalls = fetchMock.mock.calls.filter(([path]) => String(path) === '/api/v1/process-estimates');
+    expect(apiCalls.length).toBe(0);
   });
 
-  it('shows user-confirmed text matches for product-input factor mapping', async () => {
+  it('reports a mass mismatch as an inline error and keeps downloads locked', async () => {
     stubApi();
     render(<App />);
-    await screen.findByText('Build a process estimate.');
-    await screen.findByRole('combobox', { name: 'Pick a process' });
-
-    fireEvent.change(screen.getByRole('textbox', { name: 'Name (for example, cotton yarn)' }), {
-      target: { value: 'Cotton yarn' },
-    });
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'Amount' }), {
-      target: { value: '0.35' },
-    });
-    fireEvent.change(screen.getByRole('textbox', { name: 'Unit (for example, kg)' }), { target: { value: 'kg' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Add material' }));
-    expect(await screen.findByText('Cotton yarn')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Find factor' }));
-
-    expect(await screen.findByRole('heading', { name: 'Match a process factor' })).toBeTruthy();
-    expect(screen.getByText(/Text matches only/)).toBeTruthy();
-    expect(screen.getByText('Spinning cotton to yarn')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Use as output' }));
-    const mappedQuantity = await screen.findByRole('spinbutton', { name: 'Mapped quantity' });
-    expect((mappedQuantity as HTMLInputElement).value).toBe('0.35');
-    expect(await screen.findByText('Input is process output')).toBeTruthy();
+    await fillCalculator({ finishedKg: '0.35', materialKg: '0.18' });
+    fireEvent.click(screen.getByRole('button', { name: 'Calculate' }));
+    expect(await screen.findByText(/Declared input mass is below finished-product mass/)).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Download Excel' })).toBeNull();
   });
 
-  it('maps a declared mass input locally and never sends it to the calculation API', async () => {
-    const fetchMock = stubApi();
-    render(<App />);
-    await screen.findByText('Build a process estimate.');
-
-    fireEvent.change(screen.getByRole('textbox', { name: 'Name (for example, cotton yarn)' }), {
-      target: { value: 'Cotton feed' },
-    });
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'Amount' }), {
-      target: { value: '0.55' },
-    });
-    fireEvent.change(screen.getByRole('textbox', { name: 'Unit (for example, kg)' }), { target: { value: 'kg' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Add material' }));
-
-    const factorInput = screen.getByRole('combobox', { name: 'Pick a process' });
-    fireEvent.change(factorInput, { target: { value: 'Spinning cotton to yarn' } });
-    fireEvent.click(await screen.findByRole('option', { name: /Spinning cotton to yarn/ }));
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'How much? (in the unit shown)' }), {
-      target: { value: '1' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Add this step' }));
-
-    fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Goes into which step?' }));
-    fireEvent.click(await screen.findByRole('option', { name: 'Cotton feed — 0.55 kg' }));
-    fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Quantity basis' }));
-    fireEvent.click(await screen.findByRole('option', { name: 'Input is process feed' }));
-    expect((screen.getByRole('spinbutton', { name: 'Mapped quantity' }) as HTMLInputElement).value).toBe('0.5');
-
-    fireEvent.click(screen.getByRole('button', { name: 'Calculate my results' }));
-    await screen.findByRole('table', { name: /Separate environmental indicators for Spinning cotton to yarn/ });
-    expect(screen.getByText(/0\.5 × 1 kg yarn/)).toBeTruthy();
-    expect(fetchMock.mock.calls.some(([path]) => String(path) === '/api/v1/process-estimates')).toBe(false);
-  });
-
-  it('checks flat BOM mass locally and keeps unmapped inputs explicitly uncalculated', async () => {
-    const fetchMock = stubApi();
-    render(<App />);
-    await screen.findByRole('combobox', { name: 'Pick a process' });
-
-    for (const [name, quantity, unit] of [
-      ['Upper fabric', '250', 'g'],
-      ['Rubber sole', '0.1', 'kg'],
-    ]) {
-      fireEvent.change(screen.getByRole('textbox', { name: 'Name (for example, cotton yarn)' }), { target: { value: name } });
-      fireEvent.change(screen.getByRole('spinbutton', { name: 'Amount' }), { target: { value: quantity } });
-      fireEvent.change(screen.getByRole('textbox', { name: 'Unit (for example, kg)' }), { target: { value: unit } });
-      fireEvent.click(screen.getByRole('button', { name: 'Add material' }));
-    }
-
-    fireEvent.click(screen.getByText('Optional checks: mass, transport, and life-cycle stages'));
-    fireEvent.click(screen.getByRole('checkbox', { name: 'All declared lines are product components for one functional unit' }));
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'Finished product mass per functional unit (kg)' }), {
-      target: { value: '0.35' },
-    });
-    expect(await screen.findByText('Declared input mass matches finished-product mass within calculator precision.')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Edit product input Upper fabric' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Save input' }));
-    expect((screen.getByRole('checkbox', { name: 'All declared lines are product components for one functional unit' }) as HTMLInputElement).checked).toBe(false);
-    expect(screen.getByText('Confirm that every declared line is a product component for one functional unit.')).toBeTruthy();
-    fireEvent.click(screen.getByRole('checkbox', { name: 'All declared lines are product components for one functional unit' }));
-    expect(await screen.findByText('Declared input mass matches finished-product mass within calculator precision.')).toBeTruthy();
-
-    await calculateExample();
-    expect(screen.getByText('Flat BOM mass diagnostic')).toBeTruthy();
-    expect(screen.getByText('Declared-input use')).toBeTruthy();
-    expect(screen.getByText(/Not calculated \(not zero\): Upper fabric, Rubber sole/)).toBeTruthy();
-    const estimateCall = fetchMock.mock.calls.find(([path]) => String(path) === '/api/v1/process-estimates');
-    expect(estimateCall).toBeTruthy();
-    expect(JSON.stringify(estimateCall?.[1])).not.toContain('0.35');
-    expect(JSON.stringify(estimateCall?.[1])).not.toContain('Upper fabric');
-    await expectNoAxeViolations();
-  });
-
-  it('has no axe violations in the calculator and populated indicator results', async () => {
+  it('unlocks downloads once the mass balances, and has no axe violations', async () => {
     stubApi();
     const { container } = render(<App />);
-    await expectNoAxeViolations();
-    await calculateExample();
-    const processTable = screen.getByRole('table', { name: /Separate environmental indicators for Spinning cotton to yarn/ });
-    expect(processTable.querySelectorAll('tbody tr')).toHaveLength(16);
-    expect(screen.getByText('Selected rows only')).toBeTruthy();
-    expect(screen.queryByText('Source attribution · CC BY-SA 4.0')).toBeNull();
-    expect(screen.queryByRole('link', { name: /Open pinned source release/ })).toBeNull();
-    expect(container.querySelector('.result-source-card')).toBeNull();
-    expect(container.querySelector('.process-result-details')).toBeNull();
-    expect(container.querySelector('.summary-method-link')).toBeNull();
-    expect(container.querySelector('.result-attribution')).toBeNull();
-    // The example has no functional-unit description, so its subtotals are held back until it is fixed.
-    expect(screen.queryByText('Selected-process total')).toBeNull();
-    expect(screen.queryByText('EF 3.1 single score')).toBeNull();
-    expect(screen.getAllByText('Hidden').length).toBeGreaterThan(0);
+    await fillCalculator();
+    fireEvent.click(screen.getByRole('button', { name: 'Calculate' }));
+    await screen.findByRole('heading', { name: 'Results' });
+    const excel = await screen.findByRole('button', { name: 'Download Excel' });
+    expect(excel.hasAttribute('disabled')).toBe(false);
+    expect(screen.getByRole('button', { name: 'Download CSV' }).hasAttribute('disabled')).toBe(false);
+    expect(container.querySelector('#bom-mass-assessment-heading')?.textContent).toBe('Mass check');
     await expectNoAxeViolations();
   });
-
-  it('holds the CSV and Excel downloads until the boundary issues are fixed', async () => {
-    stubApi();
-    render(<App />);
-    await calculateExample();
-
-    const csv = screen.getByRole('button', { name: 'Download CSV' });
-    const excel = screen.getByRole('button', { name: 'Download Excel' });
-    expect(csv.hasAttribute('disabled')).toBe(true);
-    expect(excel.hasAttribute('disabled')).toBe(true);
-    expect(csv.getAttribute('aria-describedby')).toBe('exports-locked-note');
-    expect(screen.getByText('Downloads unlock when the Step 2 items are fixed.')).toBeTruthy();
-  });
-
 });

@@ -1,4 +1,4 @@
-import { SOCIAL_LINKS, GITHUB_URL, ISSUES_URL } from './content';
+import { ISSUES_URL } from './content';
 
 /*
  * Footer for the public landing pages. It has a brand block, product, company, and legal links,
@@ -20,20 +20,12 @@ export default function LandingFooter() {
             <span>EcoImpact Lab</span>
           </a>
           <p>Environmental Impact Analyzer. Published apparel and footwear process factors, with scope stated on every result.</p>
-          <div className="social" aria-label="Social media">
-            {SOCIAL_LINKS.map((item) => (
-              <a key={item.label} href={item.href} target="_blank" rel="noopener noreferrer" aria-label={`${item.label} (opens in a new tab)`}>
-                {item.label}
-              </a>
-            ))}
-          </div>
         </div>
 
         <nav className="footer-col" aria-label="Product links">
           <h3>Product</h3>
           <ul>
             <li><a href="#/calculator">Calculator</a></li>
-            <li><a href="#/method">Method and scope</a></li>
             <li><a href="#/pricing">Plans</a></li>
             <li><a href="#/blogs">Guides and news</a></li>
           </ul>
@@ -44,7 +36,6 @@ export default function LandingFooter() {
           <ul>
             <li><a href="#/contact">Contact</a></li>
             <li><a href={ISSUES_URL} target="_blank" rel="noopener noreferrer">Report an issue (new tab)</a></li>
-            <li><a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">Source code (new tab)</a></li>
           </ul>
         </nav>
 

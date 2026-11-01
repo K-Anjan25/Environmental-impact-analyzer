@@ -311,7 +311,7 @@ summary {
 .legal-body p, .legal-body li { max-width: 70ch; }
 .legal-body ul, .legal-body ol { padding-left: 22px; }
 .legal-body a { color: #000; font-weight: 700; text-decoration-thickness: 2px; }
-.legal-body code, .legal-body pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 14px; background: #FFF0C2; border: 2px solid #000; border-radius: 0; }
+.legal-body code, .legal-body pre { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 14px; background: #FFF0C2; border: 2px solid #000; border-radius: 0; }
 .legal-body pre { padding: 14px; overflow-x: auto; }
 .legal-body table { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
 .legal-body th, .legal-body td { border: 2px solid #000; padding: 8px 10px; text-align: left; vertical-align: top; }
@@ -655,7 +655,6 @@ summary {
   padding: 6px 2px 4px !important;
 }
 .site-nav a[aria-current="page"] { border-bottom: 4px solid #000 !important; }
-.site-nav a:hover { text-decoration: underline !important; text-underline-offset: 4px; }
 
 /* 12-column grid on desktop: the form takes 7 columns, the results 5. Stacked below 1100px. */
 @media (min-width: 1100px) {
@@ -709,20 +708,54 @@ summary {
   }
 }
 
-/* Green scrollbars wherever results scroll. */
-.result-panel,
-.indicator-table-wrap,
-.summary-table-wrap,
-.results-output {
+/* Results scrollbars use the calculator palette, not the retired sage-green theme. */
+.calculator-page .result-panel,
+.calculator-page .indicator-table-wrap,
+.calculator-page .summary-table-wrap,
+.calculator-page .results-output {
   scrollbar-width: thin;
-  scrollbar-color: #2f8f5b #e6f3ea;
+  scrollbar-color: #000000 #FFF6E0;
+}
+.calculator-page .result-panel::-webkit-scrollbar,
+.calculator-page .indicator-table-wrap::-webkit-scrollbar,
+.calculator-page .summary-table-wrap::-webkit-scrollbar,
+.calculator-page .results-output::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.calculator-page .result-panel::-webkit-scrollbar-track,
+.calculator-page .indicator-table-wrap::-webkit-scrollbar-track,
+.calculator-page .summary-table-wrap::-webkit-scrollbar-track,
+.calculator-page .results-output::-webkit-scrollbar-track {
+  background: #FFF6E0;
+}
+.calculator-page .result-panel::-webkit-scrollbar-thumb,
+.calculator-page .indicator-table-wrap::-webkit-scrollbar-thumb,
+.calculator-page .summary-table-wrap::-webkit-scrollbar-thumb,
+.calculator-page .results-output::-webkit-scrollbar-thumb {
+  background: #000000;
+  border: 2px solid #FFF6E0;
 }
 
-/* Hover underlines on top navigation and footer links. */
+/* Hover on top navigation and footer links: a small lift, no text underline.
+   The current page keeps its bar, so a hovered current link shows one mark, not two. */
+.site-nav a,
+.landing-footer a {
+  transition: transform 160ms ease;
+}
+.site-nav a:hover,
+.site-nav a:focus-visible,
+.landing-footer a:hover,
+.landing-footer a:focus-visible {
+  text-decoration: none !important;
+}
 .site-nav a:hover,
 .landing-footer a:hover {
-  text-decoration: underline !important;
-  text-underline-offset: 4px;
+  transform: translateY(-2px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-nav a, .landing-footer a { transition: none; }
+  .site-nav a:hover, .landing-footer a:hover { transform: none; }
 }
 
 .subtotal-hold-note { margin: 8px 0 0; font-size: 13px; font-weight: 700; color: #000; }
@@ -740,3 +773,198 @@ summary {
 .ghg-stage-accordion > summary:focus-visible { outline: 3px solid #000 !important; outline-offset: 2px; }
 .ghg-stage-accordion[open] > summary { border-bottom: 2px solid #000; }
 .ghg-stage-accordion > .form-grid { padding: 10px; }
+
+/* ---- Indicator tables: roomier rows and larger type (the dense table was the main readability problem). ---- */
+.indicator-table-wrap .MuiTableCell-root {
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  vertical-align: top;
+}
+.indicator-table-wrap .MuiTableCell-head {
+  font-size: 12px;
+  line-height: 1.4;
+  padding: 10px 14px;
+}
+.indicator-table-wrap .indicator-code {
+  min-width: 40px;
+  font-size: 12px;
+  padding: 2px 6px;
+}
+.indicator-table-wrap .indicator-name {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.indicator-table-wrap .numeric-value {
+  font-size: 14px;
+  line-height: 1.3;
+}
+.indicator-table-wrap .unit-note {
+  max-width: none;
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.indicator-table-wrap .MuiTableRow-root + .MuiTableRow-root .MuiTableCell-root {
+  border-top: 1px solid #d9dfd6;
+}
+@media (max-width: 720px) {
+  .indicator-table-wrap .MuiTableCell-root { padding: 10px 10px; font-size: 12px; }
+  .indicator-table-wrap .numeric-value { font-size: 13px; }
+  .indicator-table-wrap .unit-note { font-size: 11px; }
+}
+
+/* ---- Calculator flow: visible Step 1 / Step 2 / Step 3 connections and the round lab icon. ---- */
+.round-lab-icon.empty-illustration {
+  width: 88px;
+  height: 88px;
+  margin: 0 auto 14px;
+  border: 3px solid #000;
+  border-radius: 50%;
+  background: #FFD23F;
+  box-shadow: 4px 4px 0 #000;
+  color: #000;
+}
+.round-lab-icon.empty-illustration svg { width: 40px; height: 40px; }
+.step-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 22px 0 12px;
+  padding-top: 14px;
+  border-top: 3px solid #000;
+  scroll-margin-top: 88px;
+}
+.step-heading-row .product-input-title { margin: 0; font-weight: 900; }
+.step-required-chip { background: #000 !important; color: #FFD23F !important; font-weight: 900 !important; }
+.subtotal-hold { margin-top: 8px; }
+.hold-blocker-list { margin: 6px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.hold-blocker-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  padding: 8px 10px;
+  border: 2px solid #000;
+  background: #FFFFFF;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.hold-blocker-list .MuiButton-root { color: #000; font-weight: 900; text-decoration: underline; text-underline-offset: 3px; min-height: 0; padding: 2px 6px; }
+#step-2, #product-inputs { scroll-margin-top: 88px; }
+
+.step-required-tag { display: inline-block; padding: 4px 9px; border: 2px solid #000; background: #000; color: #FFD23F; font-size: 12px; font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.2; }
+
+/* ---- Calculator orientation: product, process and connection, plus the worked example. ---- */
+.how-it-works { margin: 22px 0 6px; }
+.how-it-works-title { margin: 0 0 12px; font-size: 20px; font-weight: 900; color: #000; }
+.how-it-works-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; list-style: none; margin: 0; padding: 0; }
+.how-card { display: grid; gap: 6px; padding: 14px 16px; border: 3px solid #000; background: #FFFFFF; box-shadow: 4px 4px 0 #000; }
+.how-card strong { font-size: 15px; font-weight: 900; line-height: 1.3; }
+.how-card p { margin: 0; font-size: 14px; line-height: 1.5; color: #000; }
+.how-card-label { justify-self: start; padding: 3px 8px; border: 2px solid #000; font-size: 12px; font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; }
+.how-card-product .how-card-label { background: #FFD23F; }
+.how-card-process .how-card-label { background: #8FD3FF; }
+.how-card-link .how-card-label { background: #FF9ECF; }
+.how-it-works-steps { margin: 12px 0 0; font-size: 15px; color: #000; }
+.worked-example-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 4px 0 14px; padding: 12px; border: 2px dashed #000; background: #FFF8DC; }
+.worked-example-row span { font-size: 13px; color: #000; line-height: 1.4; }
+.worked-example-row .MuiButton-root { border: 3px solid #000; border-radius: 0; background: #FFD23F; color: #000; font-weight: 900; box-shadow: 3px 3px 0 #000; }
+@media (max-width: 900px) { .how-it-works-grid { grid-template-columns: 1fr; } }
+
+/* ---- Footer links: hover changes colour only. No underline, no glow, no lift. ---- */
+.landing-footer a:hover,
+.landing-footer a:focus-visible {
+  text-decoration: none !important;
+  transform: none !important;
+  color: #FFD23F !important;
+}
+.landing-footer a { transition: color 150ms ease; }
+
+
+/* ---- Simple calculator: one product block, one materials list, one results panel. ---- */
+.calc-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+  margin-top: 24px;
+}
+.calc-card,
+.calc-layout .result-card { padding: 24px; }
+.calc-card .card-title,
+.calc-layout .result-card .card-title { margin: 0 0 16px; font-size: 20px; font-weight: 800; color: #000; }
+.calc-section-title { margin-top: 8px !important; }
+.calc-form { display: flex; flex-direction: column; gap: 20px; }
+.calc-required-note { margin: -8px 0 -8px; font-size: 13px; font-weight: 700; }
+.calc-product-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+.calc-profile-suggestion { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 14px; border: 2px solid #000; background: #fff3bd; }
+.calc-profile-suggestion span { font-size: 13px; line-height: 1.45; }
+.calc-profile-suggestion .MuiButton-root { margin-top: 2px; }
+.calc-material-list { display: flex; flex-direction: column; gap: 16px; }
+.calc-material-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  padding: 16px 48px 16px 16px;
+  border: 2px solid #000;
+  background: #fff;
+}
+.calc-material-row .MuiAutocomplete-root { grid-column: 1 / -1; }
+.calc-remove { position: absolute !important; top: 8px; right: 8px; }
+.calc-form .MuiFormHelperText-root { margin: 4px 0 0; font-size: 12px; }
+.calc-form .MuiFormLabel-root { font-size: 14px; }
+.calc-scope { margin: 0 !important; }
+.calc-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.calc-empty { display: flex; min-height: 220px; flex-direction: column; align-items: center; justify-content: center; margin: 0; padding: 24px 0; color: #000; font-size: 15px; text-align: center; }
+.calc-empty p { margin: 0; }
+.calc-layout .result-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+.calc-layout .hold-blocker-list { margin: 12px 0 0; padding-left: 20px; }
+.calc-layout .hold-blocker-list li { font-size: 14px; margin-bottom: 6px; }
+
+/* Bring the detailed result checks and tables out of the retired soft-green card styling. */
+.calculator-page .product-input-use-review,
+.calculator-page .bom-mass-assessment {
+  margin-bottom: 16px;
+  padding: 14px;
+  border: 3px solid #000 !important;
+  border-radius: 0 !important;
+  background: #FFFFFF !important;
+  box-shadow: 4px 4px 0 #000 !important;
+  color: #000 !important;
+}
+.calculator-page .dialog-section-title,
+.calculator-page .input-use-counts,
+.calculator-page .bom-mass-values dt,
+.calculator-page .bom-mass-values dd,
+.calculator-page .bom-unconvertible-inputs {
+  color: #000 !important;
+}
+.calculator-page .dialog-section-title { font-weight: 900 !important; }
+.calculator-page .bom-mass-values > div { border-bottom: 1px solid #000; }
+.calculator-page .bom-mass-status,
+.calculator-page .input-use-warning,
+.calculator-page .summary-data-warning,
+.calculator-page .score-unavailable {
+  border-radius: 0 !important;
+  color: #000 !important;
+  box-shadow: 3px 3px 0 #000 !important;
+}
+.calculator-page .summary-scope-copy,
+.calculator-page .numeric-value,
+.calculator-page .unit-note,
+.calculator-page .catalog-loading { color: #000 !important; }
+.calculator-page .indicator-table-wrap .MuiTableCell-root { border-color: #000 !important; }
+.calculator-page .summary-table-wrap .MuiTable-root { min-width: 540px; }
+
+@media (max-width: 900px) {
+  .calc-layout { grid-template-columns: 1fr; }
+  .calc-material-row { grid-template-columns: 1fr; padding-right: 16px; padding-top: 40px; }
+  .calc-remove { top: 4px; right: 4px; }
+}

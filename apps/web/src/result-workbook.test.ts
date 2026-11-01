@@ -48,6 +48,17 @@ describe('buildResultWorkbook', () => {
     expect(String(summary?.getCell('B7').value)).toContain('IST');
   });
 
+  it('lists all 16 calculated indicators vertically on the first sheet', async () => {
+    const { workbook } = await build();
+    const summary = workbook.getWorksheet('Summary');
+    expect(summary?.getTable('tblIndicators')).toBeTruthy();
+    expect(summary?.getCell('A14').value).toBe('All 16 environmental indicators');
+    const indicatorCodes = Array.from({ length: 16 }, (_, index) => summary?.getCell(16 + index, 1).value);
+    expect(indicatorCodes.every((code) => typeof code === 'string' && code.length > 0)).toBe(true);
+    expect(summary?.getCell('C16').value).toMatchObject({ formula: "'EF 3.1 score'!D4" });
+    expect(summary?.getCell('D16').value).toBeTruthy();
+  });
+
   it('keeps only calculation parameters on the Inputs sheet', async () => {
     const { workbook } = await build();
     const headers = workbook.getWorksheet('Inputs')?.getRow(4).values as unknown[];

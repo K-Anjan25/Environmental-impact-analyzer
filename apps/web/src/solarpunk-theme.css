@@ -1,0 +1,582 @@
+/* EcoImpact Lab — Solarpunk system. Loaded after legacy styles so all routes share one calm, data-first visual language. */
+:root {
+  --solar-bg: #FBFBF9;
+  --solar-surface: #FFFFFF;
+  --solar-surface-soft: #F2F7F2;
+  --solar-forest: #1B4332;
+  --solar-emerald: #2D6A4F;
+  --solar-emerald-soft: #E7F2EA;
+  --solar-gold: #FFB703;
+  --solar-gold-soft: #FFF5D7;
+  --solar-text: #24332B;
+  --solar-muted: #58685E;
+  --solar-line: #D8E4DB;
+  --solar-shadow: 0 12px 32px rgba(27, 67, 50, 0.075);
+  --solar-shadow-hover: 0 16px 38px rgba(27, 67, 50, 0.12);
+  --nb-paper: var(--solar-bg);
+  --nb-white: var(--solar-surface);
+  --nb-cream: var(--solar-surface-soft);
+  --nb-yellow: var(--solar-gold);
+  --nb-pink: #F5E8E3;
+  --nb-green: var(--solar-emerald);
+  --nb-lilac: var(--solar-emerald-soft);
+  --nb-blue: var(--solar-emerald-soft);
+  --nb-orange: var(--solar-gold);
+  --nb-ink: var(--solar-forest);
+  --nb-border: 1px solid var(--solar-line);
+  --nb-shadow: var(--solar-shadow);
+  --nb-shadow-sm: 0 5px 16px rgba(27, 67, 50, 0.07);
+  --nb-shadow-control: 0 2px 8px rgba(27, 67, 50, 0.08);
+  --nb-shadow-primary: 0 7px 18px rgba(45, 106, 79, 0.18);
+  --nb-shadow-primary-hover: 0 10px 24px rgba(45, 106, 79, 0.24);
+  --nb-shadow-primary-pressed: 0 2px 6px rgba(27, 67, 50, 0.12);
+  --nb-shadow-specimen: var(--solar-shadow);
+  --ink: var(--solar-text);
+  --text-main: var(--solar-forest);
+  --muted: var(--solar-muted);
+  --text-muted: var(--solar-muted);
+  --forest: var(--solar-emerald);
+  --forest-dark: var(--solar-forest);
+  --accent-primary: var(--solar-emerald);
+  --accent-deep: var(--solar-forest);
+  --accent-warm: var(--solar-gold);
+  --bg-primary: var(--solar-bg);
+  --bg-surface: var(--solar-surface-soft);
+  --surface: var(--solar-surface);
+  --line: var(--solar-line);
+  --border-subtle: var(--solar-line);
+  --sage: var(--solar-emerald);
+  --sage-soft: var(--solar-emerald-soft);
+  --amber: var(--solar-gold);
+  --coral: #A63D40;
+  --citrus: var(--solar-gold);
+  --sand: var(--solar-bg);
+  --soft-green: var(--solar-emerald-soft);
+  --radius-lg: 22px;
+  --radius-sm: 12px;
+  color-scheme: light;
+}
+
+body,
+body:has(.nb-home) {
+  --nb-paper: var(--solar-bg);
+  --nb-cream: var(--solar-surface-soft);
+  --nb-ink: var(--solar-forest);
+  --nb-yellow: var(--solar-gold);
+  --nb-pink: #F5E8E3;
+  --nb-green: var(--solar-emerald);
+  --nb-lilac: var(--solar-emerald-soft);
+  --nb-blue: var(--solar-emerald-soft);
+  --nb-orange: var(--solar-gold);
+  --nb-white: var(--solar-surface);
+  --nb-border: 1px solid var(--solar-line);
+  --nb-shadow: var(--solar-shadow);
+  --nb-shadow-lg: 0 18px 42px rgba(27, 67, 50, 0.12);
+  --nb-shadow-control: 0 2px 8px rgba(27, 67, 50, 0.08);
+  --nb-shadow-primary: 0 7px 18px rgba(45, 106, 79, 0.18);
+  --nb-shadow-primary-hover: 0 10px 24px rgba(45, 106, 79, 0.24);
+  --nb-shadow-primary-pressed: 0 2px 6px rgba(27, 67, 50, 0.12);
+  --nb-shadow-specimen: var(--solar-shadow);
+  background: var(--solar-bg);
+  color: var(--solar-text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+body :is(h1, h2, h3, h4, h5, h6),
+body .MuiTypography-root {
+  color: var(--solar-text) !important;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif !important;
+  letter-spacing: -0.025em;
+}
+body :is(p, li, dd, dt, label, small, span) { color: inherit; }
+body .MuiSvgIcon-root { color: currentColor; }
+body a { color: var(--solar-emerald); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+body a:hover { color: var(--solar-forest); }
+body :focus-visible { outline: 3px solid var(--solar-gold) !important; outline-offset: 3px; }
+
+/* Shared shell */
+body .site-layout,
+body .site-main,
+body .site-layout-landing,
+body .calculator-page,
+body .marketing,
+body .blog-page,
+body .admin-page,
+body .legal-page { color: var(--solar-text); }
+body .site-topbar {
+  background: rgba(251, 251, 249, 0.92) !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--solar-line) !important;
+  box-shadow: 0 4px 18px rgba(27, 67, 50, 0.035);
+  backdrop-filter: blur(14px) saturate(1.15) !important;
+}
+body .site-brand,
+body .site-brand span { color: var(--solar-forest) !important; }
+body .site-nav a { color: var(--solar-forest) !important; border-radius: 999px !important; }
+body .site-nav a[aria-current="page"] { background: var(--solar-emerald-soft) !important; border-color: transparent !important; color: var(--solar-forest) !important; }
+body .site-nav a:hover:not([aria-current="page"]) { background: var(--solar-gold-soft) !important; }
+body .site-cta,
+body .site-menu-button.MuiIconButton-root {
+  border: 1px solid rgba(45, 106, 79, 0.2) !important;
+  border-radius: 14px !important;
+  background: var(--solar-emerald) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 5px 14px rgba(45, 106, 79, 0.16) !important;
+}
+body .site-menu-button.MuiIconButton-root { background: var(--solar-emerald-soft) !important; color: var(--solar-forest) !important; }
+body .site-menu-button.MuiIconButton-root:hover { background: var(--solar-gold-soft) !important; }
+body .site-menu-panel {
+  border: 1px solid var(--solar-line) !important;
+  border-radius: 20px !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  box-shadow: var(--solar-shadow-hover) !important;
+  backdrop-filter: blur(16px);
+}
+body .site-menu-list a[aria-current="page"] { border-left: 3px solid var(--solar-emerald) !important; background: var(--solar-emerald-soft) !important; color: var(--solar-forest) !important; }
+body .landing-footer { background: var(--solar-forest) !important; color: #FFFFFF !important; border-top: 0 !important; }
+body .landing-footer :is(a, p, span, h2, h3, .site-brand, .site-brand span) { color: #FFFFFF !important; }
+body .landing-footer a:hover { color: var(--solar-gold) !important; }
+
+/* Rounded, responsive action controls */
+body :is(button, .MuiButton-root, .landing-button, .nb-button, .landing-cta, .site-cta, .sticky-cta, .load-more, .stage-action, .admin-secondary, .admin-danger) {
+  border-radius: 12px !important;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif !important;
+  font-weight: 650;
+  transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+body button:not(.carousel-dot):not(.to-top):not(.calc-remove):not(.link-button):not(.MuiIconButton-root) {
+  border: 1px solid var(--solar-line);
+}
+body .MuiButton-root,
+body .landing-button,
+body .nb-button,
+body .landing-cta,
+body .site-cta,
+body .sticky-cta,
+body .load-more,
+body .stage-action,
+body .admin-secondary,
+body .admin-danger {
+  min-height: 44px;
+  padding-inline: 18px;
+  border: 1px solid rgba(45, 106, 79, 0.22) !important;
+  background: #FFFFFF !important;
+  color: var(--solar-forest) !important;
+  box-shadow: 0 3px 12px rgba(27, 67, 50, 0.07) !important;
+  text-decoration: none;
+}
+body .MuiButton-contained,
+body .landing-button-primary,
+body .nb-button-primary,
+body .site-cta,
+body .sticky-cta,
+body .load-more,
+body .admin-danger {
+  border-color: var(--solar-emerald) !important;
+  background: var(--solar-emerald) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 6px 18px rgba(45, 106, 79, 0.18) !important;
+}
+body .MuiButton-contained:hover:not(.Mui-disabled),
+body .landing-button-primary:hover,
+body .nb-button-primary:hover,
+body .site-cta:hover,
+body .sticky-cta:hover,
+body .load-more:hover,
+body .admin-danger:hover {
+  background: var(--solar-forest) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 9px 22px rgba(27, 67, 50, 0.2) !important;
+  transform: translateY(-1px);
+}
+body .MuiButton-outlined,
+body .landing-button-ghost,
+body .nb-button-secondary,
+body .admin-secondary {
+  background: #FFFFFF !important;
+  color: var(--solar-forest) !important;
+}
+body .MuiButton-text,
+body .link-button {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--solar-emerald) !important;
+}
+body .MuiButton-text:hover,
+body .link-button:hover { background: var(--solar-emerald-soft) !important; color: var(--solar-forest) !important; }
+body .MuiIconButton-root:not(.site-menu-button):not(.MuiAutocomplete-popupIndicator):not(.MuiAutocomplete-clearIndicator),
+body .carousel-dot,
+body .post-pages button,
+body .to-top,
+body .calc-remove {
+  border: 1px solid var(--solar-line) !important;
+  border-radius: 50% !important;
+  background: #FFFFFF !important;
+  color: var(--solar-forest) !important;
+  box-shadow: 0 3px 10px rgba(27, 67, 50, 0.08) !important;
+}
+body .carousel-dot[aria-current="true"],
+body .post-pages button.is-current { background: var(--solar-gold) !important; color: var(--solar-forest) !important; }
+body .post-pages button.is-current { box-shadow: 0 3px 10px rgba(27, 67, 50, 0.12) !important; }
+body .MuiButton-root.Mui-disabled { opacity: 0.55; box-shadow: none !important; }
+
+/* Light, legible fields */
+body .MuiOutlinedInput-root,
+body .MuiInputBase-root,
+body .admin-field input,
+body .admin-field select,
+body .admin-field textarea,
+body input:not([type="checkbox"]):not([type="radio"]),
+body select,
+body textarea {
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  color: var(--solar-text) !important;
+}
+body .MuiOutlinedInput-notchedOutline { border: 1px solid var(--solar-line) !important; }
+body .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline { border-color: #91B49C !important; }
+body .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline { border: 2px solid var(--solar-emerald) !important; }
+body .MuiCheckbox-root,
+body .MuiRadio-root { color: var(--solar-emerald) !important; }
+body input[type="checkbox"],
+body input[type="radio"] { accent-color: var(--solar-emerald); }
+body .MuiInputLabel-root,
+body .MuiFormLabel-root,
+body .MuiFormHelperText-root { color: var(--solar-muted) !important; }
+body .MuiInputLabel-root.Mui-focused,
+body .MuiFormLabel-root.Mui-focused { color: var(--solar-forest) !important; }
+
+/* Glassy cards and bento surfaces */
+body .MuiPaper-root,
+body .post-card,
+body .post-figure,
+body .admin-form,
+body .admin-list-item,
+body .legal-body,
+body .step-item,
+body .carousel-slide,
+body .contact-form,
+body .contact-options li,
+body .faq-item.MuiAccordion-root,
+body .nb-spec,
+body .nb-feature-panel,
+body .nb-case,
+body .nb-latest-item,
+body .nb-stat,
+body .nb-use-card,
+body .nb-cta,
+body .nb-hero,
+body .table-scroll {
+  border: 1px solid var(--solar-line) !important;
+  border-radius: 20px !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  box-shadow: var(--solar-shadow) !important;
+  backdrop-filter: blur(10px) saturate(1.08);
+}
+body .MuiPaper-root.MuiAlert-root,
+body .MuiAlert-root { border-radius: 14px !important; border: 1px solid var(--solar-line) !important; box-shadow: none !important; }
+body .MuiAlert-standardSuccess { background: var(--solar-emerald-soft) !important; color: var(--solar-forest) !important; }
+body .MuiAlert-standardInfo { background: #EDF4F8 !important; color: #23465A !important; }
+body .MuiAlert-standardWarning { background: var(--solar-gold-soft) !important; color: #574510 !important; }
+body .MuiAlert-standardError { background: #FCEDEC !important; color: #762E30 !important; }
+body .MuiChip-root { border: 1px solid var(--solar-line) !important; background: var(--solar-emerald-soft) !important; color: var(--solar-forest) !important; }
+body .page-heading,
+body .calculator-page .page-heading {
+  padding: clamp(20px, 3vw, 34px);
+  border: 1px solid var(--solar-line) !important;
+  border-radius: 24px !important;
+  background: linear-gradient(125deg, #FFFFFF 0%, #EFF7F0 62%, #FFF8E4 100%) !important;
+  box-shadow: var(--solar-shadow) !important;
+}
+body .page-title,
+body .calculator-page .page-title {
+  color: var(--solar-forest) !important;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif !important;
+  font-size: clamp(2rem, 4.2vw, 3.15rem) !important;
+  font-weight: 760 !important;
+  line-height: 1.08 !important;
+  letter-spacing: -0.045em !important;
+}
+body .calculator-page .page-eyebrow {
+  margin: 0 0 8px;
+  color: var(--solar-emerald) !important;
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+body .calculator-page .page-lede {
+  max-width: 68ch;
+  margin: 12px 0 0;
+  color: var(--solar-muted) !important;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* Calculator dashboard: 12-column bento grid, primary result module gets visual emphasis. */
+body .calculator-page .calc-layout {
+  display: grid !important;
+  grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+  gap: clamp(16px, 2vw, 24px) !important;
+  align-items: start;
+}
+body .calculator-page .calc-card.MuiPaper-root { grid-column: span 7; }
+body .calculator-page .result-card.MuiPaper-root {
+  grid-column: span 5;
+  background: linear-gradient(150deg, #FFFFFF 0%, #F2F8F3 100%) !important;
+  border-color: #C9DCCF !important;
+}
+body .calculator-page .calc-card.MuiPaper-root,
+body .calculator-page .result-card.MuiPaper-root {
+  min-width: 0;
+  padding: clamp(18px, 2.4vw, 30px);
+  border: 1px solid var(--solar-line) !important;
+  border-radius: 22px !important;
+  box-shadow: var(--solar-shadow) !important;
+  backdrop-filter: blur(12px) saturate(1.12);
+}
+body .calculator-page .card-title,
+body .calculator-page .output-heading,
+body .calculator-page .process-result-title {
+  color: var(--solar-forest) !important;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif !important;
+  font-weight: 720 !important;
+  letter-spacing: -0.035em;
+}
+body .calculator-page .calc-section-title { padding-top: 18px; border-top: 1px solid var(--solar-line); }
+body .calculator-page .calc-product-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--solar-line);
+  border-radius: 18px;
+  background: rgba(242, 247, 242, 0.72);
+}
+body .calculator-page .calc-product-grid > :first-child { grid-column: 1 / -1; }
+body .calculator-page .calc-product-grid > :nth-child(2),
+body .calculator-page .calc-product-grid > :nth-child(3) { grid-column: span 6; }
+body .calculator-page .calc-material-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(105px, 0.7fr) minmax(0, 1.5fr) auto;
+  gap: 12px;
+  align-items: start;
+  margin-block: 12px;
+  padding: 16px;
+  border: 1px solid var(--solar-line) !important;
+  border-radius: 18px !important;
+  background: linear-gradient(130deg, #FFFFFF, #F6F9F5) !important;
+  box-shadow: 0 4px 16px rgba(27, 67, 50, 0.045);
+  transition: border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+}
+body .calculator-page .calc-material-row:focus-within { border-color: #91B49C !important; box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.08); }
+body .calculator-page .calc-remove { width: 40px; height: 40px; margin-top: 4px; }
+body .calculator-page .calc-profile-suggestion {
+  border: 1px solid #D8E4DB !important;
+  border-left: 4px solid var(--solar-emerald) !important;
+  border-radius: 16px !important;
+  background: var(--solar-emerald-soft) !important;
+  color: var(--solar-text) !important;
+}
+body .calculator-page .calc-scope {
+  margin: 12px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--solar-line);
+  border-radius: 14px;
+  background: #FFFFFF;
+}
+body .calculator-page .calc-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding-top: 16px; border-top: 1px solid var(--solar-line); }
+body .calculator-page .calc-required-note,
+body .calculator-page .catalog-status,
+body .calculator-page .live-preview-status { color: var(--solar-muted) !important; }
+
+/* Live result tiles and process contribution visualisation */
+body .calculator-page .result-headline,
+body .calculator-page .result-processes,
+body .calculator-page .process-impact-card,
+body .calculator-page .selected-process-summary,
+body .calculator-page .product-input-result-context,
+body .calculator-page .summary-table-wrap,
+body .calculator-page .indicator-table-wrap,
+body .calculator-page .factor-detail-card,
+body .calculator-page .product-boundary,
+body .calculator-page .ghg-inputs,
+body .calculator-page .result-scope-note,
+body .calculator-page .bom-mass-check-workspace,
+body .calculator-page .bom-mass-assessment,
+body .calculator-page .product-input-use-review,
+body .calculator-page .boundary-issue,
+body .calculator-page .product-input-workspace,
+body .calculator-page .stage-coverage-item,
+body .calculator-page .ef-score-card {
+  border: 1px solid var(--solar-line) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 6px 20px rgba(27, 67, 50, 0.055) !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  color: var(--solar-text) !important;
+}
+body .calculator-page .result-headline {
+  padding: 18px;
+  background: linear-gradient(140deg, #E8F3EB, #F6FAF5) !important;
+}
+body .calculator-page .result-processes { padding: 18px; background: #FFFFFF !important; }
+body .calculator-page .result-stat-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+body .calculator-page .result-stat-yellow { grid-column: 1 / -1; min-height: 112px; padding: 20px; }
+body .calculator-page .result-stat {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--solar-line);
+  border-radius: 16px;
+  background: #FFFFFF !important;
+  color: var(--solar-text) !important;
+  box-shadow: 0 4px 14px rgba(27, 67, 50, 0.05);
+  transition: background-color 220ms ease, border-color 220ms ease, box-shadow 220ms ease, transform 220ms ease;
+}
+body .calculator-page .result-stat-yellow { background: var(--solar-gold-soft) !important; border-color: #F1D98D; }
+body .calculator-page .result-stat-lilac { background: var(--solar-emerald-soft) !important; border-color: #C9DCCF; }
+body .calculator-page .result-stat-emerald { background: #F0F6F1 !important; border-color: #C9DCCF; }
+body .calculator-page .result-stat :is(span, strong, small) { color: var(--solar-forest) !important; }
+body .calculator-page .result-stat strong { font-size: clamp(1.35rem, 2.6vw, 2rem); font-variant-numeric: tabular-nums; }
+body .calculator-page .metric-value { display: inline-block; animation: solar-value-enter 280ms ease-out both; }
+body .calculator-page .process-impact-card {
+  padding: 18px;
+  margin: 12px 0;
+  background: linear-gradient(145deg, #FFFFFF, #F7FAF7) !important;
+  transition: box-shadow 220ms ease, border-color 220ms ease, transform 220ms ease;
+}
+body .calculator-page .process-impact-card:hover { border-color: #B7CDBD !important; box-shadow: var(--solar-shadow-hover) !important; transform: translateY(-1px); }
+body .calculator-page :is(.process-impact-title, .process-result-title, .indicator-name, .result-value, .summary-scope-copy, .numeric-value, .unit-note, .process-impact-meta, .process-impact-figures dt, .process-impact-figures dd, .dialog-section-title, .input-use-counts, .bom-mass-values dt, .bom-mass-values dd, .bom-unconvertible-inputs) { color: var(--solar-text) !important; }
+body .calculator-page .process-impact-index { background: var(--solar-emerald-soft); color: var(--solar-forest); }
+body .calculator-page .process-driver,
+body .calculator-page .result-sentence,
+body .calculator-page .subtotal-hold-note,
+body .calculator-page .exports-locked-note { color: var(--solar-muted) !important; }
+body .calculator-page .step-heading-row { border-bottom: 1px solid var(--solar-line); box-shadow: none !important; color: var(--solar-forest) !important; }
+body .calculator-page .calc-section-title { border-top: 1px solid var(--solar-line) !important; }
+body .calculator-page .step-required-tag { border: 1px solid #EBD58E; border-radius: 999px; background: var(--solar-gold-soft); color: var(--solar-forest); }
+body .calculator-page .share-bar { border: 0 !important; background: #E5EEE7; }
+body .calculator-page .share-bar > span { border: 0 !important; }
+body .calculator-page .process-impact-figures > div { border: 1px solid var(--solar-line); border-radius: 12px; background: #FFFFFF; transition: background-color 180ms ease, border-color 180ms ease; }
+body .calculator-page .share-bar { height: 8px; overflow: hidden; border-radius: 999px; background: #E5EEE7; }
+body .calculator-page .share-bar span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--solar-emerald), #66A47B); transition: width 500ms cubic-bezier(0.2, 0.75, 0.3, 1); }
+body .calculator-page .live-preview-status {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border: 1px solid #D8E8DC;
+  border-radius: 12px;
+  background: #F4FAF5;
+  color: var(--solar-forest) !important;
+  font-size: 13px;
+}
+body .calculator-page .live-preview-indicator { width: 9px; height: 9px; flex: 0 0 auto; border-radius: 50%; background: var(--solar-emerald); animation: solar-glow 2.4s ease-in-out infinite; }
+body .calculator-page .result-overline { border: 1px solid #C9DCCF !important; border-radius: 999px !important; background: var(--solar-emerald-soft) !important; color: var(--solar-forest) !important; }
+body .calculator-page .privacy-pill .glow-dot { border-radius: 50%; background: var(--solar-emerald); }
+body .calculator-page .ef-score-card { background: var(--solar-gold-soft) !important; border-color: #F1D98D !important; }
+body .calculator-page .how-card,
+body .calculator-page .worked-example-row,
+body .calculator-page .indicator-disclosure,
+body .calculator-page .result-details {
+  border: 1px solid var(--solar-line) !important;
+  border-radius: 16px !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 0 5px 16px rgba(27, 67, 50, 0.05) !important;
+}
+body .calculator-page .worked-example-row { background: var(--solar-surface-soft) !important; }
+body .calculator-page .how-card-label { border: 1px solid var(--solar-line); border-radius: 8px; color: var(--solar-forest); }
+body .calculator-page .how-card-label,
+body .calculator-page .indicator-disclosure > summary,
+body .calculator-page .result-details > summary { background: var(--solar-emerald-soft); color: var(--solar-forest); }
+body .calculator-page .indicator-disclosure > summary:hover,
+body .calculator-page .result-details > summary:hover { background: var(--solar-gold-soft) !important; }
+body .calculator-page .calc-empty { color: var(--solar-muted); }
+body .calculator-page .empty-illustration { color: var(--solar-emerald); }
+body .calculator-page .ef-score-card :is(span, strong, small) { color: var(--solar-forest) !important; }
+body .calculator-page .indicator-table-wrap,
+body .calculator-page .summary-table-wrap { overflow-x: auto; background: rgba(255, 255, 255, 0.94) !important; }
+body .calculator-page .indicator-table-wrap .MuiTableCell-root { border-color: var(--solar-line) !important; color: var(--solar-text) !important; }
+body .calculator-page .indicator-table-wrap .MuiTableHead-root .MuiTableCell-root { background: #EFF6F0 !important; color: var(--solar-forest) !important; font-weight: 700; }
+body .calculator-page .indicator-code { border-color: #D8E4DB !important; border-radius: 8px !important; background: var(--solar-gold-soft) !important; color: var(--solar-forest) !important; }
+body .calculator-page .result-overline,
+body .calculator-page .result-stat,
+body .calculator-page .process-impact-card,
+body .calculator-page .ef-score-card { will-change: transform; }
+
+/* Marketing cards use quiet botanical surfaces, with solar gold reserved for calls to action. */
+body:has(.nb-home) .nb-home { color: var(--solar-text); }
+body:has(.nb-home) .nb-home :is(h1, h2, h3, h4, p, li, span) { color: var(--solar-text); }
+body:has(.nb-home) .nb-home .nb-title { color: var(--solar-forest) !important; }
+body:has(.nb-home) .nb-home .nb-hero { border-radius: 24px !important; background: linear-gradient(135deg, #FFFFFF, #EFF7F0) !important; }
+body:has(.nb-home) .nb-home .nb-button-primary { background: var(--solar-emerald) !important; color: #FFFFFF !important; }
+body:has(.nb-home) .nb-home .nb-button-secondary { background: #FFFFFF !important; color: var(--solar-forest) !important; }
+body:has(.nb-home) .nb-home :is(.nb-stat, .nb-feature-panel, .nb-case, .nb-latest-item, .nb-use-card, .nb-cta, .nb-spec) { border-color: var(--solar-line) !important; box-shadow: var(--solar-shadow) !important; }
+body:has(.nb-home) .nb-home .nb-stat:nth-child(5n+1) { background: #FFFFFF !important; }
+body:has(.nb-home) .nb-home .nb-stat:nth-child(5n+2) { background: var(--solar-gold-soft) !important; }
+body:has(.nb-home) .nb-home .nb-stat:nth-child(5n+3) { background: var(--solar-emerald-soft) !important; }
+body:has(.nb-home) .nb-home .nb-stat:nth-child(5n+4) { background: #F0F6F1 !important; }
+body:has(.nb-home) .nb-home .nb-stat :is(h2, h3, p, strong, span) { color: var(--solar-text) !important; }
+body:has(.nb-home) .nb-home .nb-tag { border: 1px solid #EBD58E; border-radius: 999px; background: var(--solar-gold-soft); box-shadow: none; color: var(--solar-forest); }
+body:has(.nb-home) .nb-home .nb-trust li { border: 1px solid var(--solar-line); border-radius: 12px; background: #FFFFFF; color: var(--solar-forest); }
+body:has(.nb-home) .nb-home .nb-spec-head { border-radius: 19px 19px 0 0; background: var(--solar-forest); color: #FFFFFF; }
+body:has(.nb-home) .nb-home .nb-spec-head :is(span, strong, small) { color: #FFFFFF; }
+body .blog-tabs a,
+body .blog-tabs a[aria-current],
+body .post-card,
+body .post-figure,
+body .admin-form,
+body .admin-list-item,
+body .legal-body { color: var(--solar-text) !important; border-color: var(--solar-line) !important; }
+body .post-card:hover { box-shadow: var(--solar-shadow-hover) !important; transform: translateY(-2px); }
+body .table-scroll { overflow-x: auto; }
+body :is(.scope-table, .pricing-table) :is(th, td) { border-color: var(--solar-line) !important; color: var(--solar-text); }
+body :is(.scope-table, .pricing-table) thead th { background: var(--solar-emerald-soft) !important; color: var(--solar-forest) !important; }
+body .pricing-note { background: var(--solar-gold-soft) !important; color: #574510 !important; }
+body .error-summary { background: #FCEDEC !important; color: #762E30 !important; }
+body .legal-body code,
+body .legal-body pre { border: 1px solid var(--solar-line) !important; border-radius: 8px !important; background: var(--solar-surface-soft) !important; color: var(--solar-forest) !important; }
+body .step-number { border: 1px solid var(--solar-line) !important; border-radius: 50% !important; background: var(--solar-emerald-soft) !important; color: var(--solar-forest) !important; }
+
+@keyframes solar-value-enter {
+  from { opacity: 0.55; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes solar-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(45, 106, 79, 0.08); opacity: 0.78; }
+  50% { box-shadow: 0 0 0 7px rgba(45, 106, 79, 0.12); opacity: 1; }
+}
+
+@media (max-width: 1100px) {
+  body .calculator-page .calc-card.MuiPaper-root,
+  body .calculator-page .result-card.MuiPaper-root { grid-column: 1 / -1; }
+  body .calculator-page .calc-layout { grid-template-columns: minmax(0, 1fr) !important; }
+  body .calculator-page .result-card.MuiPaper-root { position: static; max-height: none; overflow: visible; }
+}
+@media (max-width: 740px) {
+  body .calculator-page .calc-layout { gap: 16px !important; }
+  body .calculator-page .calc-product-grid { grid-template-columns: minmax(0, 1fr); }
+  body .calculator-page .calc-product-grid > :first-child,
+  body .calculator-page .calc-product-grid > :nth-child(2),
+  body .calculator-page .calc-product-grid > :nth-child(3) { grid-column: 1 / -1; }
+  body .calculator-page .calc-material-row { grid-template-columns: minmax(0, 1fr); }
+  body .calculator-page .calc-remove { justify-self: end; margin-top: 0; }
+  body .calculator-page .result-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body .calculator-page .process-impact-figures { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body .calculator-page .calc-card.MuiPaper-root,
+  body .calculator-page .result-card.MuiPaper-root { padding: 18px; border-radius: 18px !important; }
+  body .nb-home { padding-inline: 18px; }
+}
+@media (max-width: 420px) {
+  body .calculator-page .result-stat-grid,
+  body .calculator-page .process-impact-figures { grid-template-columns: minmax(0, 1fr); }
+  body .calculator-page .result-card.MuiPaper-root,
+  body .calculator-page .calc-card.MuiPaper-root { padding: 15px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body *,
+  body *::before,
+  body *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}

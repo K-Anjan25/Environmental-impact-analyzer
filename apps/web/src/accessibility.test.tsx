@@ -146,9 +146,9 @@ describe('process estimator accessibility', () => {
     expect(contrast(theme.palette.primary.main, background)).toBeGreaterThanOrEqual(4.5);
     expect(contrast(theme.palette.text.primary, background)).toBeGreaterThanOrEqual(4.5);
     expect(contrast(theme.palette.text.secondary, background)).toBeGreaterThanOrEqual(4.5);
-    expect(contrast('#000000', theme.palette.secondary.main)).toBeGreaterThanOrEqual(4.5);
-    expect(contrast('#000000', '#F46DBD')).toBeGreaterThanOrEqual(4.5);
-    expect(contrast('#000000', theme.palette.warning.main)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(theme.palette.secondary.contrastText, theme.palette.secondary.main)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(theme.palette.primary.contrastText, theme.palette.primary.main)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(theme.palette.warning.contrastText, theme.palette.warning.main)).toBeGreaterThanOrEqual(4.5);
     expect(contrast(theme.palette.error.contrastText, theme.palette.error.main)).toBeGreaterThanOrEqual(4.5);
     expect(contrast(theme.palette.success.contrastText, theme.palette.success.main)).toBeGreaterThanOrEqual(4.5);
 
@@ -270,6 +270,24 @@ describe('process estimator accessibility', () => {
     expect(await screen.findByText('Spinning cotton to yarn')).toBeTruthy();
     const apiCalls = fetchMock.mock.calls.filter(([path]) => String(path) === '/api/v1/process-estimates');
     expect(apiCalls.length).toBe(0);
+  });
+
+  it('updates a live local preview for balanced inputs and withholds exports until Calculate', async () => {
+    stubApi();
+    const { container } = render(<App />);
+    await fillCalculator();
+
+    expect(screen.getByText(/Live preview updates as complete inputs change/)).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Download Excel' })).toBeNull();
+    const initialScore = container.querySelector('.result-stat-emerald .metric-value')?.textContent;
+
+    fireEvent.change(screen.getByRole('spinbutton', { name: /Finished weight \(kg\)/ }), { target: { value: '0.20' } });
+    fireEvent.change(screen.getByRole('spinbutton', { name: /Weight \(kg\)/ }), { target: { value: '0.20' } });
+    expect(screen.getByText(/Live preview updates as complete inputs change/)).toBeTruthy();
+    expect(container.querySelector('.result-stat-emerald .metric-value')?.textContent).not.toBe(initialScore);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Calculate' }));
+    expect(await screen.findByRole('button', { name: 'Download Excel' })).toBeTruthy();
   });
 
   it('reports a mass mismatch as an inline error and keeps downloads locked', async () => {

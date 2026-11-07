@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import '@fontsource-variable/inter';
 import ReactDOM from 'react-dom/client';
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import App from './App';
@@ -13,6 +14,7 @@ import theme from './theme';
 import './styles.css';
 import './marketing/marketing.css';
 import './neo-theme.css';
+import './solarpunk-theme.css';
 
 function currentHash(): string {
   return window.location.hash;

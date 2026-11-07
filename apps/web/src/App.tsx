@@ -170,12 +170,19 @@ function ResultHeadline({ report, subtotalsHidden, blockers }: { report: ResultR
           {subtotalsHidden ? (
             <strong className="result-stat-hidden">Hidden</strong>
           ) : (
-            <strong>{formatCompact(report.efPointsTotal)}</strong>
+            <strong key={report.efPointsTotal} className="metric-value" aria-live="polite" aria-atomic="true">{formatCompact(report.efPointsTotal)}</strong>
           )}
         </div>
         <div className="result-stat result-stat-lilac">
           <span>Processes</span>
-          <strong>{report.processCount}</strong>
+          <strong key={report.processCount} className="metric-value">{report.processCount}</strong>
+        </div>
+        <div className="result-stat result-stat-emerald">
+          <span>Climate change</span>
+          <strong key={report.ghgTotal ?? 'unavailable'} className="metric-value" aria-live="polite" aria-atomic="true">
+            {report.ghgTotal === null ? 'Not comparable' : numberForDisplay(report.ghgTotal)}
+          </strong>
+          <small>{report.ghgUnit ?? 'No common unit available'}</small>
         </div>
       </div>
       {subtotalsHidden && blockers.length > 0 && (
@@ -216,7 +223,7 @@ function ProcessImpactCard({
       <dl className="process-impact-figures">
         <div>
           <dt>EF 3.1 points</dt>
-          <dd>{formatCompact(row.efPoints)}</dd>
+          <dd key={row.efPoints} className="metric-value">{formatCompact(row.efPoints)}</dd>
         </div>
         <div>
           <dt>Share of total</dt>
@@ -473,11 +480,41 @@ function App() {
     ghg: NO_GHG,
   }), [productInputs, selectedProcesses, finishedMass, scopeConfirmed, productType, functionalUnitDescription]);
   const bomMassAssessment = productBoundary.massAssessment;
+  const livePreviewResult = useMemo(() => {
+    const readyForPreview = Boolean(
+      catalog
+      && productName.trim()
+      && Number.isFinite(Number(finishedMass))
+      && Number(finishedMass) > 0
+      && scopeConfirmed
+      && bomMassAssessment.status === 'balanced'
+      && productBoundary.verdict !== 'blocked'
+      && materials.length > 0
+      && materials.every((item) => item.name.trim() && item.factor && Number.isFinite(Number(item.kg)) && Number(item.kg) > 0)
+      && selectedProcesses.length === materials.length,
+    );
+    if (!readyForPreview || !catalog) return null;
+
+    try {
+      const processSelections: Array<{ factor_id: string; quantity: number }> = [];
+      for (const line of selectedProcesses) {
+        const input = line.productInputId ? productInputsById.get(line.productInputId) ?? null : null;
+        const derived = deriveProcessQuantity(line.factor, line.quantity, input, line.quantityBasis);
+        if (derived.quantity === null || derived.error) return null;
+        processSelections.push({ factor_id: line.factor.id, quantity: derived.quantity });
+      }
+      return calculateFromCatalog(catalog, processSelections);
+    } catch {
+      return null;
+    }
+  }, [catalog, productName, finishedMass, scopeConfirmed, bomMassAssessment.status, productBoundary.verdict, materials, selectedProcesses, productInputsById]);
+  const displayResult = result ?? livePreviewResult;
+  const isLivePreview = result === null && livePreviewResult !== null;
   const selectedProcessSummary = useMemo(
-    () => result ? summarizeSelectedProcesses(result.results) : null,
-    [result],
+    () => displayResult ? summarizeSelectedProcesses(displayResult.results) : null,
+    [displayResult],
   );
-  const resultReport = useMemo(() => (result ? buildResultReport(result.results) : null), [result]);
+  const resultReport = useMemo(() => (displayResult ? buildResultReport(displayResult.results) : null), [displayResult]);
 
   // Errors appear only after the first Calculate press, then update as the fields change.
   const computeErrors = (): FormErrors => {
@@ -653,7 +690,9 @@ function App() {
     <SiteLayout current="calculator" sourceVersion={catalog?.source_version ?? '1.1.0'} totalRecords={catalog?.total_records ?? '302'}>
       <div className="calculator-page">
         <header className="page-heading">
+          <p className="page-eyebrow">ENVIRONMENTAL IMPACT ANALYSIS</p>
           <h1 className="page-title">Calculator</h1>
+          <p className="page-lede">Estimate selected process impacts from published EF 3.1 factors. Live previews update locally; this is not a complete product footprint.</p>
         </header>
 
         <div className="calc-layout">
@@ -808,10 +847,10 @@ function App() {
           <Paper component="section" elevation={0} className="result-card result-panel" aria-labelledby="results-heading">
             <Typography id="results-heading" component="h2" className="card-title">Results</Typography>
 
-            {!result && !calculating && (
+            {!displayResult && !calculating && (
               <div className="calc-empty">
                 <div className="round-lab-icon empty-illustration" aria-hidden="true"><ScienceOutlinedIcon /></div>
-                <p>Results appear here after you calculate.</p>
+                <p>Complete and balance the required inputs to see a local live preview.</p>
               </div>
             )}
 
@@ -819,22 +858,28 @@ function App() {
               <div className="catalog-loading calculation-loading" aria-busy="true"><CircularProgress size={24} aria-label="Calculating" /></div>
             )}
 
-            {result && resultReport && (
-              <div className="results-output">
-                <div className="result-actions">
-                  <Button size="small" variant="contained" startIcon={<FileDownloadOutlinedIcon />} onClick={exportExcel} disabled={exportsLocked}>
-                    Download Excel
-                  </Button>
-                  <Button size="small" variant="outlined" startIcon={<FileDownloadOutlinedIcon />} onClick={exportResults} disabled={exportsLocked}>
-                    Download CSV
-                  </Button>
-                </div>
+            {displayResult && resultReport && (
+              <div className="results-output" data-live-preview={isLivePreview ? 'true' : 'false'}>
+                {result ? (
+                  <div className="result-actions">
+                    <Button size="small" variant="contained" startIcon={<FileDownloadOutlinedIcon />} onClick={exportExcel} disabled={exportsLocked}>
+                      Download Excel
+                    </Button>
+                    <Button size="small" variant="outlined" startIcon={<FileDownloadOutlinedIcon />} onClick={exportResults} disabled={exportsLocked}>
+                      Download CSV
+                    </Button>
+                  </div>
+                ) : (
+                  <p className="live-preview-status" role="status" aria-live="polite">
+                    <span className="live-preview-indicator" aria-hidden="true" /> Live preview updates as complete inputs change. Calculate to enable exports.
+                  </p>
+                )}
                 <ResultHeadline report={resultReport} subtotalsHidden={exportsLocked} blockers={holdBlockers(productBoundary, bomMassAssessment, selectedProcesses.length)} />
                 <section className="result-processes" aria-labelledby="impact-by-process-heading">
                   <Typography id="impact-by-process-heading" component="h3" className="output-heading">By process</Typography>
                   <Stack spacing={2}>
                     {resultReport.processes.map((row, index) => {
-                      const line = result.results[index];
+                      const line = displayResult.results[index];
                       return (
                         <ProcessImpactCard
                           key={row.key}

@@ -29,11 +29,11 @@ export default function SiteLayout({ current, variant = 'standard', children }: 
       <a className="skip-link" href="#main-content">Skip to content</a>
       <header className="site-topbar">
         <div className="site-topbar-start">
-          <SiteMenu />
           <a className="site-brand" href="#/" aria-label="EcoImpact Lab home">
             <img src="/brand/mark.svg" alt="" />
             <span>EcoImpact Lab</span>
           </a>
+          <SiteMenu />
         </div>
         <nav className="site-nav" aria-label="Primary">
           {NAV_ITEMS.map((item) => (

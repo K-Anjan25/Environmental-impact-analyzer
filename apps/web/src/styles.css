@@ -37,7 +37,7 @@ button, input, textarea { font: inherit; }
 .landscape-scene { display: block; width: 100%; height: 390px; overflow: hidden; border-radius: 28px; box-shadow: 0 16px 34px rgba(36, 79, 66, 0.1); }
 .form-card.MuiPaper-root, .result-card.MuiPaper-root {
   border: 1px solid rgba(36, 71, 55, 0.12); border-radius: 20px; background: rgba(255, 254, 250, 0.96);
-  box-shadow: 0 18px 46px rgba(43, 60, 48, 0.065), 0 2px 7px rgba(43, 60, 48, 0.025);
+  box-shadow: 6px 6px 0 #000;
 }
 .form-card.MuiPaper-root { padding: 29px 30px 24px; }
 .result-card.MuiPaper-root { padding: 29px 30px 22px; }

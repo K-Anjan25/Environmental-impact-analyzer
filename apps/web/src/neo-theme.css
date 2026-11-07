@@ -25,10 +25,10 @@
   --nb-shadow: 6px 6px 0 #000000;
   --nb-shadow-sm: 4px 4px 0 #000000;
   --nb-shadow-control: 2px 2px 0 #000000;
-  --nb-shadow-primary: 4px 4px 0 #000000, 8px 8px 0 var(--nb-lilac);
-  --nb-shadow-primary-hover: 6px 6px 0 #000000, 10px 10px 0 var(--nb-lilac);
-  --nb-shadow-primary-pressed: 1px 1px 0 #000000, 4px 4px 0 var(--nb-lilac);
-  --nb-shadow-specimen: 6px 6px 0 #000000, 11px 11px 0 var(--nb-pink);
+  --nb-shadow-primary: 4px 4px 0 #000000;
+  --nb-shadow-primary-hover: 6px 6px 0 #000000;
+  --nb-shadow-primary-pressed: 1px 1px 0 #000000;
+  --nb-shadow-specimen: 6px 6px 0 #000000;
 
   /* Legacy tokens used across styles.css and marketing.css. Remapped so every component picks up the theme. */
   --ink: #000000;
@@ -70,7 +70,7 @@ a { color: #000000; text-decoration-thickness: 2px; text-underline-offset: 3px; 
 /* ----- Site header and footer ----- */
 .site-topbar {
   background: var(--nb-white) !important; border-bottom: var(--nb-border) !important;
-  box-shadow: 0 3px 0 #000000; backdrop-filter: none !important;
+  backdrop-filter: none !important;
 }
 .site-brand, .site-brand span { color: #000000 !important; font-weight: 900; }
 .landing-footer { background: #000000 !important; color: #ffffff; border-top: var(--nb-border); }
@@ -474,8 +474,13 @@ summary {
 }
 .site-topbar-start { display: flex; align-items: center; gap: 12px; min-width: 0; position: relative; }
 .site-topbar-end { display: flex; justify-content: flex-end; }
-.site-topbar .site-brand { display: inline-flex; align-items: center; gap: 10px; color: #000; text-decoration: none; font-weight: 900; font-size: 17px; white-space: nowrap; }
-.site-topbar .site-brand img { width: 30px; height: 30px; }
+.site-topbar .site-brand, .landing-footer .site-brand {
+  display: inline-flex; align-items: center; gap: 10px; color: #000; text-decoration: none;
+  font-family: Georgia, "Times New Roman", serif; font-weight: 700; font-size: 20px; letter-spacing: -0.045em; white-space: nowrap;
+}
+.site-topbar .site-brand img, .landing-footer .site-brand img { width: 34px; height: 34px; }
+.landing-footer .site-brand, .landing-footer .site-brand span { color: #fff !important; }
+.site-topbar .site-menu { margin-left: auto; }
 .site-nav { display: flex; gap: 6px; }
 .site-nav a {
   padding: 8px 12px;
@@ -494,7 +499,7 @@ summary {
 .site-cta:hover { transform: translate(-2px, -2px); box-shadow: var(--nb-shadow-primary-hover); }
 .site-cta:active { transform: translate(3px, 3px); box-shadow: var(--nb-shadow-primary-pressed); }
 
-.site-menu { position: relative; }
+.site-menu { position: relative; margin-left: auto; }
 .site-menu-button.MuiIconButton-root,
 .site-menu-button {
   display: inline-grid;
@@ -514,7 +519,8 @@ summary {
 
 .site-menu-panel {
   position: absolute;
-  left: 0;
+  right: 0;
+  left: auto;
   top: calc(100% + 14px);
   z-index: 60;
   width: min(360px, 90vw);
@@ -537,13 +543,17 @@ summary {
 .site-menu-list li:last-child a { border-bottom: 0; }
 .site-menu-list a:hover, .site-menu-list a:focus-visible { background: var(--nb-yellow); }
 
+@media (min-width: 901px) {
+  .site-menu { display: none; }
+}
 @media (max-width: 900px) {
-  .site-topbar { grid-template-columns: 1fr auto; }
+  .site-topbar { grid-template-columns: minmax(0, 1fr) auto; }
+  .site-topbar-start { width: 100%; }
   .site-nav { display: none; }
   .site-topbar-end .site-cta { display: none; }
 }
 @media (max-width: 560px) {
-  .site-topbar .site-brand span { font-size: 15px; }
+  .site-topbar .site-brand span { font-size: 18px; }
 }
 
 /* Active header link: black text, no leftover red underline from the older header */
@@ -1063,7 +1073,7 @@ summary {
 .site-menu-panel { border-radius: 4px 22px 4px 4px; }
 .blog-tabs a { border-radius: 999px !important; padding: 8px 15px !important; }
 .post-pages button { min-width: 44px; min-height: 44px; border-radius: 50% !important; }
-.post-pages button.is-current { box-shadow: 3px 3px 0 var(--nb-pink) !important; }
+.post-pages button.is-current { box-shadow: 3px 3px 0 #000 !important; }
 .post-card, .post-card-media { border-radius: 4px 24px 4px 4px !important; }
 .MuiIconButton-root:not(.site-menu-button):not(.MuiAutocomplete-popupIndicator):not(.MuiAutocomplete-clearIndicator) { min-width: 44px; min-height: 44px; }
 

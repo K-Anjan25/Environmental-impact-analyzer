@@ -97,7 +97,7 @@
 .landing-button-primary:hover { background: var(--forest-dark); }
 .landing-button-ghost { border-color: var(--accent-primary); color: var(--accent-deep); background: transparent; }
 .landing-button-ghost:hover { background: rgba(47, 107, 63, 0.06); }
-.landing-button-primary { box-shadow: 0 1px 2px rgba(26, 32, 28, 0.12), 0 6px 14px rgba(10, 92, 54, 0.22); }
+.landing-button-primary { box-shadow: 4px 4px 0 #000; }
 .mkt-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px; }
 .marketing .MuiButton-root.landing-button { text-transform: none; }
 

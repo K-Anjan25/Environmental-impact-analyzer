@@ -31,7 +31,7 @@ const theme = createTheme({
           boxShadow: '2px 2px 0 #000000',
           transition: 'transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease',
         },
-        contained: { backgroundColor: '#FFE15A', boxShadow: '4px 4px 0 #000000, 8px 8px 0 #C8A2F3' },
+        contained: { backgroundColor: '#FFE15A', boxShadow: '4px 4px 0 #000000' },
         outlined: { backgroundColor: '#FFFFFF', boxShadow: '2px 2px 0 #000000' },
         text: { borderColor: 'transparent', backgroundColor: 'transparent', boxShadow: 'none' },
       },

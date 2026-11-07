@@ -7,6 +7,7 @@ RUN npm ci
 COPY apps/web/ ./
 COPY LICENSE PRIVACY.md TERMS.md data-sources.md /workspace/
 COPY services/api/data/carbonfact-v1.1.0/LICENSE services/api/data/carbonfact-v1.1.0/SOURCE.md /workspace/services/api/data/carbonfact-v1.1.0/
+COPY services/api/data/carbonfact-v1.1.0/datasets/sources/SOURCE-RECORD.md /workspace/services/api/data/carbonfact-v1.1.0/datasets/sources/
 RUN npm run build
 
 FROM python:3.11-slim AS runtime

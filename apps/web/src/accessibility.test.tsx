@@ -161,7 +161,17 @@ describe('process estimator accessibility', () => {
 
     const { container } = render(<App />);
     const dashboardText = container.textContent ?? '';
-    expect(container.querySelector('.site-menu-list a[href="#/method"]')).toBeNull();
+    expect(container.querySelectorAll('.site-nav a')).toHaveLength(6);
+    expect(container.querySelector('.site-menu-list a[href="#/method"]')).toBeTruthy();
+    const primaryNav = screen.getByRole('navigation', { name: 'Primary' });
+    expect(primaryNav.querySelectorAll('a')).toHaveLength(6);
+    expect(primaryNav.querySelector('a[href="#/calculator"]')?.getAttribute('aria-current')).toBe('page');
+    const menuButton = screen.getByRole('button', { name: 'Open menu' });
+    fireEvent.click(menuButton);
+    expect(menuButton.getAttribute('aria-expanded')).toBe('true');
+    expect(container.querySelector('.site-menu-list a[href="#/calculator"]')?.getAttribute('aria-current')).toBe('page');
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(menuButton.getAttribute('aria-expanded')).toBe('false');
     expect(container.querySelector('.round-lab-icon.empty-illustration')).toBeTruthy();
     expect(dashboardText).not.toContain('Method and scope');
     expect(dashboardText).not.toContain('Source factors, not a product score');
@@ -181,20 +191,29 @@ describe('process estimator accessibility', () => {
     expect(screen.queryByRole('link', { name: 'Data sources' })).toBeNull();
   });
 
+  it('labels the example action as a replacement after the user has entered data', async () => {
+    stubApi();
+    render(<App />);
+    const productName = await screen.findByRole('textbox', { name: /Product name/ });
+    expect(screen.getByRole('button', { name: 'Load example' })).toBeTruthy();
 
-async function fillCalculator(options: { productName?: string; finishedKg?: string; materialKg?: string; scope?: boolean } = {}): Promise<void> {
-  await screen.findByRole('heading', { name: 'Calculator' });
-  fireEvent.change(screen.getByRole('textbox', { name: /Product name/ }), { target: { value: options.productName ?? 'Cotton tote' } });
-  fireEvent.change(screen.getByRole('spinbutton', { name: /Finished weight \(kg\)/ }), { target: { value: options.finishedKg ?? '0.18' } });
-  fireEvent.change(screen.getByRole('textbox', { name: /Material name/ }), { target: { value: 'Cotton yarn' } });
-  fireEvent.change(screen.getByRole('spinbutton', { name: /Weight \(kg\)/ }), { target: { value: options.materialKg ?? '0.18' } });
-  const processBox = screen.getByRole('combobox', { name: /Process/ });
-  fireEvent.change(processBox, { target: { value: 'Spinning cotton to yarn' } });
-  fireEvent.click(await screen.findByRole('option', { name: /Spinning cotton to yarn/ }));
-  if (options.scope !== false) {
-    fireEvent.click(screen.getByRole('checkbox', { name: /These materials make up the whole product/ }));
+    fireEvent.change(productName, { target: { value: 'Cotton jacket' } });
+    expect(screen.getByRole('button', { name: 'Replace inputs with example' })).toBeTruthy();
+  });
+
+  async function fillCalculator(options: { productName?: string; finishedKg?: string; materialKg?: string; scope?: boolean } = {}): Promise<void> {
+    await screen.findByRole('heading', { name: 'Calculator' });
+    fireEvent.change(screen.getByRole('textbox', { name: /Product name/ }), { target: { value: options.productName ?? 'Cotton tote' } });
+    fireEvent.change(screen.getByRole('spinbutton', { name: /Finished weight \(kg\)/ }), { target: { value: options.finishedKg ?? '0.18' } });
+    fireEvent.change(screen.getByRole('textbox', { name: /Material name/ }), { target: { value: 'Cotton yarn' } });
+    fireEvent.change(screen.getByRole('spinbutton', { name: /Weight \(kg\)/ }), { target: { value: options.materialKg ?? '0.18' } });
+    const processBox = screen.getByRole('combobox', { name: /Process/ });
+    fireEvent.change(processBox, { target: { value: 'Spinning cotton to yarn' } });
+    fireEvent.click(await screen.findByRole('option', { name: /Spinning cotton to yarn/ }));
+    if (options.scope !== false) {
+      fireEvent.click(screen.getByRole('checkbox', { name: /These materials make up the whole product/ }));
+    }
   }
-}
 
   it('shows errors only after Calculate and names each field plainly', async () => {
     stubApi();

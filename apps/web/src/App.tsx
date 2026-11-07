@@ -646,7 +646,8 @@ function App() {
   const suggestedCategory = suggestedCategoryForProductName(productName);
   const hasBootExampleMatch = suggestedCategory === 'footwear';
   const showCategorySuggestion = suggestedCategory === 'apparel' && productType !== 'apparel';
-  const hasExistingInputs = Boolean(finishedMass || scopeConfirmed || materials.some((item) => item.name.trim() || item.kg.trim() || item.factor));
+  const hasExampleOverwritableInputs = Boolean(finishedMass || scopeConfirmed || materials.some((item) => item.name.trim() || item.kg.trim() || item.factor));
+  const hasExistingInputs = Boolean(productName.trim() || hasExampleOverwritableInputs);
 
   return (
     <SiteLayout current="calculator" sourceVersion={catalog?.source_version ?? '1.1.0'} totalRecords={catalog?.total_records ?? '302'}>
@@ -701,7 +702,7 @@ function App() {
                   <strong>Example suggestion: women’s boots</strong>
                   <span>These sample materials and weights are not inferred from your product. Review them and confirm the whole product before calculating.</span>
                   <Button type="button" variant="outlined" onClick={() => loadWorkedExample(true)} disabled={!catalog}>
-                    {hasExistingInputs ? 'Replace inputs with example' : 'Use example as a starting point'}
+                    {hasExampleOverwritableInputs ? 'Replace inputs with example' : 'Use example as a starting point'}
                   </Button>
                 </div>
               )}
@@ -771,7 +772,7 @@ function App() {
               <div>
                 <Button
                   type="button"
-                  variant="text"
+                  variant="outlined"
                   startIcon={<AddRoundedIcon />}
                   onClick={addMaterial}
                   disabled={materials.length >= MAX_MATERIALS}
@@ -793,8 +794,13 @@ function App() {
               {catalogError && <Alert severity="error">{catalogError}</Alert>}
 
               <div className="calc-actions">
-                <Button type="submit" variant="contained" disabled={!catalog || calculating}>Calculate</Button>
-                <Button type="button" variant="text" onClick={() => loadWorkedExample()} disabled={!catalog}>Load example</Button>
+                <Button type="submit" variant="contained" disabled={!catalog || calculating} aria-busy={calculating}>
+                  {calculating ? 'Calculating…' : 'Calculate'}
+                </Button>
+                {!catalog && !catalogError && <span className="catalog-status" role="status">Loading process factors…</span>}
+                <Button type="button" variant="outlined" onClick={() => loadWorkedExample()} disabled={!catalog}>
+                  {hasExistingInputs ? 'Replace inputs with example' : 'Load example'}
+                </Button>
               </div>
             </form>
           </Paper>

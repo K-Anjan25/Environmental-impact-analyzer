@@ -1,23 +1,15 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import { SITE_NAV_ITEMS, type SiteSection } from './site-navigation';
 
 /*
- * Menu button and dropdown panel. The button sits at the start of the header, beside the logo.
- * The panel drops down under the header. It closes on Escape, on an outside click, and after a link is used.
- * Legal pages are linked from the footer, not from this menu.
+ * Mobile menu button and dropdown panel. The panel drops down under the header. It closes on Escape,
+ * on an outside click, and after a link is used. The shared navigation items keep desktop and
+ * mobile destinations and the current-page state in sync.
  */
 
-/** One item per destination. Blogs is a single item; its types have their own routes. */
-export const MENU_ITEMS: { href: string; label: string }[] = [
-  { href: '#/', label: 'Home' },
-  { href: '#/calculator', label: 'Calculator' },
-  { href: '#/pricing', label: 'Plans' },
-  { href: '#/blogs', label: 'Blogs' },
-  { href: '#/contact', label: 'Contact' },
-];
-
-export default function SiteMenu() {
+export default function SiteMenu({ current }: { current: SiteSection }) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -58,9 +50,9 @@ export default function SiteMenu() {
       <div id={panelId} className="site-menu-panel" hidden={!open}>
         <nav aria-label="Site menu">
           <ul className="site-menu-list">
-            {MENU_ITEMS.map((item) => (
-              <li key={item.href}>
-                <a href={item.href} onClick={() => setOpen(false)}>
+            {SITE_NAV_ITEMS.map((item) => (
+              <li key={item.id}>
+                <a href={item.href} aria-current={current === item.id ? 'page' : undefined} onClick={() => setOpen(false)}>
                   {item.label}
                 </a>
               </li>

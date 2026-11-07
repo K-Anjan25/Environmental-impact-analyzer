@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react';
 import SiteMenu from './SiteMenu';
 import LandingFooter from './marketing/LandingFooter';
+import { SITE_NAV_ITEMS, type SiteSection } from './site-navigation';
 
-export type SiteSection = 'home' | 'calculator' | 'blogs' | 'method' | 'pricing' | 'contact';
+export type { SiteSection } from './site-navigation';
 
 type SiteLayoutProps = {
   current: SiteSection;
@@ -16,12 +17,6 @@ type SiteLayoutProps = {
   children: ReactNode;
 };
 
-const NAV_ITEMS: { id: SiteSection; href: string; label: string }[] = [
-  { id: 'home', href: '#/', label: 'Home' },
-  { id: 'calculator', href: '#/calculator', label: 'Calculator' },
-  { id: 'blogs', href: '#/blogs', label: 'Blogs' },
-];
-
 export default function SiteLayout({ current, variant = 'standard', children }: SiteLayoutProps) {
   const landing = variant === 'landing';
   return (
@@ -33,10 +28,10 @@ export default function SiteLayout({ current, variant = 'standard', children }: 
             <img src="/brand/mark.svg" alt="" />
             <span>EcoImpact Lab</span>
           </a>
-          <SiteMenu />
+          <SiteMenu current={current} />
         </div>
         <nav className="site-nav" aria-label="Primary">
-          {NAV_ITEMS.map((item) => (
+          {SITE_NAV_ITEMS.map((item) => (
             <a key={item.id} href={item.href} aria-current={current === item.id ? 'page' : undefined}>
               {item.label}
             </a>

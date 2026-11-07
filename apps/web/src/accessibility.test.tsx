@@ -130,7 +130,7 @@ async function expectNoAxeViolations(): Promise<void> {
 
 describe('process estimator accessibility', () => {
   it('uses accessible theme colors and names imagery while keeping the brand mark decorative', () => {
-    const background = '#f4f1e9';
+    const background = theme.palette.background.default;
     const luminance = (hex: string) => {
       const channel = (offset: number) => {
         const value = Number.parseInt(hex.slice(offset, offset + 2), 16) / 255;
@@ -146,6 +146,11 @@ describe('process estimator accessibility', () => {
     expect(contrast(theme.palette.primary.main, background)).toBeGreaterThanOrEqual(4.5);
     expect(contrast(theme.palette.text.primary, background)).toBeGreaterThanOrEqual(4.5);
     expect(contrast(theme.palette.text.secondary, background)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast('#000000', theme.palette.secondary.main)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast('#000000', '#F46DBD')).toBeGreaterThanOrEqual(4.5);
+    expect(contrast('#000000', theme.palette.warning.main)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(theme.palette.error.contrastText, theme.palette.error.main)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(theme.palette.success.contrastText, theme.palette.success.main)).toBeGreaterThanOrEqual(4.5);
 
     stubApi();
     const landing = render(<LandingPage />);

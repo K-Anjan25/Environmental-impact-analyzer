@@ -47,14 +47,14 @@ function wrapPage(title, content) {
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
   <title>${escapeHtml(title)} · EcoImpact Lab</title>
   <style>
-    :root { color-scheme: light; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #000; background: #FFF6E0; }
+    :root { color-scheme: light; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #000; background: #F7F1FF; }
     * { box-sizing: border-box; }
-    body { margin: 0; padding: clamp(12px, 4vw, 48px); background: #FFF6E0; }
-    main { max-width: 900px; margin: 0 auto; padding: clamp(20px, 4vw, 40px); background: #fff; border: 3px solid #000; box-shadow: 6px 6px 0 #000, 11px 11px 0 #5BE0A0; }
+    body { margin: 0; padding: clamp(12px, 4vw, 48px); background: #F7F1FF; }
+    main { max-width: 900px; margin: 0 auto; padding: clamp(20px, 4vw, 40px); background: #fff; border: 3px solid #000; box-shadow: 6px 6px 0 #000, 11px 11px 0 #C8A2F3; }
     nav { display: flex; flex-wrap: wrap; gap: 8px; padding-bottom: 18px; border-bottom: 3px solid #000; font-size: 14px; }
     nav a, a { color: #000; text-underline-offset: 3px; }
     nav a { padding: 7px 10px; border: 2px solid #000; background: #fff; font-weight: 800; text-decoration: none; box-shadow: 2px 2px 0 #000; }
-    nav a:hover { background: #FFD23F; }
+    nav a:hover { background: #FFE15A; }
     :focus-visible { outline: 3px solid #000; outline-offset: 3px; }
     h1, h2, h3 { color: #000; line-height: 1.15; font-weight: 900; }
     h1 { margin-top: 24px; font-size: clamp(28px, 5vw, 42px); letter-spacing: -.04em; }
@@ -62,11 +62,11 @@ function wrapPage(title, content) {
     h3 { margin-top: 24px; font-size: 17px; }
     p, li { max-width: 72ch; line-height: 1.65; }
     li + li { margin-top: 6px; }
-    blockquote { margin-left: 0; padding: 10px 16px; border-left: 6px solid #000; background: #FFF0C2; }
-    pre { overflow-x: auto; padding: 16px; background: #FFF6E0; border: 2px solid #000; white-space: pre-wrap; overflow-wrap: anywhere; font: 13px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    blockquote { margin-left: 0; padding: 10px 16px; border-left: 6px solid #F46DBD; background: #EEE3FF; }
+    pre { overflow-x: auto; padding: 16px; background: #F7F1FF; border: 2px solid #000; white-space: pre-wrap; overflow-wrap: anywhere; font: 13px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
     table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; }
     th, td { padding: 8px 10px; border: 2px solid #000; text-align: left; }
-    th { background: #FFD23F; }
+    th { background: #FFE15A; }
     footer { margin-top: 34px; padding: 14px 16px; border-top: 3px solid #000; background: #000; color: #fff; font-size: 12px; }
     @media (max-width: 560px) { body { padding: 10px; } main { padding: 20px 16px; } }
   </style>

@@ -20,7 +20,7 @@ const INDICATOR_CODES = [
   'ACD', 'ETF', 'FRU', 'FWE', 'GHG', 'HTC', 'HTN', 'IOR',
   'LDU', 'MRU', 'OZD', 'PCO', 'PMA', 'SWE', 'TRE', 'WTU',
 ];
-const CASE_TONES = ['nb-tone-yellow', 'nb-tone-green', 'nb-tone-blue'];
+const CASE_TONES = ['nb-tone-yellow', 'nb-tone-lilac', 'nb-tone-pink'];
 
 function latestPostOf(type: PostType): Post | undefined {
   return publishedPosts(type)[0];
@@ -96,12 +96,12 @@ export default function LandingPage() {
               <dd className="nb-stat-value">{catalog.groups}</dd>
               <dd className="nb-stat-note">Families and reference units kept as published</dd>
             </div>
-            <div className="nb-stat nb-tone-green">
+            <div className="nb-stat nb-tone-lilac">
               <dt>EF 3.1 indicators per row</dt>
               <dd className="nb-stat-value">16</dd>
               <dd className="nb-stat-note">Shown separately for every process row</dd>
             </div>
-            <div className="nb-stat nb-tone-blue">
+            <div className="nb-stat nb-tone-paper">
               <dt>Process rows per estimate</dt>
               <dd className="nb-stat-value">25</dd>
               <dd className="nb-stat-note">Maximum selections in one calculation</dd>

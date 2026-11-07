@@ -1,21 +1,29 @@
 /*
  * Neo-Brutalist home page. Scoped to pages that contain .nb-home, so the calculator, blog, and
- * other marketing pages keep their own styles. Static by design: no animation, no canvas, no images.
- * Every text colour is black on a light fill, so contrast stays well above AAA.
+ * other marketing pages keep their own styles. The layout stays editorial and still; controls get
+ * brief reduced-motion-aware feedback. Decorative geometry uses CSS only, with black ink on light
+ * fills for reliable contrast.
  */
 
 body:has(.nb-home) {
-  --nb-paper: #FFF6E0;
+  --nb-paper: #F7F1FF;
+  --nb-cream: #EEE3FF;
   --nb-ink: #000000;
-  --nb-yellow: #FFD23F;
-  --nb-pink: #FF8FC7;
-  --nb-green: #5BE0A0;
-  --nb-blue: #8FD3FF;
-  --nb-orange: #FF9F47;
+  --nb-yellow: #FFE15A;
+  --nb-pink: #F46DBD;
+  --nb-green: #A9DDB8;
+  --nb-lilac: #C8A2F3;
+  --nb-blue: var(--nb-lilac);
+  --nb-orange: #FFB86B;
   --nb-white: #FFFFFF;
   --nb-border: 3px solid #000;
   --nb-shadow: 6px 6px 0 #000;
   --nb-shadow-lg: 10px 10px 0 #000;
+  --nb-shadow-control: 2px 2px 0 #000;
+  --nb-shadow-primary: 4px 4px 0 #000, 8px 8px 0 var(--nb-lilac);
+  --nb-shadow-primary-hover: 6px 6px 0 #000, 10px 10px 0 var(--nb-lilac);
+  --nb-shadow-primary-pressed: 1px 1px 0 #000, 4px 4px 0 var(--nb-lilac);
+  --nb-shadow-specimen: 6px 6px 0 #000, 11px 11px 0 var(--nb-pink);
   background: var(--nb-paper);
   color: var(--nb-ink);
 }
@@ -86,6 +94,7 @@ body:has(.nb-home) .landing-footer :is(a, button):focus-visible { outline-color:
 .nb-tone-pink { background: var(--nb-pink); }
 .nb-tone-green { background: var(--nb-green); }
 .nb-tone-blue { background: var(--nb-blue); }
+.nb-tone-lilac { background: var(--nb-lilac); }
 .nb-tone-orange { background: var(--nb-orange); }
 
 /* Hero */
@@ -101,8 +110,22 @@ body:has(.nb-home) .landing-footer :is(a, button):focus-visible { outline-color:
 
 /* Specimen card: one process row, 16 tiles */
 .nb-spec {
+  position: relative;
   border: var(--nb-border); background: #fff; box-shadow: var(--nb-shadow-specimen); transform: rotate(-1.5deg);
   padding: 0 0 16px;
+}
+.nb-spec::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  top: -17px;
+  right: -15px;
+  width: 42px;
+  height: 42px;
+  background: var(--nb-pink);
+  clip-path: polygon(50% 0, 61% 31%, 94% 9%, 78% 42%, 100% 50%, 72% 61%, 91% 93%, 59% 77%, 50% 100%, 39% 69%, 7% 91%, 24% 58%, 0 50%, 29% 39%, 9% 7%, 43% 24%);
+  filter: drop-shadow(3px 3px 0 #000);
+  pointer-events: none;
 }
 .nb-spec-head {
   display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px;
@@ -116,6 +139,20 @@ body:has(.nb-home) .landing-footer :is(a, button):focus-visible { outline-color:
   font-size: 24px; line-height: 1; letter-spacing: -0.04em;
 }
 .nb-spec-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; margin: 16px 16px 0; border: 2px solid #000; }
+.nb-tile {
+  display: grid;
+  min-height: 58px;
+  place-items: center;
+  padding: 8px 4px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: .02em;
+  font-variant-numeric: tabular-nums;
+}
+.nb-tile:nth-child(even) { background: var(--nb-cream); }
+.nb-tile:not(:nth-child(4n)) { border-right: 2px solid #000; }
+.nb-tile:nth-child(-n + 12) { border-bottom: 2px solid #000; }
 .nb-spec-foot { margin: 14px 18px 0; font-size: 13px; font-weight: 700; }
 
 /* Stats */
@@ -134,8 +171,8 @@ body:has(.nb-home) .landing-footer :is(a, button):focus-visible { outline-color:
 .nb-feature-wide-right .nb-feature-copy { order: 2; }
 .nb-feature-wide-right .nb-feature-panel { order: 1; }
 .nb-feature-panel { border: var(--nb-border); box-shadow: var(--nb-shadow-lg); padding: 24px; background: #fff; }
-.nb-panel-indicators { background: var(--nb-blue); }
-.nb-panel-selection { background: var(--nb-green); }
+.nb-panel-indicators { background: var(--nb-lilac); }
+.nb-panel-selection { background: var(--nb-yellow); }
 .nb-panel-boundary { background: var(--nb-pink); }
 .nb-checklist { list-style: none; margin: 22px 0 0; padding: 0; display: grid; gap: 10px; }
 .nb-checklist li { display: grid; grid-template-columns: 22px 1fr; gap: 12px; font-weight: 700; line-height: 1.45; }
@@ -185,6 +222,8 @@ body:has(.nb-home) .landing-footer :is(a, button):focus-visible { outline-color:
 @media (max-width: 560px) {
   .nb-home { padding: 32px 18px 16px; }
   .nb-spec-head { align-items: flex-start; flex-direction: column; gap: 6px; }
+  .nb-spec::after { top: -11px; right: -8px; width: 36px; height: 36px; }
+  .nb-tile { min-height: 50px; }
   .nb-spec-count strong { font-size: 21px; }
   .nb-stat-grid { grid-template-columns: 1fr; }
   .nb-latest-item { grid-template-columns: 1fr; }

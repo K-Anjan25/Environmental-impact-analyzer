@@ -12,11 +12,11 @@ const theme = createTheme({
     background: { default: '#F7F1FF', paper: '#FFFFFF' },
     divider: '#000000',
   },
-  shape: { borderRadius: 0 },
+  shape: { borderRadius: 12 },
   typography: {
     fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
-    h1: { fontWeight: 900, letterSpacing: '-0.045em' },
-    h2: { fontWeight: 900, letterSpacing: '-0.035em' },
+    h1: { fontFamily: 'Georgia, "Times New Roman", serif', fontWeight: 700, letterSpacing: '-0.055em' },
+    h2: { fontFamily: 'Georgia, "Times New Roman", serif', fontWeight: 700, letterSpacing: '-0.045em' },
     h3: { fontWeight: 900, letterSpacing: '-0.025em' },
     button: { fontWeight: 800, textTransform: 'none' },
   },
@@ -38,7 +38,7 @@ const theme = createTheme({
     },
     MuiOutlinedInput: {
       styleOverrides: {
-        root: { borderRadius: 0, backgroundColor: '#ffffff' },
+        root: { borderRadius: 8, backgroundColor: '#ffffff' },
         notchedOutline: { borderWidth: 2, borderColor: '#000000' },
       },
     },

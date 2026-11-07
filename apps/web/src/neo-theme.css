@@ -1,7 +1,8 @@
 /*
  * Neo-Brutalist theme for the whole site. Loaded last, so it overrides styles.css, marketing.css,
  * and neo.css where they conflict. Bold colour blocks, 3px black borders, hard offset shadows,
- * and square corners; motion is limited to short, tactile control feedback.
+ * with a deliberate mix of sharp primary controls, pill-shaped secondary actions, rounded fields, and
+ * asymmetric paper panels; motion is limited to short, tactile control feedback.
  *
  * Palette: pale lilac paper, lilac surfaces, lemon actions, and magenta editorial accents; mint is
  * reserved for success. Contrast: dark ink on each light accent is AA/AAA, and meaning never relies on colour alone.
@@ -51,8 +52,8 @@
   --citrus: var(--nb-yellow);
   --sand: var(--nb-paper);
   --soft-green: var(--nb-green);
-  --radius-lg: 0px;
-  --radius-sm: 0px;
+  --radius-lg: 20px;
+  --radius-sm: 8px;
   color-scheme: light;
 }
 
@@ -61,7 +62,8 @@ body {
   color: #000000;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
-h1, h2, h3, h4, h5, h6 { color: #000000; font-weight: 900; letter-spacing: -0.03em; }
+h1, h2 { color: #000000; font-family: Georgia, "Times New Roman", serif !important; font-weight: 700 !important; letter-spacing: -0.05em; }
+h3, h4, h5, h6 { color: #000000; font-weight: 900; letter-spacing: -0.03em; }
 a { color: #000000; text-decoration-thickness: 2px; text-underline-offset: 3px; }
 :focus-visible { outline: 3px solid #000000; outline-offset: 3px; }
 
@@ -91,7 +93,12 @@ a { color: #000000; text-decoration-thickness: 2px; text-underline-offset: 3px; 
   color: #000000 !important;
   box-shadow: var(--nb-shadow-primary) !important;
 }
-.landing-button-ghost, .MuiButton-outlined { background: var(--nb-white) !important; }
+.landing-button-ghost, .MuiButton-outlined {
+  background: var(--nb-white) !important;
+  border-radius: 999px !important;
+  padding-inline: 20px;
+}
+.MuiButton-outlined:hover:not(.Mui-disabled) { background: var(--nb-cream) !important; }
 .landing-button:not(.landing-button-primary), .MuiButton-outlined { box-shadow: var(--nb-shadow-control) !important; }
 .MuiButton-text {
   border-color: transparent !important;
@@ -128,7 +135,7 @@ a { color: #000000; text-decoration-thickness: 2px; text-underline-offset: 3px; 
 }
 .MuiIconButton-root:not(.site-menu-button) {
   border: 2px solid #000000 !important;
-  border-radius: 0 !important;
+  border-radius: 50% !important;
   background: var(--nb-white) !important;
   box-shadow: var(--nb-shadow-control) !important;
   transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
@@ -147,19 +154,19 @@ a { color: #000000; text-decoration-thickness: 2px; text-underline-offset: 3px; 
 /* ----- Cards and panels ----- */
 .MuiPaper-root {
   background: var(--nb-white) !important; background-image: none !important;
-  border: var(--nb-border) !important; border-radius: 0 !important; box-shadow: var(--nb-shadow) !important;
+  border: var(--nb-border) !important; border-radius: 4px 22px 4px 4px !important; box-shadow: var(--nb-shadow) !important;
 }
 .MuiPaper-root.MuiAlert-root, .MuiAlert-root { box-shadow: var(--nb-shadow-sm) !important; border: 2px solid #000000 !important; border-radius: 0 !important; }
 .MuiAlert-standardError { background: var(--nb-pink) !important; color: #000000 !important; }
 .MuiAlert-standardSuccess { background: var(--nb-green) !important; color: #000000 !important; }
 .MuiAlert-standardInfo, .MuiAlert-standardWarning { background: var(--nb-yellow) !important; color: #000000 !important; }
-.MuiChip-root { border: 2px solid #000000 !important; border-radius: 0 !important; background: var(--nb-white) !important; color: #000000 !important; font-weight: 800; }
+.MuiChip-root { border: 2px solid #000000 !important; border-radius: 999px !important; background: var(--nb-white) !important; color: #000000 !important; font-weight: 800; padding-inline: 4px; }
 .MuiChip-root.MuiChip-filled, .MuiChip-colorPrimary { background: var(--nb-yellow) !important; }
 .MuiChip-root.MuiChip-colorSecondary { background: var(--nb-lilac) !important; }
 .MuiAccordion-root { box-shadow: var(--nb-shadow-sm) !important; }
 
 /* Inputs */
-.MuiOutlinedInput-root { border-radius: 0 !important; background: var(--nb-white) !important; }
+.MuiOutlinedInput-root { border-radius: 8px !important; background: var(--nb-white) !important; }
 .MuiOutlinedInput-notchedOutline { border: 2px solid #000000 !important; }
 .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline { border-width: 3px !important; }
 .MuiOutlinedInput-root.Mui-focused { box-shadow: 4px 4px 0 #000000; }
@@ -174,9 +181,14 @@ a { color: #000000; text-decoration-thickness: 2px; text-underline-offset: 3px; 
   display: inline-block; padding: 4px 10px; border: 2px solid #000000; background: var(--nb-yellow);
   color: #000000 !important; font-size: 12px; font-weight: 900; letter-spacing: 0.08em; box-shadow: 3px 3px 0 #000000;
 }
-.marketing .section-title, .mkt-page-title, .mkt-title, .page-title, .card-title { font-weight: 900; letter-spacing: -0.035em; }
+.marketing .section-title, .mkt-page-title, .mkt-title, .page-title, .card-title {
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.05em;
+}
+.page-title, .mkt-page-title { font-size: clamp(3.2rem, 7vw, 5.5rem) !important; line-height: .92 !important; }
 .step-item, .carousel-slide, .contact-form, .contact-options li, .faq-item.MuiAccordion-root, .mkt-art {
-  background: var(--nb-white) !important; border: var(--nb-border) !important; border-radius: 0 !important; box-shadow: var(--nb-shadow) !important;
+  background: var(--nb-white) !important; border: var(--nb-border) !important; border-radius: 4px 22px 4px 4px !important; box-shadow: var(--nb-shadow) !important;
 }
 .step-item:nth-child(5n+1) { background: var(--nb-yellow) !important; }
 .step-item:nth-child(5n+2) { background: var(--nb-pink) !important; }
@@ -202,8 +214,10 @@ a { color: #000000; text-decoration-thickness: 2px; text-underline-offset: 3px; 
 .calculator-page .page-title { color: #000000; }
 .calculator-page .page-lede { color: #1A1A1A; }
 .calculator-page .privacy-pill {
-  display: inline-flex; align-items: center; gap: 8px; margin: 0 0 14px; padding: 6px 12px;
-  border: 2px solid #000000; background: var(--nb-green); color: #000000; font-size: 12px; font-weight: 900; box-shadow: var(--nb-shadow-sm);
+  display: inline-flex; align-items: center; gap: 8px; margin: 0 0 14px; padding: 6px 13px;
+  border: 2px solid #000000; border-radius: 999px; background: var(--nb-green); color: #000000;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 11px; font-weight: 900;
+  letter-spacing: .06em; text-transform: uppercase; box-shadow: 3px 3px 0 #000;
 }
 .calculator-page .privacy-pill .glow-dot { width: 8px; height: 8px; background: #000000; border-radius: 0; }
 .calculator-page .product-input-workspace,
@@ -1040,4 +1054,115 @@ summary {
   .calc-layout { grid-template-columns: 1fr; }
   .calc-material-row { grid-template-columns: 1fr; padding-right: 16px; padding-top: 40px; }
   .calc-remove { top: 4px; right: 4px; }
+}
+
+/* ----- Field-desk refresh: editorial type, varied silhouettes, and a real input/results split ----- */
+.site-nav a { border-radius: 999px !important; padding: 8px 14px !important; }
+.site-nav a[aria-current="page"] { border: 2px solid #000 !important; background: var(--nb-lilac) !important; }
+.site-nav a:hover:not([aria-current="page"]) { background: var(--nb-yellow) !important; }
+.site-menu-panel { border-radius: 4px 22px 4px 4px; }
+.blog-tabs a { border-radius: 999px !important; padding: 8px 15px !important; }
+.post-pages button { min-width: 44px; min-height: 44px; border-radius: 50% !important; }
+.post-pages button.is-current { box-shadow: 3px 3px 0 var(--nb-pink) !important; }
+.post-card, .post-card-media { border-radius: 4px 24px 4px 4px !important; }
+.MuiIconButton-root:not(.site-menu-button) { min-width: 44px; min-height: 44px; }
+
+.calculator-page .page-heading {
+  position: relative;
+  max-width: none;
+  margin: 0 0 12px;
+  padding: clamp(24px, 4vw, 42px) clamp(24px, 4vw, 48px);
+  border: 3px solid #000;
+  border-left-width: 12px;
+  border-radius: 4px 34px 4px 4px;
+  background: var(--nb-lilac);
+  box-shadow: 8px 8px 0 #000;
+}
+.calculator-page .page-heading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: clamp(22px, 4vw, 48px);
+  width: 64px;
+  height: 64px;
+  border: 3px solid #000;
+  border-radius: 50%;
+  background: var(--nb-yellow);
+  box-shadow: 4px 4px 0 #000;
+  transform: translateY(-50%);
+}
+.calculator-page .page-title {
+  max-width: 9ch;
+  margin: 0 !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-size: clamp(3.4rem, 6vw, 5rem) !important;
+  font-weight: 700 !important;
+  line-height: .9 !important;
+  letter-spacing: -.06em !important;
+}
+
+.calculator-page .calc-layout { grid-template-columns: minmax(0, 1.12fr) minmax(360px, .88fr); gap: clamp(22px, 3vw, 36px); align-items: start; }
+.calculator-page .calc-card.MuiPaper-root {
+  border-radius: 28px 4px 4px 4px !important;
+  box-shadow: 7px 7px 0 #000 !important;
+}
+.calculator-page .result-card.MuiPaper-root {
+  border-radius: 4px 28px 4px 4px !important;
+  background: var(--nb-lilac) !important;
+  box-shadow: 8px 8px 0 #000 !important;
+}
+.calculator-page .calc-card .card-title,
+.calculator-page .result-card .card-title {
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-size: clamp(1.6rem, 2.4vw, 2.1rem) !important;
+  font-weight: 700 !important;
+  letter-spacing: -.04em;
+}
+.calculator-page .calc-section-title { padding-top: 18px; border-top: 2px dashed #000; }
+.calculator-page .calc-product-grid { grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); }
+.calculator-page .calc-product-grid > :first-child { grid-column: 1 / -1; }
+.calculator-page .calc-profile-suggestion {
+  width: 100%;
+  border: 2px solid #000;
+  border-left-width: 8px;
+  border-left-color: var(--nb-pink);
+  border-radius: 4px 20px 4px 4px;
+}
+.calculator-page .calc-material-row { border-radius: 4px 18px 4px 4px; }
+.calculator-page .calc-material-row:nth-child(even) { background: var(--nb-cream); }
+.calculator-page .calc-remove { border-radius: 50% !important; }
+.calculator-page .result-headline,
+.calculator-page .result-processes {
+  border-radius: 4px 22px 4px 4px;
+  box-shadow: 5px 5px 0 #000;
+}
+.calculator-page .result-stat { border-radius: 4px 18px 4px 4px; }
+.calculator-page .process-impact-card { border-radius: 4px 22px 4px 4px; }
+.calculator-page .process-impact-index { display: grid; place-items: center; width: 2.4em; height: 2.4em; padding: 0; border-radius: 50%; }
+.calculator-page .process-impact-figures > div { border-radius: 4px 14px 4px 4px; }
+.calculator-page .indicator-disclosure,
+.calculator-page .result-details { border-radius: 4px 18px 4px 4px; overflow: hidden; }
+.calculator-page .indicator-disclosure > summary:hover,
+.calculator-page .result-details > summary:hover { background: var(--nb-lilac); }
+.calculator-page .indicator-code { border-radius: 999px; padding-inline: 8px; }
+.calculator-page .step-required-chip { border-radius: 999px !important; }
+
+@media (min-width: 1100px) {
+  .calculator-page .calc-layout { margin-top: 34px; }
+  .calculator-page .result-card.MuiPaper-root {
+    position: sticky;
+    top: 96px;
+    max-height: calc(100vh - 118px);
+    overflow-y: auto;
+  }
+}
+@media (max-width: 900px) {
+  .calculator-page .calc-layout { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 560px) {
+  .calculator-page .page-heading { padding: 24px 20px; border-left-width: 8px; }
+  .calculator-page .page-heading::after { display: none; }
+  .calculator-page .page-title { max-width: 8ch; font-size: clamp(3rem, 13vw, 4rem) !important; }
+  .calculator-page .calc-product-grid { grid-template-columns: minmax(0, 1fr); }
+  .calculator-page .calc-product-grid > :first-child { grid-column: auto; }
 }

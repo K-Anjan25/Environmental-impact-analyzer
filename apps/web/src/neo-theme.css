@@ -1086,7 +1086,6 @@ summary {
   margin: 0 0 16px;
   padding: clamp(24px, 3vw, 36px) clamp(24px, 4vw, 48px);
   border: 3px solid #000;
-  border-left-width: 10px;
   border-radius: 18px;
   background: var(--nb-lilac);
   box-shadow: 6px 6px 0 #000;
@@ -1160,7 +1159,7 @@ summary {
   .calculator-page .calc-layout { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 560px) {
-  .calculator-page .page-heading { padding: 24px 20px; border-left-width: 8px; }
+  .calculator-page .page-heading { padding: 24px 20px; }
   .calculator-page .page-title { max-width: none; font-size: clamp(3rem, 13vw, 4rem) !important; }
   .calculator-page .calc-product-grid { grid-template-columns: minmax(0, 1fr); }
   .calculator-page .calc-product-grid > :first-child { grid-column: auto; }

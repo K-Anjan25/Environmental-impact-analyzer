@@ -37,7 +37,7 @@ body:has(.nb-home) .site-topbar {
 }
 body:has(.nb-home) .site-cta {
   background: var(--nb-yellow) !important; color: #000 !important; border: var(--nb-border);
-  box-shadow: var(--nb-shadow-primary); border-radius: 0 !important;
+  box-shadow: var(--nb-shadow-primary); border-radius: 12px !important;
 }
 body:has(.nb-home) .site-cta:hover { box-shadow: var(--nb-shadow-primary-hover); }
 body:has(.nb-home) .site-cta:active { box-shadow: var(--nb-shadow-primary-pressed); }
@@ -78,7 +78,7 @@ body:has(.nb-home) .landing-footer :is(a, button):focus-visible { outline-color:
 
 .nb-button {
   display: inline-flex; align-items: center; gap: 8px; min-height: 52px; padding: 12px 22px;
-  border: var(--nb-border); border-radius: 0; font-size: 1.05rem; font-weight: 800; text-decoration: none; cursor: pointer;
+  border: var(--nb-border); border-radius: 12px; font-size: 1.05rem; font-weight: 800; text-decoration: none; cursor: pointer;
   box-shadow: var(--nb-shadow-control); color: #000; background: #fff;
   transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
 }

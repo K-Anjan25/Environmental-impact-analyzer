@@ -1,7 +1,7 @@
 /*
  * Neo-Brutalist theme for the whole site. Loaded last, so it overrides styles.css, marketing.css,
  * and neo.css where they conflict. Bold colour blocks, 3px black borders, hard offset shadows,
- * with a deliberate mix of sharp primary controls, pill-shaped secondary actions, rounded fields, and
+ * with softly rounded primary controls, pill-shaped secondary actions, rounded fields, and
  * asymmetric paper panels; motion is limited to short, tactile control feedback.
  *
  * Palette: pale lilac paper, lilac surfaces, lemon actions, and magenta editorial accents; mint is
@@ -81,7 +81,7 @@ a { color: #000000; text-decoration-thickness: 2px; text-underline-offset: 3px; 
 .landing-button, .MuiButton-root {
   min-height: 44px;
   border: var(--nb-border) !important;
-  border-radius: 0 !important;
+  border-radius: 12px !important;
   box-shadow: var(--nb-shadow-control) !important;
   font-weight: 800 !important;
   color: #000000 !important;
@@ -195,7 +195,7 @@ a { color: #000000; text-decoration-thickness: 2px; text-underline-offset: 3px; 
 .step-item:nth-child(5n+3) { background: var(--nb-green) !important; }
 .step-item:nth-child(5n+4) { background: var(--nb-blue) !important; }
 .step-number { border: var(--nb-border); background: var(--nb-white) !important; color: #000000 !important; border-radius: 0; }
-.carousel-dot { border: 2px solid #000000 !important; border-radius: 0 !important; background: var(--nb-white) !important; }
+.carousel-dot { border: 2px solid #000000 !important; border-radius: 50% !important; background: var(--nb-white) !important; }
 .carousel-dot[aria-current='true'] { background: var(--nb-yellow) !important; }
 .carousel-icon { border: var(--nb-border); background: var(--nb-pink) !important; color: #000000 !important; border-radius: 0 !important; }
 .pricing-note, .error-summary { color: #000000 !important; border: var(--nb-border) !important; border-radius: 12px !important; box-shadow: var(--nb-shadow-sm); }
@@ -240,8 +240,11 @@ a { color: #000000; text-decoration-thickness: 2px; text-underline-offset: 3px; 
 .blog-tabs a { color: #000000 !important; font-weight: 900; }
 .blog-tabs a[aria-current], .blog-tabs a.is-current { background: var(--nb-yellow) !important; }
 .post-pages button.is-current { background: #000000 !important; color: #ffffff !important; }
-.admin-field input, .admin-field select, .admin-field textarea, .admin-secondary, .admin-danger {
-  border: 2px solid #000000 !important; border-radius: 0 !important; background: var(--nb-white); color: #000000;
+.admin-field input, .admin-field select, .admin-field textarea {
+  border: 2px solid #000000 !important; border-radius: 8px !important; background: var(--nb-white); color: #000000;
+}
+.admin-secondary, .admin-danger {
+  border: 2px solid #000000 !important; border-radius: 12px !important; background: var(--nb-white); color: #000000;
 }
 .admin-danger { background: var(--nb-pink) !important; }
 .admin-secondary { background: var(--nb-white) !important; }
@@ -250,10 +253,10 @@ a { color: #000000; text-decoration-thickness: 2px; text-underline-offset: 3px; 
 .faq-question.MuiTypography-root { color: #000000; font-weight: 800; }
 .faq-answer.MuiTypography-root { color: #1A1A1A; }
 
-/* Floating controls */
-.sticky-cta, .to-top { border: var(--nb-border) !important; border-radius: 0 !important; box-shadow: var(--nb-shadow-sm) !important; }
-.sticky-cta { background: var(--nb-yellow) !important; color: #000000 !important; font-weight: 900; }
-.to-top { background: var(--nb-white) !important; color: #000000 !important; }
+/* Floating controls: rounded CTA and a circular back-to-top icon button. */
+.sticky-cta, .to-top { border: var(--nb-border) !important; box-shadow: var(--nb-shadow-sm) !important; }
+.sticky-cta { border-radius: 12px !important; background: var(--nb-yellow) !important; color: #000000 !important; font-weight: 900; }
+.to-top { border-radius: 50% !important; background: var(--nb-white) !important; color: #000000 !important; }
 
 /* Reduced motion: keep the hover shift off */
 @media (prefers-reduced-motion: reduce) {
@@ -292,24 +295,25 @@ a { color: #000000; text-decoration-thickness: 2px; text-underline-offset: 3px; 
   color: #000000 !important;
 }
 
-/* ---- Audit pass: square corners, no shimmer, black ink, Neo borders on app panels ---- */
+/* ---- Shape audit: rounded action controls, circular icon buttons, and card-like app panels ---- */
 .skip-link,
 .site-menu-button.MuiIconButton-root,
-.MuiIconButton-root,
 .stage-action,
+.landing-cta,
+.site-cta {
+  border-radius: 12px !important;
+}
 .stage-coverage-item,
 .product-boundary,
 .ghg-inputs,
-.landing-cta,
-.site-cta,
-.skeleton-bar,
 .bom-mass-check-workspace,
 .result-scope-note,
 .boundary-issue,
 .product-input-workspace,
 .factor-detail-card {
-  border-radius: 0 !important;
+  border-radius: 14px !important;
 }
+.skeleton-bar { border-radius: 10px !important; }
 
 .skeleton-bar {
   background: var(--nb-cream) !important;
@@ -508,7 +512,7 @@ summary {
   height: 44px;
   padding: 0 !important;
   border: 3px solid #000 !important;
-  border-radius: 0 !important;
+  border-radius: 12px !important;
   background: var(--nb-yellow) !important;
   color: #000 !important;
   box-shadow: 3px 3px 0 #000 !important;
@@ -972,7 +976,7 @@ summary {
 .how-it-works-steps { margin: 12px 0 0; font-size: 15px; color: #000; }
 .worked-example-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 4px 0 14px; padding: 12px; border: 2px dashed #000; background: var(--nb-cream); }
 .worked-example-row span { font-size: 13px; color: #000; line-height: 1.4; }
-.worked-example-row .MuiButton-root { border: 3px solid #000; border-radius: 0; background: var(--nb-yellow); color: #000; font-weight: 900; box-shadow: 3px 3px 0 #000; }
+.worked-example-row .MuiButton-root { border: 3px solid #000; border-radius: 12px; background: var(--nb-yellow); color: #000; font-weight: 900; box-shadow: 3px 3px 0 #000; }
 @media (max-width: 900px) { .how-it-works-grid { grid-template-columns: 1fr; } }
 
 /* ---- Footer links: hover changes colour only. No underline, no glow, no lift. ---- */
@@ -1165,7 +1169,7 @@ summary {
   .calculator-page .calc-product-grid > :first-child { grid-column: auto; }
 }
 
-/* Final card-radius audit: keep cards/panels rounded while leaving sharp action controls intentional. */
+/* Final shape audit: cards and notices stay rounded; pill and circular controls keep their intended silhouettes. */
 .stage-coverage-item,
 .product-boundary,
 .ghg-inputs,

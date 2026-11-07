@@ -53,7 +53,7 @@
   backdrop-filter: blur(6px);
 }
 .site-cta {
-  margin-left: auto; margin-right: 12px; padding: 9px 16px; border-radius: 999px;
+  margin-left: auto; margin-right: 12px; padding: 9px 16px; border-radius: 12px;
   background: var(--forest); color: #fff; font-weight: 700; font-size: 14px; text-decoration: none;
 }
 .site-cta:hover { background: var(--forest-dark); }
@@ -90,12 +90,12 @@
 
 /* Buttons */
 .landing-button {
-  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 10px 20px; border-radius: 999px;
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 10px 20px; border-radius: 12px;
   font-weight: 700; font-size: 15px; text-decoration: none; cursor: pointer; border: 1px solid transparent;
 }
 .landing-button-primary { background: var(--forest); color: #fff; }
 .landing-button-primary:hover { background: var(--forest-dark); }
-.landing-button-ghost { border-color: var(--accent-primary); color: var(--accent-deep); background: transparent; }
+.landing-button-ghost { border-color: var(--accent-primary); border-radius: 999px; color: var(--accent-deep); background: transparent; }
 .landing-button-ghost:hover { background: rgba(47, 107, 63, 0.06); }
 .landing-button-primary { box-shadow: 4px 4px 0 #000; }
 .mkt-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px; }
@@ -189,7 +189,7 @@
 /* Floating controls */
 .sticky-cta {
   position: fixed; right: 20px; bottom: 20px; z-index: 30; display: inline-flex; align-items: center; gap: 8px;
-  padding: 12px 18px; border-radius: 999px; background: var(--forest); color: #fff; font-weight: 800; text-decoration: none;
+  padding: 12px 18px; border-radius: 12px; background: var(--forest); color: #fff; font-weight: 800; text-decoration: none;
   box-shadow: 0 14px 30px rgba(42, 38, 34, 0.2); transform: translateY(16px); opacity: 0; pointer-events: none; transition: opacity 0.3s, transform 0.3s;
 }
 .sticky-cta.is-visible { opacity: 1; transform: none; pointer-events: auto; }

@@ -19,7 +19,7 @@ export default function LandingFooter() {
             <img src="/brand/mark.svg" alt="" />
             <span>EcoImpact Lab</span>
           </a>
-          <p>Environmental Impact Analyzer. Published apparel and footwear process factors, with scope stated on every result.</p>
+          <p>Apparel and footwear process impacts, with scope stated on every result.</p>
         </div>
 
         <nav className="footer-col" aria-label="Product links">

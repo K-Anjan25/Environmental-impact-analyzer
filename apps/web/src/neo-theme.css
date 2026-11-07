@@ -1,7 +1,7 @@
 /*
  * Neo-Brutalist theme for the whole site. Loaded last, so it overrides styles.css, marketing.css,
  * and neo.css where they conflict. Bold colour blocks, 3px black borders, hard offset shadows,
- * square corners, and no gradients, glass, or animation.
+ * and square corners; motion is limited to short, tactile control feedback.
  *
  * Contrast: all body text is black or near-black on white or pale fills (AAA). Buttons use black
  * text on yellow, pink, or white. Nothing relies on colour alone.
@@ -20,6 +20,11 @@
   --nb-border: 3px solid #000000;
   --nb-shadow: 6px 6px 0 #000000;
   --nb-shadow-sm: 4px 4px 0 #000000;
+  --nb-shadow-control: 2px 2px 0 #000000;
+  --nb-shadow-primary: 4px 4px 0 #000000, 8px 8px 0 var(--nb-green);
+  --nb-shadow-primary-hover: 6px 6px 0 #000000, 10px 10px 0 var(--nb-green);
+  --nb-shadow-primary-pressed: 1px 1px 0 #000000, 4px 4px 0 var(--nb-green);
+  --nb-shadow-specimen: 6px 6px 0 #000000, 11px 11px 0 var(--nb-green);
 
   /* Legacy tokens used across styles.css and marketing.css. Remapped so every component picks up the theme. */
   --ink: #000000;
@@ -63,27 +68,78 @@ a { color: #000000; text-decoration-thickness: 2px; text-underline-offset: 3px; 
   box-shadow: 0 3px 0 #000000; backdrop-filter: none !important;
 }
 .site-brand, .site-brand span { color: #000000 !important; font-weight: 900; }
-.site-cta, .site-cta:hover {
-  background: var(--nb-yellow) !important; color: #000000 !important; border: var(--nb-border);
-  box-shadow: var(--nb-shadow-sm); border-radius: 0 !important; font-weight: 900;
-}
 .landing-footer { background: #000000 !important; color: #ffffff; border-top: var(--nb-border); }
 .landing-footer a, .landing-footer-base { color: #ffffff !important; }
 .landing-footer :is(a, button):focus-visible { outline-color: var(--nb-yellow); }
 
-/* ----- Buttons ----- */
+/* ----- Button language: one raised hero action, one compact outline, one quiet text action ----- */
 .landing-button, .MuiButton-root {
-  border: var(--nb-border) !important; border-radius: 0 !important; box-shadow: var(--nb-shadow-sm) !important;
-  font-weight: 800 !important; color: #000000 !important; background: var(--nb-white);
+  min-height: 44px;
+  border: var(--nb-border) !important;
+  border-radius: 0 !important;
+  box-shadow: var(--nb-shadow-control) !important;
+  font-weight: 800 !important;
+  color: #000000 !important;
+  background: var(--nb-white);
+  transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
 }
 .landing-button-primary, .MuiButton-containedPrimary, .MuiButton-contained {
-  background: var(--nb-yellow) !important; color: #000000 !important;
+  background: var(--nb-yellow) !important;
+  color: #000000 !important;
+  box-shadow: var(--nb-shadow-primary) !important;
 }
 .landing-button-ghost, .MuiButton-outlined { background: var(--nb-white) !important; }
-.landing-button:hover, .MuiButton-root:hover { transform: translate(-2px, -2px); box-shadow: 8px 8px 0 #000000 !important; }
-.landing-button:active, .MuiButton-root:active { transform: translate(3px, 3px); box-shadow: 2px 2px 0 #000000 !important; }
-.MuiButton-root.Mui-disabled { opacity: 0.55; box-shadow: none !important; }
-.landing-button-primary:hover, .MuiButton-containedPrimary:hover { background: #FFC61A !important; }
+.landing-button:not(.landing-button-primary), .MuiButton-outlined { box-shadow: var(--nb-shadow-control) !important; }
+.MuiButton-text {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.landing-button:hover:not(:disabled),
+.MuiButton-root:not(.MuiButton-text):hover:not(.Mui-disabled) {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 #000000 !important;
+}
+.landing-button-primary:hover:not(:disabled),
+.MuiButton-contained:hover:not(.Mui-disabled) {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--nb-shadow-primary-hover) !important;
+  background: #FFC61A !important;
+}
+.MuiButton-text:hover:not(.Mui-disabled) {
+  transform: none;
+  background: var(--nb-cream) !important;
+}
+.landing-button:active:not(:disabled), .MuiButton-root:active:not(.Mui-disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 #000000 !important;
+}
+.landing-button-primary:active:not(:disabled), .MuiButton-contained:active:not(.Mui-disabled) {
+  transform: translate(3px, 3px);
+  box-shadow: var(--nb-shadow-primary-pressed) !important;
+}
+.MuiButton-root.Mui-disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: 1px 1px 0 #000000 !important;
+}
+.MuiIconButton-root:not(.site-menu-button) {
+  border: 2px solid #000000 !important;
+  border-radius: 0 !important;
+  background: var(--nb-white) !important;
+  box-shadow: var(--nb-shadow-control) !important;
+  transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+}
+.MuiIconButton-root:not(.site-menu-button):hover:not(.Mui-disabled) {
+  transform: translate(-1px, -1px);
+  background: var(--nb-pink) !important;
+  box-shadow: 4px 4px 0 #000000 !important;
+}
+.MuiIconButton-root:not(.site-menu-button):active:not(.Mui-disabled) {
+  transform: translate(1px, 1px);
+  box-shadow: none !important;
+}
+.MuiIconButton-root:not(.site-menu-button).Mui-disabled { opacity: 0.55; }
 
 /* ----- Cards and panels ----- */
 .MuiPaper-root {
@@ -410,8 +466,13 @@ summary {
 }
 .site-nav a:hover { border-color: #000; background: #FFD23F; }
 .site-nav a[aria-current="page"] { border-color: #000; background: #FFD23F; }
-.site-cta { display: inline-block; padding: 9px 16px; border: 3px solid #000; background: #FFD23F; color: #000; font-weight: 900; text-decoration: none; box-shadow: 4px 4px 0 #000; }
-.site-cta:hover { transform: translate(-1px, -1px); box-shadow: 5px 5px 0 #000; }
+.site-cta {
+  display: inline-block; padding: 9px 16px; border: 3px solid #000; background: #FFD23F; color: #000;
+  font-weight: 900; text-decoration: none; box-shadow: var(--nb-shadow-primary);
+  transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+}
+.site-cta:hover { transform: translate(-2px, -2px); box-shadow: var(--nb-shadow-primary-hover); }
+.site-cta:active { transform: translate(3px, 3px); box-shadow: var(--nb-shadow-primary-pressed); }
 
 .site-menu { position: relative; }
 .site-menu-button.MuiIconButton-root,
@@ -681,16 +742,21 @@ summary {
   background: #FFD23F !important;
   color: #000 !important;
   border: 3px solid #000 !important;
-  box-shadow: 4px 4px 0 #000 !important;
+  box-shadow: var(--nb-shadow-primary) !important;
 }
-.calculator-page .MuiButton-outlined,
-.calculator-page .MuiButton-text {
+.calculator-page .MuiButton-outlined {
   background: #FFFFFF !important;
   color: #000 !important;
   border: 3px solid #000 !important;
+  box-shadow: var(--nb-shadow-control) !important;
+}
+.calculator-page .MuiButton-text {
+  background: transparent !important;
+  color: #000 !important;
+  border: 3px solid transparent !important;
   box-shadow: none !important;
 }
-.calculator-page .MuiButton-root.Mui-disabled { opacity: 0.55; box-shadow: none !important; }
+.calculator-page .MuiButton-root.Mui-disabled { opacity: 0.6; box-shadow: 1px 1px 0 #000 !important; }
 
 /* ---- Round 2: equal panels, sticky results, green scrollbars, hover underlines, stage accordions ---- */
 
@@ -754,8 +820,9 @@ summary {
   transform: translateY(-2px);
 }
 @media (prefers-reduced-motion: reduce) {
-  .site-nav a, .landing-footer a { transition: none; }
-  .site-nav a:hover, .landing-footer a:hover { transform: none; }
+  .site-nav a, .landing-footer a, .site-cta, .MuiButton-root, .MuiIconButton-root { transition: none; }
+  .site-nav a:hover, .landing-footer a:hover, .site-cta:hover, .site-cta:active,
+  .MuiButton-root:hover, .MuiButton-root:active, .MuiIconButton-root:hover, .MuiIconButton-root:active { transform: none; }
 }
 
 .subtotal-hold-note { margin: 8px 0 0; font-size: 13px; font-weight: 700; color: #000; }

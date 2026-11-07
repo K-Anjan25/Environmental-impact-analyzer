@@ -24,7 +24,16 @@ const theme = createTheme({
     MuiPaper: { styleOverrides: { root: { backgroundImage: 'none' } } },
     MuiButton: {
       styleOverrides: {
-        root: { borderRadius: 0, minHeight: 44, border: '3px solid #000000', boxShadow: '4px 4px 0 #000000' },
+        root: {
+          borderRadius: 0,
+          minHeight: 44,
+          border: '3px solid #000000',
+          boxShadow: '2px 2px 0 #000000',
+          transition: 'transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease',
+        },
+        contained: { backgroundColor: '#FFD23F', boxShadow: '4px 4px 0 #000000, 8px 8px 0 #5BE0A0' },
+        outlined: { backgroundColor: '#FFFFFF', boxShadow: '2px 2px 0 #000000' },
+        text: { borderColor: 'transparent', backgroundColor: 'transparent', boxShadow: 'none' },
       },
     },
     MuiOutlinedInput: {

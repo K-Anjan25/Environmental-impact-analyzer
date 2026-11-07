@@ -9,9 +9,10 @@ import './marketing/neo.css';
 
 /*
  * Home page, rebuilt in a Neo-Brutalist style: bold colour blocks, thick black borders, hard offset
- * shadows, large type, and deliberately asymmetric layouts. Static throughout: no animation, no
- * canvas, no images. Sections, top to bottom: hero, the catalog numbers, three feature panels, use
- * cases, latest posts, and a closing call to action.
+ * shadows, large type, and deliberately asymmetric layouts. The editorial layout stays still; only
+ * controls get brief, reduced-motion-aware tactile feedback. No canvas or image assets. Sections,
+ * top to bottom: hero, the catalog numbers, three feature panels, use cases, latest posts, and a
+ * closing call to action.
  */
 
 /** The 16 EF 3.1 indicator codes, shown as tiles in the hero specimen. Order follows the method page. */
@@ -19,9 +20,7 @@ const INDICATOR_CODES = [
   'ACD', 'ETF', 'FRU', 'FWE', 'GHG', 'HTC', 'HTN', 'IOR',
   'LDU', 'MRU', 'OZD', 'PCO', 'PMA', 'SWE', 'TRE', 'WTU',
 ];
-
-/** Tile colours cycle through the palette so the 16 tiles read as a set, not a gradient. */
-const TILE_TONES = ['nb-tone-yellow', 'nb-tone-paper', 'nb-tone-pink', 'nb-tone-green', 'nb-tone-blue', 'nb-tone-orange'];
+const CASE_TONES = ['nb-tone-yellow', 'nb-tone-green', 'nb-tone-blue'];
 
 function latestPostOf(type: PostType): Post | undefined {
   return publishedPosts(type)[0];
@@ -31,7 +30,7 @@ export default function LandingPage() {
   const catalog = useCatalogSummary();
   const latest = POST_TYPES.map((type) => ({ type, post: latestPostOf(type) }));
   useDocumentMeta(
-    'Environmental Impact Analyzer',
+    'EcoImpact Lab',
     'Published apparel and footwear process factors, with all 16 EF 3.1 indicators kept separate on every row. Scope is stated on every result.',
   );
 
@@ -64,12 +63,12 @@ export default function LandingPage() {
           {/* Decorative specimen of one process row: the 16 indicator tiles. The text summary is for screen readers. */}
           <div className="nb-spec" aria-hidden="true">
             <div className="nb-spec-head">
-              <span>One process row</span>
-              <span>16 indicators</span>
+              <span className="nb-spec-kicker">Field plate / 01</span>
+              <span className="nb-spec-count"><strong>16</strong> impact indicators</span>
             </div>
             <div className="nb-spec-grid">
-              {INDICATOR_CODES.map((code, i) => (
-                <span key={code} className={`nb-tile ${TILE_TONES[i % TILE_TONES.length]}`}>
+              {INDICATOR_CODES.map((code) => (
+                <span key={code} className="nb-tile">
                   {code}
                 </span>
               ))}
@@ -143,7 +142,7 @@ export default function LandingPage() {
           </h2>
           <ol className="nb-cases">
             {USE_CASES.map((item, i) => (
-              <li key={item.title} className={`nb-case ${TILE_TONES[(i * 2) % TILE_TONES.length]}`}>
+              <li key={item.title} className={`nb-case ${CASE_TONES[i % CASE_TONES.length]}`}>
                 <span className="nb-case-num" aria-hidden="true">
                   0{i + 1}
                 </span>

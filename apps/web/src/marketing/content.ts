@@ -2,7 +2,7 @@
  * Marketing copy and configuration for the public landing pages.
  *
  * Every factual claim here is traceable to the repository:
- *  - 302 factor rows, 11 source categories, 12 selectable groups: README.md, data-sources.md
+ *  - 302 factor rows, 11 source categories, 12 selectable groups: data-sources.md
  *  - 25 selections per estimate: services/api/app/factor_schemas.py (max_length=25)
  *  - Textile fibre production (A1) is not in the bundled data: data-sources.md
  *  - Privacy: no analytics, no third-party trackers, inputs stay in the browser: PRIVACY.md
@@ -36,7 +36,7 @@ export const JRC_NORMALISATION_URL = 'https://eplca.jrc.ec.europa.eu/permalink/E
 export const JRC_WEIGHTING_URL = 'https://eplca.jrc.ec.europa.eu/permalink/2018_JRC_Weighting_EF.pdf';
 
 export const HERO = {
-  eyebrow: 'Environmental Impact Analyzer',
+  eyebrow: 'Field notes / 01',
   title: 'Measure the impact behind every process',
   lede:
     'EcoImpact Lab shows published apparel and footwear process factors with all 16 EF 3.1 indicators kept separate on each row. Each result carries its source unit, geography, and boundary. You choose the rows, and the subtotal covers only those rows.',

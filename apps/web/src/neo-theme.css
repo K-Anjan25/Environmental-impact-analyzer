@@ -133,23 +133,23 @@ a { color: #000000; text-decoration-thickness: 2px; text-underline-offset: 3px; 
   opacity: 0.6;
   box-shadow: 1px 1px 0 #000000 !important;
 }
-.MuiIconButton-root:not(.site-menu-button) {
+.MuiIconButton-root:not(.site-menu-button):not(.MuiAutocomplete-popupIndicator):not(.MuiAutocomplete-clearIndicator) {
   border: 2px solid #000000 !important;
   border-radius: 50% !important;
   background: var(--nb-white) !important;
   box-shadow: var(--nb-shadow-control) !important;
   transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
 }
-.MuiIconButton-root:not(.site-menu-button):hover:not(.Mui-disabled) {
+.MuiIconButton-root:not(.site-menu-button):not(.MuiAutocomplete-popupIndicator):not(.MuiAutocomplete-clearIndicator):hover:not(.Mui-disabled) {
   transform: translate(-1px, -1px);
   background: var(--nb-pink) !important;
   box-shadow: 4px 4px 0 #000000 !important;
 }
-.MuiIconButton-root:not(.site-menu-button):active:not(.Mui-disabled) {
+.MuiIconButton-root:not(.site-menu-button):not(.MuiAutocomplete-popupIndicator):not(.MuiAutocomplete-clearIndicator):active:not(.Mui-disabled) {
   transform: translate(1px, 1px);
   box-shadow: none !important;
 }
-.MuiIconButton-root:not(.site-menu-button).Mui-disabled { opacity: 0.55; }
+.MuiIconButton-root:not(.site-menu-button):not(.MuiAutocomplete-popupIndicator):not(.MuiAutocomplete-clearIndicator).Mui-disabled { opacity: 0.55; }
 
 /* ----- Cards and panels ----- */
 .MuiPaper-root {
@@ -999,7 +999,7 @@ summary {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 16px;
-  padding: 16px 48px 16px 16px;
+  padding: 60px 48px 16px 16px;
   border: 2px solid #000;
   background: #fff;
 }
@@ -1052,7 +1052,7 @@ summary {
 
 @media (max-width: 900px) {
   .calc-layout { grid-template-columns: 1fr; }
-  .calc-material-row { grid-template-columns: 1fr; padding-right: 16px; padding-top: 40px; }
+  .calc-material-row { grid-template-columns: 1fr; padding-right: 16px; padding-top: 60px; }
   .calc-remove { top: 4px; right: 4px; }
 }
 
@@ -1065,7 +1065,7 @@ summary {
 .post-pages button { min-width: 44px; min-height: 44px; border-radius: 50% !important; }
 .post-pages button.is-current { box-shadow: 3px 3px 0 var(--nb-pink) !important; }
 .post-card, .post-card-media { border-radius: 4px 24px 4px 4px !important; }
-.MuiIconButton-root:not(.site-menu-button) { min-width: 44px; min-height: 44px; }
+.MuiIconButton-root:not(.site-menu-button):not(.MuiAutocomplete-popupIndicator):not(.MuiAutocomplete-clearIndicator) { min-width: 44px; min-height: 44px; }
 
 .calculator-page .page-heading {
   position: relative;
